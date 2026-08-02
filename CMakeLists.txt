@@ -14,6 +14,7 @@ add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
   src/core/task_result.cpp
   src/pool/simulator_pool.cpp
+  src/session/spectre_session.cpp
   src/core/version.cpp
 )
 
@@ -70,4 +71,21 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_evaluator_contract_test)
+
+  add_executable(spiceunion_spectre_session_lifecycle_test
+    tests/spectre_session_lifecycle_test.cpp
+  )
+
+  target_link_libraries(spiceunion_spectre_session_lifecycle_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_spectre_session_lifecycle_test
+    PRIVATE
+      SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
+  )
+
+  gtest_discover_tests(spiceunion_spectre_session_lifecycle_test)
 endif()

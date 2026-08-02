@@ -18,12 +18,15 @@ states
 
 ## Current Status
 
-The repository is in M0: design finalization and project bootstrap.
+The repository has completed M0, M1.0, and M1.1:
 
-At this stage the priority is not to start with a real Spectre subprocess. The
-first priority is to freeze the execution-layer contract, create the CMake /
-GoogleTest skeleton, and validate scheduling behavior with fake or scripted
-sessions.
+- M0: CMake / GoogleTest skeleton is available.
+- M1.0: core evaluator contract is covered with fake-session tests.
+- M1.1: `SpectreSession` can start Spectre interactive mode, complete the SKILL
+  handshake, initialize the circuit handle, and stop the process.
+
+The next stage is M1.2: parameter writing, single-task `(sclRun "all")`
+execution, completion detection, and failure recovery.
 
 ## Scope
 
@@ -107,6 +110,30 @@ M0 is complete when:
 - fake or scripted session tests cover namespace isolation, startup failure,
   ordered result collection, idle-worker scheduling, and per-task failure
   isolation.
+
+## Build And Test
+
+Default tests do not require external EDA tools:
+
+```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+External Spectre lifecycle tests are opt-in:
+
+```bash
+cmake -S . -B cmake-build-external -DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON
+cmake --build cmake-build-external
+ctest --test-dir cmake-build-external --output-on-failure
+```
+
+External tests expect:
+
+- `spectre` available in `PATH`;
+- `/dev/shm/pdk_cache/toplevel.scs`;
+- `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs`.
 
 ## Notes
 
