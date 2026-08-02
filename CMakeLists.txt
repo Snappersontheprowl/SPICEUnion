@@ -11,6 +11,9 @@ option(SPICEUNION_BUILD_TESTS "Build SPICEUnion tests" ON)
 option(SPICEUNION_ENABLE_EXTERNAL_TESTS "Enable tests that require external EDA tools" OFF)
 
 add_library(spiceunion_core STATIC
+  src/core/evaluator.cpp
+  src/core/task_result.cpp
+  src/pool/simulator_pool.cpp
   src/core/version.cpp
 )
 
@@ -20,6 +23,8 @@ target_include_directories(spiceunion_core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_options(spiceunion_core PRIVATE
@@ -53,4 +58,16 @@ if(SPICEUNION_BUILD_TESTS)
 
   include(GoogleTest)
   gtest_discover_tests(spiceunion_smoke_test)
+
+  add_executable(spiceunion_evaluator_contract_test
+    tests/evaluator_contract_test.cpp
+  )
+
+  target_link_libraries(spiceunion_evaluator_contract_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  gtest_discover_tests(spiceunion_evaluator_contract_test)
 endif()
