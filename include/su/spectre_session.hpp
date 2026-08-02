@@ -29,8 +29,11 @@ class SpectreSession final : public SimulatorSession {
   void prepare_workspace() const;
   void launch_process();
   void wait_for_handshake();
+  TaskResult run_once(const ParameterState& state, std::chrono::seconds timeout);
+  TaskResult wait_for_completion(std::chrono::seconds timeout);
   bool write_command(const std::string& command) noexcept;
   bool read_line_with_timeout(int timeout_seconds, std::string* line);
+  bool process_exited() noexcept;
   void remember_output(std::string line);
   std::string recent_output_text() const;
   void discard_process(bool graceful) noexcept;

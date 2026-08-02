@@ -18,15 +18,20 @@ states
 
 ## Current Status
 
-The repository has completed M0, M1.0, and M1.1:
+The repository has completed M0, M1.0, M1.1, M1.2, and M1.3:
 
 - M0: CMake / GoogleTest skeleton is available.
 - M1.0: core evaluator contract is covered with fake-session tests.
 - M1.1: `SpectreSession` can start Spectre interactive mode, complete the SKILL
   handshake, initialize the circuit handle, and stop the process.
+- M1.2: `SpectreSession` can format SKILL parameter updates, trigger
+  `(sclRun "all")`, wait for completion, and report timeout / transport /
+  simulation failures.
+- M1.3: the default Spectre evaluator factory can run a real multi-worker batch
+  through the evaluator / pool path.
 
-The next stage is M1.2: parameter writing, single-task `(sclRun "all")`
-execution, completion detection, and failure recovery.
+The next stage is C ABI ownership design followed by M2: minimal result IR and
+PSF helper parity with the Python `task_library.py` behavior.
 
 ## Scope
 
@@ -134,6 +139,9 @@ External tests expect:
 - `spectre` available in `PATH`;
 - `/dev/shm/pdk_cache/toplevel.scs`;
 - `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs`.
+
+External tests currently cover Spectre handshake, single-task run, and
+multi-worker evaluator batch execution.
 
 ## Notes
 

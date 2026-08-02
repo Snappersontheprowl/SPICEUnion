@@ -2,34 +2,34 @@
 
 ## 当前阶段
 
-SPICEUnion 已完成 M0、M1.0、M1.1。
+SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3。
 
-当前目标进入 M1.2：在单个真实 Spectre session 上完成参数写入、
-`(sclRun "all")`、完成等待与失败恢复。
+当前目标进入 C ABI 所有权草案与 M2：最小结果 IR、PSF helper、
+与 Python `task_library.py` 行为的一致性测试。
 
 ## 当前活跃待办
 
-### M1.2 Spectre 单任务运行
+### C ABI 所有权草案
 
-- [ ] 为 `ParameterState` 生成 SKILL 参数写入命令：
-      `(sclSetAttribute (sclGetParameter top "key") "value" <value>)`。
-- [ ] 实现 `(sclRun "all")` 运行触发。
-- [ ] 等待完成标志：资源统计行后 `t`。
-- [ ] 识别 `nil` 为单任务失败。
-- [ ] 识别 EOF / BrokenPipe / timeout，并回收进程。
-- [ ] 实现有限次 restart attempt。
-- [ ] 补充协议单测与真实 Spectre 单任务运行测试。
+- [ ] 明确 evaluator handle 创建 / 销毁 API。
+- [ ] 明确 `TaskResult` 跨 C 边界的数据结构。
+- [ ] 明确 string / array 内存由谁分配、谁释放。
+- [ ] 编写 `include/su/evaluator.h` 草案。
+- [ ] 编写 C ABI 文档或 README 小节。
 
-### M1.3 并发 Evaluator 真实路径
+### M2 最小结果 IR 与 PSF helper
 
-- [ ] 将真实 `SpectreSession` 接入 evaluator / pool 工厂。
-- [ ] 用真实 session 回归多 worker batch。
-- [ ] 初步设计 C ABI handle 与 `TaskResult` 输出结构。
-- [ ] 文档化 C ABI 所有权规则。
+- [ ] 定义最小结果 IR：scalar、AC response、tran waveform、sensitivity entry。
+- [ ] 实现 `.raw` 结果目录定位。
+- [ ] 实现 `dcOp.dc` 单信号读取。
+- [ ] 实现 `ac.ac` 频率、幅度、相位读取。
+- [ ] 实现 UGBW / phase margin 计算。
+- [ ] 实现 `tran.tran` 建立时间计算。
+- [ ] 实现 legacy sensitivity 结果读取。
+- [ ] 建立与 Python `task_library.py` 的一致性测试 fixture。
 
 ## 暂缓池
 
-- [ ] 真实 `SpectreSession` 的参数写入、运行、完成等待、transport failure 恢复。
 - [ ] 原生 PSF parser。
 - [ ] C ABI 稳定化与 pybind11 绑定。
 - [ ] Ngspice / Xyce / Hspice 多仿真器扩展。

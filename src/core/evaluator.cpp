@@ -1,6 +1,7 @@
 #include "su/evaluator.hpp"
 
 #include "src/pool/simulator_pool.hpp"
+#include "su/spectre_session.hpp"
 
 #include <atomic>
 #include <sstream>
@@ -57,6 +58,19 @@ std::vector<std::string> Evaluator::worker_work_dirs() const {
     return {};
   }
   return pool_->worker_work_dirs();
+}
+
+SessionFactory make_spectre_session_factory() {
+  return [](
+             std::size_t worker_id,
+             const EvaluatorOptions& options,
+             const std::string& work_dir) -> SimulatorSessionPtr {
+    return SimulatorSessionPtr(new SpectreSession(worker_id, options, work_dir));
+  };
+}
+
+Evaluator make_spectre_evaluator(EvaluatorOptions options) {
+  return Evaluator(std::move(options), make_spectre_session_factory());
 }
 
 std::string generate_workspace_namespace() {

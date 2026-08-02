@@ -26,3 +26,9 @@ cmake -S . -B cmake-build-external -DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON
 cmake --build cmake-build-external
 ctest --test-dir cmake-build-external --output-on-failure
 ```
+
+External tests currently cover:
+
+- Spectre interactive handshake and stop;
+- single-session `(sclRun "all")`;
+- default Spectre evaluator multi-worker batch.

@@ -43,6 +43,9 @@ class Evaluator {
   std::unique_ptr<SimulatorPool> pool_;
 };
 
+SessionFactory make_spectre_session_factory();
+Evaluator make_spectre_evaluator(EvaluatorOptions options);
+
 std::string generate_workspace_namespace();
 std::string join_path(const std::string& left, const std::string& right);
 

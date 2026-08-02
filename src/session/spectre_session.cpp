@@ -1,5 +1,7 @@
 #include "su/spectre_session.hpp"
 
+#include "su/spectre_protocol.hpp"
+
 #include <cerrno>
 #include <chrono>
 #include <cstring>
@@ -98,11 +100,37 @@ void SpectreSession::start() {
   }
 }
 
-TaskResult SpectreSession::run(const ParameterState&, std::chrono::seconds) {
+TaskResult SpectreSession::run(const ParameterState& state, std::chrono::seconds timeout) {
+  const int max_attempts = options_.restart_attempts < 0 ? 1 : options_.restart_attempts + 1;
+
+  for (int attempt = 1; attempt <= max_attempts; ++attempt) {
+    try {
+      if (!active_ || process_exited()) {
+        discard_process(false);
+        start();
+      }
+
+      auto result = run_once(state, timeout);
+      if (result.status != TaskStatus::kTransportFailure) {
+        return result;
+      }
+
+      discard_process(false);
+      if (attempt == max_attempts) {
+        return result;
+      }
+    } catch (const std::exception& exc) {
+      discard_process(false);
+      if (attempt == max_attempts) {
+        return TaskResult::failure(TaskStatus::kTransportFailure, work_dir_, exc.what());
+      }
+    }
+  }
+
   return TaskResult::failure(
-      TaskStatus::kSimulationFailed,
+      TaskStatus::kTransportFailure,
       work_dir_,
-      "SpectreSession::run is not implemented in M1.1");
+      "Spectre run failed after restart attempts");
 }
 
 void SpectreSession::stop(bool graceful) noexcept {
@@ -196,6 +224,54 @@ void SpectreSession::wait_for_handshake() {
       "Spectre handshake timed out; recent_output=" + recent_output_text());
 }
 
+TaskResult SpectreSession::run_once(const ParameterState& state, std::chrono::seconds timeout) {
+  if (!write_command(format_spectre_run_command(state))) {
+    return TaskResult::failure(
+        TaskStatus::kTransportFailure,
+        work_dir_,
+        "failed to dispatch Spectre run command");
+  }
+  return wait_for_completion(timeout);
+}
+
+TaskResult SpectreSession::wait_for_completion(std::chrono::seconds timeout) {
+  const auto effective_timeout = timeout.count() > 0 ? timeout : std::chrono::seconds(60);
+  const auto deadline = std::chrono::steady_clock::now() + effective_timeout;
+  bool seen_resource_stats = false;
+
+  while (std::chrono::steady_clock::now() < deadline) {
+    std::string line;
+    if (!read_line_with_timeout(1, &line)) {
+      if (process_exited()) {
+        return TaskResult::failure(
+            TaskStatus::kTransportFailure,
+            work_dir_,
+            "Spectre process exited before run completion; recent_output=" +
+                recent_output_text());
+      }
+      continue;
+    }
+
+    remember_output(line);
+    auto completion = classify_spectre_completion_line(line, &seen_resource_stats);
+    if (completion == SpectreCompletion::kSucceeded) {
+      return TaskResult::success(work_dir_);
+    }
+    if (completion == SpectreCompletion::kFailed) {
+      return TaskResult::failure(
+          TaskStatus::kSimulationFailed,
+          work_dir_,
+          "Spectre run returned nil; recent_output=" + recent_output_text());
+    }
+  }
+
+  discard_process(false);
+  return TaskResult::failure(
+      TaskStatus::kTimeout,
+      work_dir_,
+      "Spectre run timed out; recent_output=" + recent_output_text());
+}
+
 bool SpectreSession::write_command(const std::string& command) noexcept {
   if (stdin_fd_ < 0) {
     return false;
@@ -247,6 +323,25 @@ bool SpectreSession::read_line_with_timeout(int timeout_seconds, std::string* li
       line->push_back(ch);
     }
   }
+}
+
+bool SpectreSession::process_exited() noexcept {
+  if (child_pid_ <= 0) {
+    return true;
+  }
+  int status = 0;
+  auto waited = ::waitpid(child_pid_, &status, WNOHANG);
+  if (waited == child_pid_) {
+    child_pid_ = -1;
+    active_ = false;
+    return true;
+  }
+  if (waited < 0 && errno == ECHILD) {
+    child_pid_ = -1;
+    active_ = false;
+    return true;
+  }
+  return false;
 }
 
 void SpectreSession::remember_output(std::string line) {

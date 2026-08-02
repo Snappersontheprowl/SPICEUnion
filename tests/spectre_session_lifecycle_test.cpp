@@ -1,4 +1,5 @@
 #include "su/spectre_session.hpp"
+#include "su/evaluator.hpp"
 
 #include <gtest/gtest.h>
 
@@ -44,17 +45,6 @@ void skip_unless_external_environment_is_ready() {
 
 }  // namespace
 
-TEST(SpectreSessionLifecycleTest, RunIsExplicitlyDeferredInM11) {
-  auto options = spectre_options();
-  su::SpectreSession session(0, options, "/tmp/spiceunion_spectre_deferred/worker_0");
-
-  auto result = session.run({}, std::chrono::seconds(1));
-
-  EXPECT_FALSE(result.ok());
-  EXPECT_EQ(result.status, su::TaskStatus::kSimulationFailed);
-  EXPECT_NE(result.error_message.find("not implemented"), std::string::npos);
-}
-
 TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsEnabled) {
   skip_unless_external_environment_is_ready();
 
@@ -67,4 +57,40 @@ TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsE
   ASSERT_NO_THROW(session.start());
   EXPECT_FALSE(session.recent_output().empty());
   EXPECT_NO_THROW(session.stop(true));
+}
+
+TEST(SpectreSessionLifecycleTest, CanRunSingleTaskWhenExternalSpectreIsEnabled) {
+  skip_unless_external_environment_is_ready();
+
+  auto options = spectre_options();
+  options.workspace_namespace = "single_run";
+  su::SpectreSession session(
+      0,
+      options,
+      "/dev/shm/spiceunion_spectre_lifecycle/single_run/worker_0");
+
+  ASSERT_NO_THROW(session.start());
+  auto result = session.run({}, std::chrono::seconds(30));
+  EXPECT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.work_dir, "/dev/shm/spiceunion_spectre_lifecycle/single_run/worker_0");
+  EXPECT_NO_THROW(session.stop(true));
+}
+
+TEST(SpectreSessionLifecycleTest, SpectreEvaluatorRunsBatchWhenExternalSpectreIsEnabled) {
+  skip_unless_external_environment_is_ready();
+
+  auto options = spectre_options();
+  options.workspace_namespace = "batch_run";
+  options.num_workers = 2;
+  options.timeout_seconds = 30;
+
+  auto evaluator = su::make_spectre_evaluator(options);
+  auto results = evaluator.run({su::ParameterState{}, su::ParameterState{}});
+
+  ASSERT_EQ(results.size(), 2U);
+  EXPECT_TRUE(results[0].ok()) << results[0].error_message;
+  EXPECT_TRUE(results[1].ok()) << results[1].error_message;
+  EXPECT_NE(results[0].work_dir, results[1].work_dir);
+
+  evaluator.cleanup();
 }
