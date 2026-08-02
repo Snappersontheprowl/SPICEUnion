@@ -1,0 +1,43 @@
+# TODO
+
+## 当前阶段
+
+SPICEUnion 处于 M0 设计定型与仓库启动阶段。
+
+当前目标不是直接实现真实 Spectre 会话，而是先把项目文档、目录语义、
+构建骨架和可测试的执行层契约钉住，确保后续 M1 开发不会在接口边界上散掉。
+
+## 当前活跃待办
+
+### M0 文档与项目启动
+
+- [ ] 初始化 Git 仓库或确认外部版本管理方式。
+
+### M0 构建骨架
+
+- [ ] 建立最小 CMake 工程：根 `CMakeLists.txt`、`include/`、`src/`、`tests/`。
+- [ ] 接入 GoogleTest，提供一个可运行的 hello / smoke 单测。
+- [ ] 为主要目录补 `README.md`，写明目录职责与命名规则。
+- [ ] 建立本地验证命令，至少覆盖 configure、build、test。
+
+### M0 契约测试骨架
+
+- [ ] 定义执行层核心类型草案：evaluator options、state、task result、error status。
+- [ ] 定义 `SimulatorSession` 接口草案。
+- [ ] 用 `FakeSession` / `ScriptedSession` 先覆盖调度契约：
+      命名空间隔离、启动失败传播、空闲 worker 调度、输入保序、单任务失败隔离。
+- [ ] 暂不接真实 Spectre，避免 M0 被外部 license / PDK / stdout 协议细节阻塞。
+
+## 暂缓池
+
+- [ ] 真实 `SpectreSession` 的 start / handshake / stop。
+- [ ] 真实 `SpectreSession` 的参数写入、运行、完成等待、transport failure 恢复。
+- [ ] 原生 PSF parser。
+- [ ] C ABI 稳定化与 pybind11 绑定。
+- [ ] Ngspice / Xyce / Hspice 多仿真器扩展。
+- [ ] `OrderedConcurrentPool` 独立仓库提取。
+
+## 监控项
+
+- [ ] `spectre_materials` 行为基线变化时，同步审视 SPICEUnion 计划书与契约测试。
+- [ ] 性能数字未实测前，只能作为目标值，不得写成已完成结果。
