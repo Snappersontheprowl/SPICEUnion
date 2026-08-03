@@ -187,9 +187,9 @@ g++ -std=c++17 tests/manual/libpsf_probe.cpp \
 /tmp/libpsf_probe /path/to/result.raw/dcOp.dc vout
 ```
 
-## 6. 当前结论
+## 6. 初始结论
 
-截至本记录：
+截至 2026-08-03 初始记录：
 
 ```text
 1. 本机尚未安装可直接使用的 henjo/libpsf。
@@ -223,3 +223,260 @@ libpsf backend 尚不能进入正式实现。
 - 直接链接 Cadence 自带 `libpsf.so`。
 - 直接开始 native parser。
 - 直接实现 `read_dc_value()` 的正式文件读取逻辑。
+
+## 8. 本地 CMake patch 构建验证
+
+时间：2026-08-04
+
+### 8.1 本地实验区
+
+按“项目内、Git 外、边界清楚”的方式新建本地实验区：
+
+```text
+local/external/libpsf/
+├── src/       # henjo/libpsf clone 与临时 CMake patch
+├── build/     # CMake build 目录
+├── install/   # 本地安装结果
+└── libpsf_probe
+```
+
+项目 `.gitignore` 已加入：
+
+```gitignore
+/local/
+```
+
+因此该目录不会进入 SPICEUnion 版本库。这里保存的是本机 spike 过程，不是正式
+third_party 依赖。
+
+### 8.2 上游源码
+
+clone 源码：
+
+```bash
+git clone https://github.com/henjo/libpsf.git local/external/libpsf/src
+```
+
+当前 commit：
+
+```text
+6efc14f7c5fa7e09a07e354cc54b9135ec353d70
+2014-11-29T10:53:38+01:00
+Fixed problem with PSF files that contain sweep parameters but no traces such as files used
+```
+
+### 8.3 最小 CMake patch
+
+在 `local/external/libpsf/src/CMakeLists.txt` 中临时补了最小 CMake 构建脚本。
+
+本 patch 的边界：
+
+- 只构建 C++ reader core；
+- 不构建 Python binding；
+- 不修改任何 PSF 解析源码；
+- 不提交 libpsf 源码或构建产物；
+- 不接入 SPICEUnion 默认 CMake。
+
+核心源文件来自上游 `src/Makefile.am`，并在链接 `manual probe` 时补充
+`src/psfpropertyblock.cc`。该补充是源文件列表修正，不涉及解析逻辑修改。
+
+### 8.4 构建命令
+
+```bash
+cmake -S local/external/libpsf/src \
+  -B local/external/libpsf/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=~/my_lab/projects/SPICEUnion/local/external/libpsf/install
+
+cmake --build local/external/libpsf/build
+cmake --install local/external/libpsf/build
+```
+
+结果：
+
+```text
+local/external/libpsf/install/lib64/libpsf.a
+local/external/libpsf/install/include/psf.h
+local/external/libpsf/install/include/psfdata.h
+```
+
+构建成功，但出现上游旧代码自身 warning：
+
+```text
+warning: no return statement in function returning non-void
+warning: control reaches end of non-void function
+```
+
+这些 warning 暂未修改，因为本阶段原则是“只改构建，不改解析源码”。正式接入前需评估
+是否在内部 backend 中规避异常路径，或在 fork/patch 中做兼容性修补。
+
+### 8.5 manual probe 编译
+
+命令：
+
+```bash
+g++ -std=c++17 tests/manual/libpsf_probe.cpp \
+  -Ilocal/external/libpsf/install/include \
+  -Llocal/external/libpsf/install/lib64 \
+  -lpsf \
+  -o local/external/libpsf/libpsf_probe
+```
+
+结果：
+
+```text
+编译成功。
+```
+
+### 8.6 libpsf 自带 dcOp 样本验证
+
+命令：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  local/external/libpsf/src/test/data/dcOp.dc vout
+```
+
+结果摘要：
+
+```text
+file=local/external/libpsf/src/test/data/dcOp.dc
+is_swept=0
+nsweeps=0
+sweep_npoints=0
+sweep_values=null
+signal_count=2
+signal[0]=vin
+signal[1]=vout
+requested_signal=vout
+signal_type=scalar value=2.5
+```
+
+结论：
+
+```text
+henjo/libpsf 可以读取自带 dcOp scalar 样本。
+```
+
+### 8.7 spectre_materials 真实 dcOp 验证
+
+命令：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  ~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/dcOp.dc \
+  net6
+```
+
+结果摘要：
+
+```text
+file=~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/dcOp.dc
+is_swept=0
+nsweeps=0
+sweep_npoints=0
+sweep_values=null
+signal_count=14
+signal[0]=net6
+signal[1]=net1
+signal[2]=net3
+signal[3]=net2
+signal[4]=net5
+signal[5]=net7
+requested_signal=net6
+signal_type=scalar value=0.8
+```
+
+结论：
+
+```text
+henjo/libpsf 可以读取 spectre_materials 历史 Spectre 输出中的 dcOp scalar。
+```
+
+### 8.8 spectre_materials 真实 stb 验证
+
+命令：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  ~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/stb.stb \
+  loopGain
+```
+
+结果摘要：
+
+```text
+file=~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/stb.stb
+is_swept=1
+nsweeps=1
+sweep_npoints=201
+sweep_param_names: freq
+sweep_type=double_vector size=201 [0]=1 [1]=1.12202 [2]=1.25893 [3]=1.41254 [4]=1.58489
+signal_count=1
+signal[0]=loopGain
+requested_signal=loopGain
+signal_type=complex_double_vector size=201 [0]=(-287890,26932.1) [1]=(-287245,30150.6)
+```
+
+结论：
+
+```text
+henjo/libpsf 可以读取 spectre_materials 历史 Spectre 输出中的 swept complex vector。
+这对 M2 的 AC/STB 类频域 ResultIR 具有直接参考价值。
+```
+
+### 8.9 当前覆盖缺口
+
+当前在 `spectre_materials/local/runtime` 历史输出中没有找到明显的 `.ac` / `.tran` 文件：
+
+```bash
+find ~/my_lab/projects/spectre_materials/local/runtime \
+  -path '*.raw/*' -type f \( -name '*.ac' -o -name '*.tran' -o -name '*tran*' -o -name '*ac*' \)
+```
+
+结果为空。
+
+因此：
+
+- dcOp scalar 路径已验证；
+- swept complex vector 路径已通过 `stb.stb` 验证；
+- 标准 AC 文件读取仍需专门 fixture；
+- transient waveform 文件读取仍需专门 fixture；
+- sensitivity 文件读取仍需专门 fixture。
+
+## 9. 更新后的 M2.3 判断
+
+截至 2026-08-04：
+
+```text
+libpsf 作为 M2 可选内部 backend 的可行性明显提高。
+它已经能在本机用临时 CMake patch 构建，并能读取 dcOp scalar 与 STB swept
+complex vector。
+```
+
+下一步建议从“能不能构建”转为“如何正式、干净地接入”：
+
+1. 固化一个很小的 PSF fixture 策略，优先 dcOp + stb/AC。
+2. 增加 `SPICEUNION_ENABLE_LIBPSF_READER` CMake option。
+3. 增加内部 backend 文件：
+
+   ```text
+   src/parse/libpsf_backend.hpp
+   src/parse/libpsf_backend.cpp
+   ```
+
+4. 保持公开 API 不变：
+
+   ```text
+   include/su/result_reader.hpp
+   ```
+
+5. 先实现 `read_dc_value()` 的真实读取。
+6. 再实现 swept complex vector 到 `AcResponse` 的转换。
+
+仍然不建议：
+
+- 把 `local/external/libpsf/src` 纳入 Git；
+- 把 `psf.h` 暴露到 `include/su/`；
+- 让默认 CMake 强依赖 libpsf；
+- 在 fixture 不足时一次性承诺 dc/ac/tran/sens 全部完成。

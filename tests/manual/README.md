@@ -13,3 +13,30 @@
 
 - `libpsf_probe.cpp`：用于手动验证 `henjo/libpsf` C++ API 是否能读取指定 PSF 文件。
   它不会进入默认构建，也不会把 `psf.h` 暴露到 SPICEUnion 公开 API。
+
+## libpsf probe 本机示例
+
+若已按 M2 spike 记录在 `local/external/libpsf/` 中构建并安装 `henjo/libpsf`，可用：
+
+```bash
+g++ -std=c++17 tests/manual/libpsf_probe.cpp \
+  -Ilocal/external/libpsf/install/include \
+  -Llocal/external/libpsf/install/lib64 \
+  -lpsf \
+  -o local/external/libpsf/libpsf_probe
+```
+
+读取 libpsf 自带样本：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  local/external/libpsf/src/test/data/dcOp.dc vout
+```
+
+读取 `spectre_materials` 历史输出样本：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  ~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/stb.stb \
+  loopGain
+```
