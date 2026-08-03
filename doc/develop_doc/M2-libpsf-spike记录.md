@@ -608,3 +608,49 @@ M2.3 后续不再是“libpsf 能不能用”，而是：
 3. 补标准 `ac.ac` fixture，或明确以 `stb.stb` 作为第一批频域 fixture。
 4. 补 `tran.tran` fixture。
 5. 补 legacy sensitivity fixture。
+
+## 11. 第一批项目内 PSF fixture
+
+时间：2026-08-04
+
+为避免 libpsf reader 测试长期依赖 `local/` 或 `spectre_materials/local/runtime` 的本机路径，
+已新增项目内 fixture 目录：
+
+```text
+tests/fixtures/
+└── psf/
+    ├── dc_op_minimal.raw/
+    │   └── dcOp.dc
+    ├── spectre_materials_dc_op.raw/
+    │   └── dcOp.dc
+    ├── spectre_materials_stb_loop_gain.raw/
+    │   └── stb.stb
+    └── README.md
+```
+
+`.gitignore` 继续忽略普通 `.raw` runtime 输出，但显式放行：
+
+```gitignore
+!tests/fixtures/
+!tests/fixtures/**
+```
+
+已固化样本：
+
+| fixture | 来源 | 用途 | 已知值 |
+|---|---|---|---|
+| `dc_op_minimal.raw/dcOp.dc` | `henjo/libpsf` 上游测试数据 | 最小 DC scalar | `vout = 2.5` |
+| `spectre_materials_dc_op.raw/dcOp.dc` | `spectre_materials` 历史真实 Spectre 输出 | Cadence Spectre 23.1 DC scalar | `net6 = 0.8` |
+| `spectre_materials_stb_loop_gain.raw/stb.stb` | `spectre_materials` 历史真实 Spectre 输出 | 后续 STB / swept complex vector 读取 | `freq[0] = 1`，`loopGain` 共 201 点 |
+
+测试已从本机绝对路径切换到：
+
+```cmake
+SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+```
+
+后续仍缺：
+
+- 标准 `ac.ac` fixture；
+- 标准 `tran.tran` fixture；
+- legacy sensitivity fixture。

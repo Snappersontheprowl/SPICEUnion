@@ -20,3 +20,7 @@ psf/
 spectre.dc
 *.ahdlSimDB/
 results_*/
+
+# Small, intentional test fixtures are versioned even when they use Spectre .raw naming.
+!tests/fixtures/
+!tests/fixtures/**

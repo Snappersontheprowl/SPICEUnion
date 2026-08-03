@@ -170,8 +170,7 @@ if(SPICEUNION_BUILD_TESTS)
   target_compile_definitions(spiceunion_result_reader_test
     PRIVATE
       SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
-      SPICEUNION_LIBPSF_DCOP_FIXTURE="${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/src/test/data/dcOp.dc"
-      SPICEUNION_SPECTRE_MATERIALS_DCOP_FIXTURE="~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/dcOp.dc"
+      SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
   )
 
   gtest_discover_tests(spiceunion_result_reader_test)

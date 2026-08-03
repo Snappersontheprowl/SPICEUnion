@@ -220,13 +220,13 @@ TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
 
 #if SPICEUNION_ENABLE_LIBPSF_READER
 
-TEST(LibpsfDcReaderTest, ReadsBundledLibpsfDcOpScalarWhenFixtureExists) {
-  const std::filesystem::path fixture(SPICEUNION_LIBPSF_DCOP_FIXTURE);
-  if (!std::filesystem::is_regular_file(fixture)) {
-    GTEST_SKIP() << "libpsf dcOp fixture is not available: " << fixture;
-  }
+TEST(LibpsfDcReaderTest, ReadsMinimalProjectFixtureDcOpScalar) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "dc_op_minimal.raw";
 
-  const auto result = su::read_dc_value(fixture.parent_path().string(), "vout");
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dcOp.dc")) << fixture;
+
+  const auto result = su::read_dc_value(fixture.string(), "vout");
 
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(result.value.signal, "vout");
@@ -234,24 +234,24 @@ TEST(LibpsfDcReaderTest, ReadsBundledLibpsfDcOpScalarWhenFixtureExists) {
 }
 
 TEST(LibpsfDcReaderTest, ReportsMissingSignal) {
-  const std::filesystem::path fixture(SPICEUNION_LIBPSF_DCOP_FIXTURE);
-  if (!std::filesystem::is_regular_file(fixture)) {
-    GTEST_SKIP() << "libpsf dcOp fixture is not available: " << fixture;
-  }
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "dc_op_minimal.raw";
 
-  const auto result = su::read_dc_value(fixture.parent_path().string(), "missing_signal");
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dcOp.dc")) << fixture;
+
+  const auto result = su::read_dc_value(fixture.string(), "missing_signal");
 
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
 }
 
-TEST(LibpsfDcReaderTest, ReadsSpectreClDcOpScalarWhenFixtureExists) {
-  const std::filesystem::path fixture(SPICEUNION_SPECTRE_MATERIALS_DCOP_FIXTURE);
-  if (!std::filesystem::is_regular_file(fixture)) {
-    GTEST_SKIP() << "spectre_materials dcOp fixture is not available: " << fixture;
-  }
+TEST(LibpsfDcReaderTest, ReadsSpectreClProjectFixtureDcOpScalar) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_dc_op.raw";
 
-  const auto result = su::read_dc_value(fixture.parent_path().string(), "net6");
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dcOp.dc")) << fixture;
+
+  const auto result = su::read_dc_value(fixture.string(), "net6");
 
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(result.value.signal, "net6");
