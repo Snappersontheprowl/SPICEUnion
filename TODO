@@ -29,6 +29,9 @@ Python 返回习惯而牺牲类型安全。
 
 ### M2.3 最小文件读取能力
 
+- [ ] 按 `doc/develop_doc/M2-libpsf评估与接入策略.md` 完成 libpsf spike。
+- [ ] 确认 libpsf C++ API 是否能读取当前 dc/ac/tran/sens fixture。
+- [ ] 设计 `SPICEUNION_ENABLE_LIBPSF_READER` 可选开关，不影响默认构建。
 - [ ] 实现 `dcOp.dc` 单信号读取。
 - [ ] 实现 `ac.ac` frequency 与 complex response 读取。
 - [ ] 实现 `tran.tran` time axis 与 waveform 读取。
@@ -41,6 +44,7 @@ Python 返回习惯而牺牲类型安全。
 - [ ] 原生 PSF parser。
 - [ ] C ABI 稳定化与 pybind11 绑定。
 - [ ] evaluator C ABI 所有权草案。
+- [ ] libpsf backend 产品化分发与 license notice。
 - [ ] Ngspice / Xyce / Hspice 多仿真器扩展。
 - [ ] `OrderedConcurrentPool` 独立仓库提取。
 

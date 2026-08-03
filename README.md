@@ -82,6 +82,8 @@ SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价�
 - `doc/develop_doc/CPP版本开发计划书.md`：架构、里程碑、契约与验收标准。
 - `doc/develop_doc/M2结果层职责边界与契约.md`：M2 ResultIR、结果读取 helper、
   失败语义与职责边界。
+- `doc/develop_doc/M2-libpsf评估与接入策略.md`：libpsf 在 M2 中作为可选
+  backend、fixture oracle 与 native parser 决策参考的策略。
 - `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
   commit 边界。
 - `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。
