@@ -10,6 +10,8 @@
   fixture 策略与职责边界。
 - `M2-libpsf评估与接入策略.md`：M2 中 libpsf 的可用性、接入边界、CMake
   开关、license 风险与 native parser 决策策略。
+- `M2-libpsf-spike记录.md`：M2.3 libpsf 本机环境探测、manual probe 与下一步
+  决策记录。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

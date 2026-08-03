@@ -9,6 +9,7 @@
 - Result tests 验证 M2 ResultIR、读取状态和公开 result_reader API 骨架。
 - Result reader tests 验证 `.raw` 目录定位、AC 数学 helper、settling time 和
   M2.3 文件读取 stub。
+- Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre 或 PDK 访问权限，默认必须禁用，除非显式启用。
 
 ## 命令
