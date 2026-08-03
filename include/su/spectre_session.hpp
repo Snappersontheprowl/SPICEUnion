@@ -21,9 +21,15 @@ class SpectreSession final : public SimulatorSession {
   TaskResult run(const ParameterState& state, std::chrono::seconds timeout) override;
   void stop(bool graceful) noexcept override;
 
-  std::size_t worker_id() const noexcept override { return worker_id_; }
-  const std::string& work_dir() const noexcept override { return work_dir_; }
-  const std::vector<std::string>& recent_output() const noexcept { return recent_output_; }
+  std::size_t worker_id() const noexcept override {
+    return worker_id_;
+  }
+  const std::string& work_dir() const noexcept override {
+    return work_dir_;
+  }
+  const std::vector<std::string>& recent_output() const noexcept {
+    return recent_output_;
+  }
 
  private:
   void prepare_workspace() const;

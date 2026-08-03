@@ -30,11 +30,8 @@ TaskResult TaskResult::success(std::string work_dir, std::string detail) {
   return result;
 }
 
-TaskResult TaskResult::failure(
-    TaskStatus status,
-    std::string work_dir,
-    std::string error_message,
-    int error_code) {
+TaskResult TaskResult::failure(TaskStatus status, std::string work_dir, std::string error_message,
+                               int error_code) {
   TaskResult result;
   result.status = status;
   result.work_dir = std::move(work_dir);

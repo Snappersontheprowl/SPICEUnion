@@ -22,14 +22,13 @@ struct TaskResult {
   std::string error_message;
   std::string detail;
 
-  bool ok() const noexcept { return status == TaskStatus::kSuccess; }
+  bool ok() const noexcept {
+    return status == TaskStatus::kSuccess;
+  }
 
   static TaskResult success(std::string work_dir, std::string detail = {});
-  static TaskResult failure(
-      TaskStatus status,
-      std::string work_dir,
-      std::string error_message,
-      int error_code = 0);
+  static TaskResult failure(TaskStatus status, std::string work_dir, std::string error_message,
+                            int error_code = 0);
 };
 
 }  // namespace su

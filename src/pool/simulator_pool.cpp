@@ -10,10 +10,8 @@
 
 namespace su {
 
-SimulatorPool::SimulatorPool(
-    EvaluatorOptions options,
-    std::string workspace_root,
-    SessionFactory factory)
+SimulatorPool::SimulatorPool(EvaluatorOptions options, std::string workspace_root,
+                             SessionFactory factory)
     : options_(std::move(options)), workspace_root_(std::move(workspace_root)) {
   if (options_.num_workers <= 0) {
     throw std::invalid_argument("num_workers must be positive");
@@ -44,9 +42,8 @@ void SimulatorPool::start_all() {
 
   for (auto& worker : workers_) {
     auto* worker_ptr = &worker;
-    futures.push_back(std::async(std::launch::async, [worker_ptr]() {
-      worker_ptr->session->start();
-    }));
+    futures.push_back(
+        std::async(std::launch::async, [worker_ptr]() { worker_ptr->session->start(); }));
   }
 
   std::exception_ptr first_error;
@@ -78,8 +75,7 @@ void SimulatorPool::start_all() {
   available_.notify_all();
 }
 
-std::vector<TaskResult> SimulatorPool::evaluate_batch(
-    const std::vector<ParameterState>& states) {
+std::vector<TaskResult> SimulatorPool::evaluate_batch(const std::vector<ParameterState>& states) {
   if (states.empty()) {
     return {};
   }
@@ -97,15 +93,11 @@ std::vector<TaskResult> SimulatorPool::evaluate_batch(
       try {
         results[index] = run_one(worker_index, states[index]);
       } catch (const std::exception& exc) {
-        results[index] = TaskResult::failure(
-            TaskStatus::kException,
-            workers_[worker_index].work_dir,
-            exc.what());
+        results[index] = TaskResult::failure(TaskStatus::kException,
+                                             workers_[worker_index].work_dir, exc.what());
       } catch (...) {
-        results[index] = TaskResult::failure(
-            TaskStatus::kException,
-            workers_[worker_index].work_dir,
-            "unknown exception");
+        results[index] = TaskResult::failure(TaskStatus::kException,
+                                             workers_[worker_index].work_dir, "unknown exception");
       }
       release_worker(worker_index);
     }));
@@ -158,9 +150,7 @@ void SimulatorPool::release_worker(std::size_t index) {
   available_.notify_one();
 }
 
-TaskResult SimulatorPool::run_one(
-    std::size_t worker_index,
-    const ParameterState& state) noexcept {
+TaskResult SimulatorPool::run_one(std::size_t worker_index, const ParameterState& state) noexcept {
   auto& worker = workers_[worker_index];
   try {
     auto result = worker.session->run(state, std::chrono::seconds(options_.timeout_seconds));

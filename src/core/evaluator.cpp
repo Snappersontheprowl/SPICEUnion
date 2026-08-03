@@ -3,10 +3,10 @@
 #include "src/pool/simulator_pool.hpp"
 #include "su/spectre_session.hpp"
 
+#include <unistd.h>
 #include <atomic>
 #include <sstream>
 #include <stdexcept>
-#include <unistd.h>
 #include <utility>
 
 namespace su {
@@ -61,10 +61,8 @@ std::vector<std::string> Evaluator::worker_work_dirs() const {
 }
 
 SessionFactory make_spectre_session_factory() {
-  return [](
-             std::size_t worker_id,
-             const EvaluatorOptions& options,
-             const std::string& work_dir) -> SimulatorSessionPtr {
+  return [](std::size_t worker_id, const EvaluatorOptions& options,
+            const std::string& work_dir) -> SimulatorSessionPtr {
     return SimulatorSessionPtr(new SpectreSession(worker_id, options, work_dir));
   };
 }

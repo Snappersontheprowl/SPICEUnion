@@ -42,10 +42,8 @@ class FakeSession final : public su::SimulatorSession {
 
     const auto fail_it = state.find("fail");
     if (fail_it != state.end() && fail_it->second != 0.0) {
-      return su::TaskResult::failure(
-          su::TaskStatus::kSimulationFailed,
-          work_dir_,
-          "fake task failure");
+      return su::TaskResult::failure(su::TaskStatus::kSimulationFailed, work_dir_,
+                                     "fake task failure");
     }
 
     std::string detail;
@@ -60,8 +58,12 @@ class FakeSession final : public su::SimulatorSession {
     state_->stops.fetch_add(1);
   }
 
-  std::size_t worker_id() const noexcept override { return worker_id_; }
-  const std::string& work_dir() const noexcept override { return work_dir_; }
+  std::size_t worker_id() const noexcept override {
+    return worker_id_;
+  }
+  const std::string& work_dir() const noexcept override {
+    return work_dir_;
+  }
 
  private:
   std::size_t worker_id_;
@@ -78,10 +80,8 @@ su::EvaluatorOptions options(int workers = 2) {
 }
 
 su::SessionFactory factory_with_states(std::vector<std::shared_ptr<FakeSessionState>>* states) {
-  return [states](
-             std::size_t worker_id,
-             const su::EvaluatorOptions&,
-             const std::string& work_dir) -> su::SimulatorSessionPtr {
+  return [states](std::size_t worker_id, const su::EvaluatorOptions&,
+                  const std::string& work_dir) -> su::SimulatorSessionPtr {
     if (worker_id >= states->size()) {
       states->resize(worker_id + 1);
     }
@@ -152,10 +152,7 @@ TEST(EvaluatorContractTest, StartupFailureStopsCreatedWorkersAndPropagates) {
   states[0]->fail_start = true;
 
   EXPECT_THROW(
-      {
-        su::Evaluator evaluator(options(2), factory_with_states(&states));
-      },
-      std::runtime_error);
+      { su::Evaluator evaluator(options(2), factory_with_states(&states)); }, std::runtime_error);
 
   EXPECT_GE(states[0]->stops.load(), 1);
   EXPECT_GE(states[1]->stops.load(), 1);

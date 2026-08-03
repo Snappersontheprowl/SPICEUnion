@@ -10,16 +10,15 @@ std::string format_spectre_run_command(const ParameterState& state) {
   command << "(progn";
   command << std::scientific << std::setprecision(6);
   for (const auto& item : state) {
-    command << " (sclSetAttribute (sclGetParameter top \"" << item.first
-            << "\") \"value\" " << item.second << ")";
+    command << " (sclSetAttribute (sclGetParameter top \"" << item.first << "\") \"value\" "
+            << item.second << ")";
   }
   command << " (sclRun \"all\"))\n";
   return command.str();
 }
 
-SpectreCompletion classify_spectre_completion_line(
-    const std::string& line,
-    bool* seen_resource_stats) {
+SpectreCompletion classify_spectre_completion_line(const std::string& line,
+                                                   bool* seen_resource_stats) {
   if (seen_resource_stats != nullptr &&
       line.find("Peak resident memory used") != std::string::npos) {
     *seen_resource_stats = true;

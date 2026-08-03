@@ -13,8 +13,7 @@ enum class SpectreCompletion {
 };
 
 std::string format_spectre_run_command(const ParameterState& state);
-SpectreCompletion classify_spectre_completion_line(
-    const std::string& line,
-    bool* seen_resource_stats);
+SpectreCompletion classify_spectre_completion_line(const std::string& line,
+                                                   bool* seen_resource_stats);
 
 }  // namespace su

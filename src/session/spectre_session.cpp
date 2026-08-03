@@ -2,18 +2,18 @@
 
 #include "su/spectre_protocol.hpp"
 
+#include <sys/select.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <cerrno>
 #include <chrono>
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sys/select.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -70,10 +70,8 @@ bool write_all(int fd, const std::string& text) {
 
 namespace su {
 
-SpectreSession::SpectreSession(
-    std::size_t worker_id,
-    EvaluatorOptions options,
-    std::string work_dir)
+SpectreSession::SpectreSession(std::size_t worker_id, EvaluatorOptions options,
+                               std::string work_dir)
     : worker_id_(worker_id), options_(std::move(options)), work_dir_(std::move(work_dir)) {}
 
 SpectreSession::~SpectreSession() {
@@ -127,10 +125,8 @@ TaskResult SpectreSession::run(const ParameterState& state, std::chrono::seconds
     }
   }
 
-  return TaskResult::failure(
-      TaskStatus::kTransportFailure,
-      work_dir_,
-      "Spectre run failed after restart attempts");
+  return TaskResult::failure(TaskStatus::kTransportFailure, work_dir_,
+                             "Spectre run failed after restart attempts");
 }
 
 void SpectreSession::stop(bool graceful) noexcept {
@@ -178,12 +174,7 @@ void SpectreSession::launch_process() {
     ::chdir(work_dir_.c_str());
 
     const char* argv[] = {
-        "spectre",
-        options_.netlist_path.c_str(),
-        "+interactive",
-        "-64",
-        "-o",
-        work_dir_.c_str(),
+        "spectre", options_.netlist_path.c_str(), "+interactive", "-64", "-o", work_dir_.c_str(),
         nullptr,
     };
     ::execvp("spectre", const_cast<char* const*>(argv));
@@ -208,8 +199,8 @@ void SpectreSession::wait_for_handshake() {
       int status = 0;
       if (child_pid_ > 0 && ::waitpid(child_pid_, &status, WNOHANG) == child_pid_) {
         child_pid_ = -1;
-        throw std::runtime_error(
-            "Spectre exited before interactive handshake; recent_output=" + recent_output_text());
+        throw std::runtime_error("Spectre exited before interactive handshake; recent_output=" +
+                                 recent_output_text());
       }
       continue;
     }
@@ -220,16 +211,13 @@ void SpectreSession::wait_for_handshake() {
     }
   }
 
-  throw std::runtime_error(
-      "Spectre handshake timed out; recent_output=" + recent_output_text());
+  throw std::runtime_error("Spectre handshake timed out; recent_output=" + recent_output_text());
 }
 
 TaskResult SpectreSession::run_once(const ParameterState& state, std::chrono::seconds timeout) {
   if (!write_command(format_spectre_run_command(state))) {
-    return TaskResult::failure(
-        TaskStatus::kTransportFailure,
-        work_dir_,
-        "failed to dispatch Spectre run command");
+    return TaskResult::failure(TaskStatus::kTransportFailure, work_dir_,
+                               "failed to dispatch Spectre run command");
   }
   return wait_for_completion(timeout);
 }
@@ -244,10 +232,8 @@ TaskResult SpectreSession::wait_for_completion(std::chrono::seconds timeout) {
     if (!read_line_with_timeout(1, &line)) {
       if (process_exited()) {
         return TaskResult::failure(
-            TaskStatus::kTransportFailure,
-            work_dir_,
-            "Spectre process exited before run completion; recent_output=" +
-                recent_output_text());
+            TaskStatus::kTransportFailure, work_dir_,
+            "Spectre process exited before run completion; recent_output=" + recent_output_text());
       }
       continue;
     }
@@ -258,18 +244,14 @@ TaskResult SpectreSession::wait_for_completion(std::chrono::seconds timeout) {
       return TaskResult::success(work_dir_);
     }
     if (completion == SpectreCompletion::kFailed) {
-      return TaskResult::failure(
-          TaskStatus::kSimulationFailed,
-          work_dir_,
-          "Spectre run returned nil; recent_output=" + recent_output_text());
+      return TaskResult::failure(TaskStatus::kSimulationFailed, work_dir_,
+                                 "Spectre run returned nil; recent_output=" + recent_output_text());
     }
   }
 
   discard_process(false);
-  return TaskResult::failure(
-      TaskStatus::kTimeout,
-      work_dir_,
-      "Spectre run timed out; recent_output=" + recent_output_text());
+  return TaskResult::failure(TaskStatus::kTimeout, work_dir_,
+                             "Spectre run timed out; recent_output=" + recent_output_text());
 }
 
 bool SpectreSession::write_command(const std::string& command) noexcept {

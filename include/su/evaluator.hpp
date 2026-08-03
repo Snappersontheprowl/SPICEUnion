@@ -15,9 +15,7 @@ namespace su {
 class SimulatorPool;
 
 using SessionFactory = std::function<SimulatorSessionPtr(
-    std::size_t worker_id,
-    const EvaluatorOptions& options,
-    const std::string& work_dir)>;
+    std::size_t worker_id, const EvaluatorOptions& options, const std::string& work_dir)>;
 
 class Evaluator {
  public:
@@ -33,8 +31,12 @@ class Evaluator {
   void cleanup() noexcept;
   void reload_workers();
 
-  const EvaluatorOptions& options() const noexcept { return options_; }
-  const std::string& workspace_root() const noexcept { return workspace_root_; }
+  const EvaluatorOptions& options() const noexcept {
+    return options_;
+  }
+  const std::string& workspace_root() const noexcept {
+    return workspace_root_;
+  }
   std::vector<std::string> worker_work_dirs() const;
 
  private:
