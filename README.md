@@ -79,12 +79,16 @@ layout.
 Current documents:
 
 - `TODO`: active M0 tasks and deferred work.
-- `doc/CPP版本开发计划书.md`: architecture, milestones, contract, and acceptance
-  criteria.
-- `doc/开发路线图.md`: stage-by-stage implementation tasks, file outputs,
-  test outputs, completion definitions, and commit boundaries.
-- `doc/简历亮点解析.md`: interview-facing story and resume positioning.
 - `doc/README.md`: document directory ownership and naming rules.
+- `doc/develop_doc/README.md`: development-document ownership and naming
+  rules.
+- `doc/develop_doc/CPP版本开发计划书.md`: architecture, milestones, contract,
+  and acceptance criteria.
+- `doc/develop_doc/开发路线图.md`: stage-by-stage implementation tasks, file
+  outputs, test outputs, completion definitions, and commit boundaries.
+- `doc/develop_doc/简历亮点解析.md`: interview-facing story and resume
+  positioning.
+- `doc/study_notes/README.md`: reusable study-note ownership and naming rules.
 
 Planned implementation layout:
 

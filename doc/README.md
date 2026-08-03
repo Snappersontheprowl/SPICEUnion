@@ -1,22 +1,18 @@
 # doc
 
-This directory owns project-level planning and narrative documents.
+This directory owns SPICEUnion documentation.
 
-## Files
+## Subdirectories
 
-- `CPP版本开发计划书.md`: the authoritative development plan for SPICEUnion,
-  including scope, architecture, milestones, execution-layer contracts, and
-  acceptance criteria.
-- `开发路线图.md`: the implementation roadmap, including stage tasks, expected
-  file outputs, test outputs, completion definitions, non-goals, and suggested
-  commit boundaries.
+- `develop_doc/`: project development documents, including the authoritative
+  plan, implementation roadmap, and interview/resume positioning.
 - `study_notes/`: reusable study notes that support project development.
-- `简历亮点解析.md`: interview and resume positioning derived from the
-  development plan.
 
 ## Naming Rules
 
 - Use `README.md` for directory ownership documents.
+- Keep project development documents under `develop_doc/`.
+- Keep reusable learning notes under `study_notes/`.
 - Use stable responsibility names for planning documents.
 - Do not use phase-only names such as `new`, `final`, `tmp`, `test2`, or `v2`.
 - When a document becomes authoritative for a workflow, link it from the root
