@@ -6,6 +6,10 @@ This directory stores study notes that support SPICEUnion development.
 
 - `C++标准开发配置.md`: notes about the baseline configuration expected in a
   modern C++ project, especially when using VSCode with CMake.
+- `SPICEUnion开发环境配置.md`: the concrete VSCode / CMake / clangd setup used
+  by this repository.
+- `当前已有插件.md`: the currently installed VSCode Remote SSH extensions and
+  their roles.
 
 ## Naming Rules
 

@@ -121,17 +121,17 @@ M0 is complete when:
 Default tests do not require external EDA tools:
 
 ```bash
-cmake -S . -B build
-cmake --build build
-ctest --test-dir build --output-on-failure
+cmake --preset default
+cmake --build --preset default
+ctest --preset default
 ```
 
 External Spectre lifecycle tests are opt-in:
 
 ```bash
-cmake -S . -B cmake-build-external -DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON
-cmake --build cmake-build-external
-ctest --test-dir cmake-build-external --output-on-failure
+cmake --preset external
+cmake --build --preset external
+ctest --preset external
 ```
 
 External tests expect:

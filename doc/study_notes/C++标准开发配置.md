@@ -245,22 +245,24 @@ SPICEUnion 当前已经具备：
 - GoogleTest；
 - 默认测试与 external Spectre 测试分离；
 - `.gitignore` 排除构建和 Spectre 产物。
+- `CMakePresets.json` 固化 default / external 配置；
+- `build/compile_commands.json` 可由 default preset 生成；
+- `.vscode/settings.json` 让 clangd 读取 CMake 编译数据库；
+- `.clang-format` 统一 C++ 格式化风格。
 
-当前缺的是：
+后续可选补充：
 
-- `CMakePresets.json`；
-- `build/compile_commands.json`；
-- `.vscode/settings.json`；
-- `.clang-format`；
-- 后续可选 `.clang-tidy`。
+- `.clang-tidy`；
+- 本地 `scripts/check.sh`；
+- CI 配置。
 
-因此，针对 VSCode 找不到 `su/evaluator.hpp`，优先做：
+因此，针对 VSCode 找不到 `su/evaluator.hpp`，优先检查：
 
 ```text
-1. 添加 CMakePresets.json，开启 CMAKE_EXPORT_COMPILE_COMMANDS
-2. 添加 .vscode/settings.json，让 VSCode 使用 CMake Tools
-3. 用 preset 重新 configure
-4. 确认 build/compile_commands.json 存在
+1. 用 cmake --preset default 重新 configure
+2. 确认 build/compile_commands.json 存在
+3. 重启 clangd 或 reload VSCode window
+4. 确认当前 VSCode workspace 是项目根目录
 ```
 
 这套配置完成后，VSCode 报找不到 `su/...` 公共头的概率会大幅降低。
