@@ -19,7 +19,7 @@
 | --- | --- | --- |
 | `spectre_daemon.py` | 常驻 Spectre 进程管理：启动、SKILL 握手、参数下发、运行、结果回收、优雅退出/强杀 | 仿真器会话层 `SimulatorSession` |
 | `daemon_pool.py` | 守护进程池：并行预热、队列动态抢占调度、按输入顺序保序回收结果 | 进程池 + 线程池 |
-| `task_library.py` | 基于 libpsf 的低层结果读取：`.raw` 目录定位、dcOp/ac/tran 提取、UGBW/相位裕度/建立时间、legacy sensitivity 解析 | 原生结果解析器 + 结果 IR + 兼容 helper |
+| `task_library.py` | 基于 libpsf 的低层结果读取：`.raw` 目录定位、dcOp/ac/tran 提取、UGBW/相位裕度/建立时间、legacy sensitivity 解析 | 最小 ResultIR + 通用结果读取 helper + 清晰失败语义 |
 | `generic_evaluator.py` | 对外门面：把"参数状态 → 并发仿真 → 解析回调"串成一条 API | C ABI / 绑定层之上的 Facade |
 
 必须复刻的关键行为基准：
@@ -101,6 +101,8 @@ V1 必须覆盖下面这些当前 Python 版已稳定使用的能力。
 - UGBW / phase margin 通用计算。
 - `tran.tran` 建立时间计算。
 - legacy sensitivity 结果读取与结构化整理。
+- Python `task_library.py` 只作为历史参考和 fixture 来源；C++ 核心不为强行兼容
+  Python 的 `0.0` / 空数组 / `None` 失败返回而牺牲类型安全。
 
 **边界**：
 
@@ -271,7 +273,7 @@ public:
 | --- | --- | --- |
 | M0 设计定型（1 周） | 本计划书定稿；根 README/TODO 完成；独立仓库初始化；CMake / CI 骨架（编译 + 单测）；Fake / Scripted session 契约测试草案 | 仓库可配置、可编译、hello 单测通过；执行层核心类型与跨语言边界写入文档；M1.1 开发任务清楚 |
 | M1 单仿真器核心（2 周） | `SimulatorSession`(Spectre) + 进程池/线程池 + C ABI + pybind11 + Python `GenericEvaluator` 等价门面 | 覆盖 Python 版主契约：并行预热、命名空间隔离、空闲 worker 调度、输入保序、启动失败传播、timeout/transport failure 回收；单 worker 连续 1000 次运行无泄漏 |
-| M2 原生解析器（1 周） | PSF 解析器（dcOp/ac/tran/sens）+ 结果 IR + UGBW/PM/建立时间 + `.raw` 目录定位 | 与 libpsf 解析结果一致；覆盖当前 `task_library.py` helper 行为；单文件解析吞吐 ≥ 10x |
+| M2 结果层（1 周） | 最小 ResultIR + 通用结果读取 helper + UGBW/PM/建立时间 + `.raw` 目录定位 + 固定 fixture | C++ API 具备清晰失败语义；参考 libpsf / Python 数值但不强行复制 Python 失败返回习惯；benchmark 入口可运行 |
 | M3 多仿真器抽象（1–2 周） | 网表 IR / 结果 IR 定型；Ngspice 全量适配；Xyce/Hspice 注册式占位 | 同一任务以两种仿真器各跑一遍，IR 结果一致 |
 | M3.5 池库提取（1 周） | 两池组件提取为独立仓库 `OrderedConcurrentPool`：独立测试/基准/README；SPICEUnion 改为依赖该库 | `OrderedConcurrentPool` 可独立构建运行；SPICEUnion 依赖后全部测试通过；API 冻结 |
 | M4 服务化与部署（1 周） | 一键安装脚本；单二进制 demo；性能基准报告 | `./install.sh && demo` 一条命令跑通；基准文档含对比图 |
@@ -279,7 +281,7 @@ public:
 
 ## 七、全局验收与性能基准
 
-1. **功能等价**：V1 用 `spectre_materials` 现有主线测试思想与常用网表做对照，优先使用 `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs` 与 `~/my_lab/projects/spectre_materials/netlist/AMP/sens/input.scs`；C++ 与 Python 解析结果一致；`GenericEvaluator` 等价门面、worker 工作目录约定、失败语义、保序语义均通过测试。
+1. **功能等价**：V1 用 `spectre_materials` 现有主线测试思想与常用网表做参考，优先使用 `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs` 与 `~/my_lab/projects/spectre_materials/netlist/AMP/sens/input.scs`；执行层契约、worker 工作目录约定、失败隔离、保序语义均通过测试。结果读取层参考 Python / libpsf 数值，但 C++ API 以清晰状态和类型安全为优先。
 2. **性能**（M1/M2 实测后回填数字）：
    - 调度往返延迟：C++ / Python ≥ 2x；
    - 解析吞吐：C++ / Python ≥ 10x；
