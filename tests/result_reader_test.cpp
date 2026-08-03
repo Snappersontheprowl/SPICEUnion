@@ -205,11 +205,57 @@ TEST(TranMathTest, RejectsInvalidWaveformShape) {
   EXPECT_EQ(result.status, su::ResultStatus::kInvalidInput);
 }
 
-TEST(ResultReaderStubTest, FileReadersReturnUnsupportedUntilM23) {
+TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
+#if SPICEUNION_ENABLE_LIBPSF_READER
+  EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
+#else
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kUnsupportedFormat);
+#endif
   EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
             su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
             su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_sensitivity_legacy("work").status, su::ResultStatus::kUnsupportedFormat);
 }
+
+#if SPICEUNION_ENABLE_LIBPSF_READER
+
+TEST(LibpsfDcReaderTest, ReadsBundledLibpsfDcOpScalarWhenFixtureExists) {
+  const std::filesystem::path fixture(SPICEUNION_LIBPSF_DCOP_FIXTURE);
+  if (!std::filesystem::is_regular_file(fixture)) {
+    GTEST_SKIP() << "libpsf dcOp fixture is not available: " << fixture;
+  }
+
+  const auto result = su::read_dc_value(fixture.parent_path().string(), "vout");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "vout");
+  EXPECT_DOUBLE_EQ(result.value.value, 2.5);
+}
+
+TEST(LibpsfDcReaderTest, ReportsMissingSignal) {
+  const std::filesystem::path fixture(SPICEUNION_LIBPSF_DCOP_FIXTURE);
+  if (!std::filesystem::is_regular_file(fixture)) {
+    GTEST_SKIP() << "libpsf dcOp fixture is not available: " << fixture;
+  }
+
+  const auto result = su::read_dc_value(fixture.parent_path().string(), "missing_signal");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
+}
+
+TEST(LibpsfDcReaderTest, ReadsSpectreClDcOpScalarWhenFixtureExists) {
+  const std::filesystem::path fixture(SPICEUNION_SPECTRE_MATERIALS_DCOP_FIXTURE);
+  if (!std::filesystem::is_regular_file(fixture)) {
+    GTEST_SKIP() << "spectre_materials dcOp fixture is not available: " << fixture;
+  }
+
+  const auto result = su::read_dc_value(fixture.parent_path().string(), "net6");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "net6");
+  EXPECT_DOUBLE_EQ(result.value.value, 0.8);
+}
+
+#endif

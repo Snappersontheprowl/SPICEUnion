@@ -1,5 +1,9 @@
 #include "su/result_reader.hpp"
 
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+#include "src/parse/libpsf_backend.hpp"
+#endif
+
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
@@ -61,10 +65,14 @@ ReadResult<ResultDirectory> find_result_directory(const std::string& work_dir) {
 
 ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
                                        const std::string& signal_name) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+  return parse::read_dc_value_with_libpsf(result_dir, signal_name);
+#else
   (void)result_dir;
   (void)signal_name;
   return ReadResult<ScalarResult>::failure(ResultStatus::kUnsupportedFormat,
-                                           "dcOp.dc reading is scheduled for M2.3");
+                                           "dcOp.dc reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
 }
 
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,

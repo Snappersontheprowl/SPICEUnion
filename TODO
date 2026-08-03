@@ -3,9 +3,10 @@
 ## 当前阶段
 
 SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2，并已完成
-M2.3 的 libpsf 本地 CMake 构建 spike。
+M2.3 的 libpsf 本地 CMake 构建 spike、可选 CMake backend 开关与
+`dcOp.dc` 单信号读取链路。
 
-当前目标进入 M2.3：固定 fixture 与最小文件读取能力。
+当前目标继续 M2.3：固定 fixture，并补齐 AC、TRAN、legacy sensitivity 最小文件读取能力。
 
 Python `task_library.py` 只作为历史参考和 fixture 来源；C++ API 不为强行兼容
 Python 返回习惯而牺牲类型安全。
@@ -16,8 +17,6 @@ Python 返回习惯而牺牲类型安全。
 
 - [ ] 固化最小 PSF fixture 策略，优先覆盖 dcOp scalar 与 STB/AC swept complex vector。
 - [ ] 补齐标准 AC、TRAN、legacy sensitivity fixture 或生成脚本。
-- [ ] 设计 `SPICEUNION_ENABLE_LIBPSF_READER` 可选开关，不影响默认构建。
-- [ ] 实现 `dcOp.dc` 单信号读取。
 - [ ] 实现 `ac.ac` frequency 与 complex response 读取。
 - [ ] 实现 `tran.tran` time axis 与 waveform 读取。
 - [ ] 实现 legacy sensitivity 结果读取。

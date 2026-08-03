@@ -9,6 +9,48 @@ project(
 
 option(SPICEUNION_BUILD_TESTS "Build SPICEUnion tests" ON)
 option(SPICEUNION_ENABLE_EXTERNAL_TESTS "Enable tests that require external EDA tools" OFF)
+option(SPICEUNION_ENABLE_LIBPSF_READER "Enable optional henjo/libpsf PSF result reader backend" OFF)
+
+set(SPICEUNION_LIBPSF_INCLUDE_DIR "" CACHE PATH "Directory that contains henjo/libpsf psf.h")
+set(SPICEUNION_LIBPSF_LIBRARY "" CACHE FILEPATH "Path to henjo/libpsf library")
+
+if(SPICEUNION_ENABLE_LIBPSF_READER)
+  if(SPICEUNION_LIBPSF_INCLUDE_DIR)
+    set(_spiceunion_libpsf_include_dir "${SPICEUNION_LIBPSF_INCLUDE_DIR}")
+  else()
+    unset(_spiceunion_libpsf_include_dir)
+    find_path(_spiceunion_libpsf_include_dir
+      NAMES psf.h
+      HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/include"
+    )
+  endif()
+
+  if(SPICEUNION_LIBPSF_LIBRARY)
+    set(_spiceunion_libpsf_library "${SPICEUNION_LIBPSF_LIBRARY}")
+  else()
+    unset(_spiceunion_libpsf_library)
+    find_library(_spiceunion_libpsf_library
+      NAMES psf libpsf.a
+      HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/lib64"
+    )
+  endif()
+
+  if(NOT _spiceunion_libpsf_include_dir OR NOT _spiceunion_libpsf_library)
+    message(FATAL_ERROR
+      "SPICEUNION_ENABLE_LIBPSF_READER=ON requires henjo/libpsf. "
+      "Set SPICEUNION_LIBPSF_INCLUDE_DIR and SPICEUNION_LIBPSF_LIBRARY, "
+      "or build it under local/external/libpsf/install."
+    )
+  endif()
+
+  set(SPICEUNION_LIBPSF_INCLUDE_DIR "${_spiceunion_libpsf_include_dir}" CACHE PATH
+      "Directory that contains henjo/libpsf psf.h" FORCE)
+  set(SPICEUNION_LIBPSF_LIBRARY "${_spiceunion_libpsf_library}" CACHE FILEPATH
+      "Path to henjo/libpsf library" FORCE)
+endif()
 
 add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
@@ -20,6 +62,13 @@ add_library(spiceunion_core STATIC
   src/session/spectre_session.cpp
   src/core/version.cpp
 )
+
+if(SPICEUNION_ENABLE_LIBPSF_READER)
+  target_sources(spiceunion_core
+    PRIVATE
+      src/parse/libpsf_backend.cpp
+  )
+endif()
 
 target_compile_features(spiceunion_core PUBLIC cxx_std_17)
 
@@ -34,6 +83,23 @@ target_include_directories(spiceunion_core
 target_compile_options(spiceunion_core PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
 )
+
+if(SPICEUNION_ENABLE_LIBPSF_READER)
+  target_compile_definitions(spiceunion_core
+    PRIVATE
+      SPICEUNION_ENABLE_LIBPSF_READER=1
+  )
+
+  target_include_directories(spiceunion_core SYSTEM
+    PRIVATE
+      ${SPICEUNION_LIBPSF_INCLUDE_DIR}
+  )
+
+  target_link_libraries(spiceunion_core
+    PRIVATE
+      ${SPICEUNION_LIBPSF_LIBRARY}
+  )
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
   target_link_libraries(spiceunion_core PUBLIC stdc++fs)
@@ -99,6 +165,13 @@ if(SPICEUNION_BUILD_TESTS)
     PRIVATE
       spiceunion_core
       GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_result_reader_test
+    PRIVATE
+      SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
+      SPICEUNION_LIBPSF_DCOP_FIXTURE="${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/src/test/data/dcOp.dc"
+      SPICEUNION_SPECTRE_MATERIALS_DCOP_FIXTURE="~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/dcOp.dc"
   )
 
   gtest_discover_tests(spiceunion_result_reader_test)

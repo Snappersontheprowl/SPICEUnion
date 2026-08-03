@@ -13,6 +13,16 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 
 - `result.cpp`：`ResultStatus` 稳定文本转换。
 - `result_reader.cpp`：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、
-  waveform settling time，以及 M2.3 文件读取函数的 `kUnsupportedFormat` stub。
+  waveform settling time，以及公开 result reader 入口。
+- `libpsf_backend.cpp`：可选内部 backend。仅在
+  `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时编译，用 `henjo/libpsf` 读取 `dcOp.dc`
+  单信号 scalar；默认构建不编译该文件。
+
+当前文件读取状态：
+
+- `read_dc_value()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
+  `dcOp.dc`。
+- `read_ac_response()`、`read_tran_waveform()`、`read_sensitivity_legacy()`：仍是
+  M2.3 后续待实现的 `kUnsupportedFormat` stub。
 
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。

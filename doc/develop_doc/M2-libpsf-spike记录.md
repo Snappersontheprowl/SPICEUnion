@@ -480,3 +480,131 @@ complex vector。
 - 把 `psf.h` 暴露到 `include/su/`；
 - 让默认 CMake 强依赖 libpsf；
 - 在 fixture 不足时一次性承诺 dc/ac/tran/sens 全部完成。
+
+## 10. 可选 libpsf backend 首次落地
+
+时间：2026-08-04
+
+在 spike 证明 libpsf 可用后，M2.3 先落地最小正式读取链路：
+
+```text
+read_dc_value(result_dir, signal_name)
+  -> src/parse/result_reader.cpp
+  -> src/parse/libpsf_backend.cpp
+  -> henjo/libpsf PSFDataSet
+  -> ScalarResult
+```
+
+### 10.1 CMake 开关
+
+新增：
+
+```cmake
+SPICEUNION_ENABLE_LIBPSF_READER
+SPICEUNION_LIBPSF_INCLUDE_DIR
+SPICEUNION_LIBPSF_LIBRARY
+```
+
+默认：
+
+```text
+SPICEUNION_ENABLE_LIBPSF_READER=OFF
+```
+
+默认构建不寻找、不编译、不链接 libpsf。
+
+启用时，CMake 会优先尝试：
+
+```text
+local/external/libpsf/install/include
+local/external/libpsf/install/lib
+local/external/libpsf/install/lib64
+```
+
+也可以手动传入：
+
+```bash
+-DSPICEUNION_LIBPSF_INCLUDE_DIR=/path/to/libpsf/include
+-DSPICEUNION_LIBPSF_LIBRARY=/path/to/libpsf.a
+```
+
+libpsf include 目录在 CMake 中按 `SYSTEM` include 处理，避免第三方 header warning
+被 SPICEUnion 自身 `-Wall -Wextra -Wpedantic` 放大。
+
+### 10.2 内部 backend 文件
+
+新增：
+
+```text
+src/parse/libpsf_backend.hpp
+src/parse/libpsf_backend.cpp
+```
+
+边界：
+
+- 文件位于 `src/parse/`，不在 `include/su/`；
+- `psf.h` 只出现在 `.cpp` 内部；
+- `PSFDataSet`、`PSFBase`、`PSFScalar` 不进入公开 API；
+- 第三方异常被翻译成 `ResultStatus`。
+
+当前错误语义：
+
+```text
+result_dir 为空       -> kInvalidInput
+signal_name 为空     -> kInvalidInput
+dcOp.dc 不存在       -> kFileNotFound
+signal 不存在        -> kSignalNotFound
+非 scalar signal     -> kUnsupportedFormat
+PSF 文件无效/异常    -> kParseError
+```
+
+### 10.3 测试
+
+默认构建：
+
+```bash
+cmake --preset default
+cmake --build --preset default
+ctest --preset default --output-on-failure
+```
+
+结果：
+
+```text
+100% tests passed, 0 tests failed out of 40
+```
+
+libpsf 构建：
+
+```bash
+cmake -S . -B cmake-build-libpsf \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DSPICEUNION_BUILD_TESTS=ON \
+  -DSPICEUNION_ENABLE_EXTERNAL_TESTS=OFF \
+  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
+cmake --build cmake-build-libpsf
+ctest --test-dir cmake-build-libpsf --output-on-failure
+```
+
+结果：
+
+```text
+100% tests passed, 0 tests failed out of 43
+```
+
+新增 libpsf 测试覆盖：
+
+- 读取 libpsf 自带 `dcOp.dc` 中的 `vout=2.5`；
+- 缺失 signal 返回 `kSignalNotFound`；
+- 读取 `spectre_materials` 历史真实 `dcOp.dc` 中的 `net6=0.8`。
+
+### 10.4 更新后的下一步
+
+M2.3 后续不再是“libpsf 能不能用”，而是：
+
+1. 固化最小 fixture 策略，避免长期依赖 `local/` 或 `spectre_materials/local/runtime`。
+2. 增加 swept complex vector 到 `AcResponse` 的内部转换。
+3. 补标准 `ac.ac` fixture，或明确以 `stb.stb` 作为第一批频域 fixture。
+4. 补 `tran.tran` fixture。
+5. 补 legacy sensitivity fixture。

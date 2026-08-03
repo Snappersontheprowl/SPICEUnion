@@ -18,7 +18,8 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1 和 M2.2：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2，并已推进
+M2.3 的 libpsf 可选 DC 读取链路：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -32,8 +33,11 @@ states
 - M2.1：最小 ResultIR、`ReadResult<T>`、结果读取 API 骨架与基础单元测试已可用。
 - M2.2：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、waveform
   settling time 等纯路径 / 纯数学 helper 已实现。
+- M2.3：`henjo/libpsf` 已完成本地 CMake spike；`read_dc_value()` 在显式启用
+  `SPICEUNION_ENABLE_LIBPSF_READER` 时可读取 `dcOp.dc` 单信号 scalar。默认构建
+  仍不依赖 libpsf。
 
-下一阶段进入 M2.3：libpsf spike、固定 fixture、dc/ac/tran/sens 最小文件读取能力。
+下一阶段继续 M2.3：固定 fixture，并补齐 ac/tran/sens 最小文件读取能力。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 
