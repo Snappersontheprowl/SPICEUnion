@@ -76,8 +76,8 @@ optimizer decisions。
 - `calculate_ugbw_and_phase_margin(response)`：计算 UGBW / phase margin。
 - `calculate_settling_time(waveform, target_value, error_band)`：计算 settling time。
 
-M2.1 只落地 API 骨架与 ResultIR 类型；具体 helper 实现按 M2.2 / M2.3 分阶段补齐。
-该头文件不得暴露 libpsf 类型。
+M2.2 已实现 `.raw` 目录定位、AC 派生视图、UGBW / phase margin 和 settling time。
+dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文件不得暴露 libpsf 类型。
 
 ### `session.hpp`
 

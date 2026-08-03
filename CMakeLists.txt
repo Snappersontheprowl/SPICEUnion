@@ -14,6 +14,7 @@ add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
   src/core/task_result.cpp
   src/parse/result.cpp
+  src/parse/result_reader.cpp
   src/pool/simulator_pool.cpp
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
@@ -33,6 +34,10 @@ target_include_directories(spiceunion_core
 target_compile_options(spiceunion_core PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
 )
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+  target_link_libraries(spiceunion_core PUBLIC stdc++fs)
+endif()
 
 if(SPICEUNION_BUILD_TESTS)
   enable_testing()
@@ -85,6 +90,18 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_result_test)
+
+  add_executable(spiceunion_result_reader_test
+    tests/result_reader_test.cpp
+  )
+
+  target_link_libraries(spiceunion_result_reader_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  gtest_discover_tests(spiceunion_result_reader_test)
 
   add_executable(spiceunion_spectre_session_lifecycle_test
     tests/spectre_session_lifecycle_test.cpp

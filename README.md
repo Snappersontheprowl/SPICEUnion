@@ -18,7 +18,7 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3 和 M2.1：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1 和 M2.2：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -30,9 +30,10 @@ states
 - M1.3：默认 Spectre evaluator factory 可以通过 evaluator / pool 路径运行真实
   multi-worker batch。
 - M2.1：最小 ResultIR、`ReadResult<T>`、结果读取 API 骨架与基础单元测试已可用。
+- M2.2：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、waveform
+  settling time 等纯路径 / 纯数学 helper 已实现。
 
-下一阶段进入 M2.2：`.raw` 目录定位、AC 派生视图、UGBW / phase margin 与 waveform
-settling time 等纯路径 / 纯数学 helper。
+下一阶段进入 M2.3：libpsf spike、固定 fixture、dc/ac/tran/sens 最小文件读取能力。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 

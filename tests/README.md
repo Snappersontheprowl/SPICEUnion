@@ -7,6 +7,8 @@
 - Smoke tests 验证构建与链接路径。
 - Contract tests 使用 fake 或 scripted session 验证执行层行为。
 - Result tests 验证 M2 ResultIR、读取状态和公开 result_reader API 骨架。
+- Result reader tests 验证 `.raw` 目录定位、AC 数学 helper、settling time 和
+  M2.3 文件读取 stub。
 - 外部测试可能依赖 Spectre 或 PDK 访问权限，默认必须禁用，除非显式启用。
 
 ## 命令

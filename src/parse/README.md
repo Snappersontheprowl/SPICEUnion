@@ -12,5 +12,7 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 当前实现：
 
 - `result.cpp`：`ResultStatus` 稳定文本转换。
+- `result_reader.cpp`：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、
+  waveform settling time，以及 M2.3 文件读取函数的 `kUnsupportedFormat` stub。
 
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。
