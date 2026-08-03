@@ -1,4 +1,4 @@
-# develop_doc
+# doc
 
 This directory owns project-level planning and narrative documents.
 
