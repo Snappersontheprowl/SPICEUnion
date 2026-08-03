@@ -1,6 +1,6 @@
 # src/session
 
-Simulator session implementations live here.
+本目录存放 simulator session 实现。
 
-This layer is the only place that should own external simulator process
-protocols such as Spectre interactive SKILL stdin/stdout handling.
+这一层是唯一应该拥有外部 simulator process protocol 的地方，例如 Spectre interactive
+SKILL stdin/stdout 处理。

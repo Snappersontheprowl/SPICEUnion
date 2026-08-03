@@ -1,10 +1,10 @@
 # SPICEUnion
 
-SPICEUnion is a C++17 rewrite of the interactive Spectre execution layer that
-currently lives in `~/my_lab/projects/spectre_materials/src/spectre_interactive/`.
+SPICEUnion 是一个 C++17 项目，用于重写并沉淀当前位于
+`~/my_lab/projects/spectre_materials/src/spectre_interactive/` 的
+Spectre 交互式执行层。
 
-The project goal is to turn the existing Python execution path into a compact,
-testable, embeddable simulator infrastructure library:
+项目目标是把已有 Python 执行路径整理为一个紧凑、可测试、可嵌入的仿真器基础设施库：
 
 ```text
 states
@@ -16,81 +16,75 @@ states
   -> ordered results
 ```
 
-## Current Status
+## 当前状态
 
-The repository has completed M0, M1.0, M1.1, M1.2, and M1.3:
+当前仓库已完成 M0、M1.0、M1.1、M1.2 和 M1.3：
 
-- M0: CMake / GoogleTest skeleton is available.
-- M1.0: core evaluator contract is covered with fake-session tests.
-- M1.1: `SpectreSession` can start Spectre interactive mode, complete the SKILL
-  handshake, initialize the circuit handle, and stop the process.
-- M1.2: `SpectreSession` can format SKILL parameter updates, trigger
-  `(sclRun "all")`, wait for completion, and report timeout / transport /
-  simulation failures.
-- M1.3: the default Spectre evaluator factory can run a real multi-worker batch
-  through the evaluator / pool path.
+- M0：CMake / GoogleTest 项目骨架已可用。
+- M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
+- M1.1：`SpectreSession` 可以启动 Spectre interactive 模式，完成 SKILL
+  握手，初始化 circuit handle，并停止进程。
+- M1.2：`SpectreSession` 可以格式化 SKILL 参数写入命令，触发
+  `(sclRun "all")`，等待完成，并报告 timeout / transport / simulation
+  失败。
+- M1.3：默认 Spectre evaluator factory 可以通过 evaluator / pool 路径运行真实
+  multi-worker batch。
 
-The next stage is C ABI ownership design followed by M2: minimal result IR and
-PSF helper parity with the Python `task_library.py` behavior.
+下一阶段建议先明确 C ABI ownership 设计，然后进入 M2：最小 result IR 与 PSF helper，
+对齐 Python `task_library.py` 的行为。
 
-## Scope
+## 范围
 
-V1 focuses on the execution layer:
+V1 聚焦执行层：
 
-- evaluator options and batch execution facade;
-- isolated evaluator namespaces and worker directories;
-- ordered result collection, independent of task completion order;
-- idle-worker queue scheduling instead of static round-robin dispatch;
-- worker startup failure propagation and cleanup;
-- per-task failure isolation;
-- explicit cleanup and worker reload;
-- Spectre interactive session support after the fake-session contract tests are
-  stable;
-- low-level result helpers and native PSF parsing after the execution core is
-  stable.
+- evaluator options 与 batch execution facade；
+- evaluator namespace 与 worker directory 隔离；
+- 与任务完成顺序无关的 ordered result collection；
+- 使用 idle-worker queue scheduling，而不是静态 round-robin dispatch；
+- worker 启动失败传播与清理；
+- per-task failure isolation；
+- 显式 cleanup 与 worker reload；
+- fake-session 契约测试稳定后支持 Spectre interactive session；
+- 执行核心稳定后补充底层 result helper 与 native PSF parsing。
 
-V1 does not own:
+V1 不负责：
 
-- project-specific circuit metrics;
-- optimization strategies;
-- objective functions or scoring logic;
-- experiment orchestration;
-- PDK content management;
-- GUI work;
-- distributed scheduling.
+- 项目特定 circuit metrics；
+- optimization strategies；
+- objective functions 或 scoring logic；
+- experiment orchestration；
+- PDK content management；
+- GUI 工作；
+- distributed scheduling。
 
-Those responsibilities belong to upstream projects.
+这些职责应由上层项目承担。
 
-## Behavior Baseline
+## 行为基线
 
-The behavior baseline is the current Python package:
+行为基线来自当前 Python package：
 
 - `~/my_lab/projects/spectre_materials/src/spectre_interactive/generic_evaluator.py`
 - `~/my_lab/projects/spectre_materials/src/spectre_interactive/daemon_pool.py`
 - `~/my_lab/projects/spectre_materials/src/spectre_interactive/spectre_daemon.py`
 - `~/my_lab/projects/spectre_materials/src/spectre_interactive/task_library.py`
 
-SPICEUnion should preserve the useful contract of
-`GenericEvaluator.run(states, parse_func)` without copying Python's exact module
-layout.
+SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价值的行为契约，
+但不复制 Python 的具体模块布局。
 
-## Repository Layout
+## 仓库结构
 
-Current documents:
+当前文档：
 
-- `TODO`: active M0 tasks and deferred work.
-- `doc/README.md`: document directory ownership and naming rules.
-- `doc/develop_doc/README.md`: development-document ownership and naming
-  rules.
-- `doc/develop_doc/CPP版本开发计划书.md`: architecture, milestones, contract,
-  and acceptance criteria.
-- `doc/develop_doc/开发路线图.md`: stage-by-stage implementation tasks, file
-  outputs, test outputs, completion definitions, and commit boundaries.
-- `doc/develop_doc/简历亮点解析.md`: interview-facing story and resume
-  positioning.
-- `doc/study_notes/README.md`: reusable study-note ownership and naming rules.
+- `TODO`：当前未完成任务、暂缓池与监控项。
+- `doc/README.md`：文档目录职责与命名规则。
+- `doc/develop_doc/README.md`：开发文档目录职责与命名规则。
+- `doc/develop_doc/CPP版本开发计划书.md`：架构、里程碑、契约与验收标准。
+- `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
+  commit 边界。
+- `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。
+- `doc/study_notes/README.md`：可复用学习笔记目录职责与命名规则。
 
-Planned implementation layout:
+计划中的实现结构：
 
 ```text
 SPICEUnion/
@@ -108,21 +102,21 @@ SPICEUnion/
 └── scripts/
 ```
 
-## M0 Start Criteria
+## M0 启动条件
 
-M0 is complete when:
+M0 满足以下条件时视为完成：
 
-- the root README and TODO describe the project state clearly;
-- the development plan no longer uses migration wording from `spectre_materials`;
-- the C++ core, C ABI, and Python binding boundaries are specified;
-- a minimal CMake project can configure, build, and run a smoke test;
-- fake or scripted session tests cover namespace isolation, startup failure,
-  ordered result collection, idle-worker scheduling, and per-task failure
-  isolation.
+- 根 README 和 TODO 能清楚描述项目状态；
+- 开发计划书不再使用从 `spectre_materials` 迁移过来的模糊表述；
+- C++ core、C ABI 与 Python binding 的边界已明确；
+- 最小 CMake 项目可以 configure、build，并运行 smoke test；
+- fake 或 scripted session 测试覆盖 namespace isolation、startup failure、
+  ordered result collection、idle-worker scheduling 与 per-task failure
+  isolation。
 
-## Build And Test
+## 构建与测试
 
-Default tests do not require external EDA tools:
+默认测试不需要外部 EDA 工具：
 
 ```bash
 cmake --preset default
@@ -130,7 +124,7 @@ cmake --build --preset default
 ctest --preset default
 ```
 
-External Spectre lifecycle tests are opt-in:
+外部 Spectre 生命周期测试需要显式启用：
 
 ```bash
 cmake --preset external
@@ -138,16 +132,16 @@ cmake --build --preset external
 ctest --preset external
 ```
 
-External tests expect:
+外部测试依赖：
 
-- `spectre` available in `PATH`;
+- `spectre` 位于 `PATH` 中；
 - `/dev/shm/pdk_cache/toplevel.scs`;
 - `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs`.
 
-External tests currently cover Spectre handshake, single-task run, and
-multi-worker evaluator batch execution.
+外部测试当前覆盖 Spectre handshake、single-task run 与 multi-worker evaluator
+batch execution。
 
-## Notes
+## 备注
 
-This repository is currently not initialized as a Git repository. Once Git is
-enabled, local commits should be made after code or project-structure changes.
+本仓库使用 Git 管理。按照项目协作约定，代码、结构或流程发生变化后，应及时进行本地
+commit。

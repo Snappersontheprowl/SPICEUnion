@@ -1,17 +1,16 @@
 # tests
 
-GoogleTest-based tests live here.
+本目录存放基于 GoogleTest 的测试。
 
-## Test Groups
+## 测试分组
 
-- Smoke tests verify the build and link path.
-- Contract tests verify execution-layer behavior with fake or scripted sessions.
-- External tests may require Spectre or PDK access and must be disabled by
-  default unless explicitly enabled.
+- Smoke tests 验证构建与链接路径。
+- Contract tests 使用 fake 或 scripted session 验证执行层行为。
+- 外部测试可能依赖 Spectre 或 PDK 访问权限，默认必须禁用，除非显式启用。
 
-## Commands
+## 命令
 
-Default tests:
+默认测试：
 
 ```bash
 cmake --preset default
@@ -19,7 +18,7 @@ cmake --build --preset default
 ctest --preset default
 ```
 
-External Spectre lifecycle tests:
+外部 Spectre 生命周期测试：
 
 ```bash
 cmake --preset external
@@ -27,8 +26,8 @@ cmake --build --preset external
 ctest --preset external
 ```
 
-External tests currently cover:
+外部测试当前覆盖：
 
-- Spectre interactive handshake and stop;
-- single-session `(sclRun "all")`;
-- default Spectre evaluator multi-worker batch.
+- Spectre interactive handshake 与 stop；
+- single-session `(sclRun "all")`；
+- 默认 Spectre evaluator multi-worker batch。

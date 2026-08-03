@@ -1,153 +1,138 @@
 # include/su
 
-This directory contains SPICEUnion public C++ headers.
+本目录存放 SPICEUnion 的公开 C++ 头文件。
 
-The namespace is `su`.
+命名空间为 `su`。
 
-## Module Overview
+## 模块概览
 
 ### `core.hpp`
 
-Shared core data types for the execution layer.
+执行层共享核心数据类型。
 
-This header currently defines:
+该头文件当前定义：
 
-- `ParameterState`: one simulation state's parameter map, modeled as
-  `std::map<std::string, double>`.
-- `EvaluatorOptions`: common evaluator/session configuration, including
-  `netlist_path`, `num_workers`, `work_dir_base`, `workspace_namespace`,
-  `timeout_seconds`, and `restart_attempts`.
+- `ParameterState`：单个仿真状态的参数映射，当前建模为
+  `std::map<std::string, double>`。
+- `EvaluatorOptions`：evaluator/session 通用配置，包括 `netlist_path`、
+  `num_workers`、`work_dir_base`、`workspace_namespace`、`timeout_seconds`
+  与 `restart_attempts`。
 
-Use this header when code needs to describe simulator input parameters or pass
-configuration into evaluator/session objects.
+当代码需要描述仿真器输入参数，或向 evaluator/session 对象传递配置时，应使用该头文件。
 
-This module must stay simulator-neutral. It should not contain Spectre-specific
-protocol strings, PSF parsing types, or business metric definitions.
+该模块必须保持仿真器无关，不应包含 Spectre 专用 protocol string、PSF parsing 类型或
+业务 metric 定义。
 
 ### `task_result.hpp`
 
-Task-level status and result reporting.
+任务级状态与结果报告。
 
-This header currently defines:
+该头文件当前定义：
 
-- `TaskStatus`: normalized execution status for a single submitted state.
-- `TaskResult`: ordered batch output item containing `status`, `work_dir`,
-  `error_code`, `error_message`, and optional `detail`.
-- `to_string(TaskStatus)`: small helper for stable status text.
+- `TaskStatus`：单个提交状态的标准化执行状态。
+- `TaskResult`：有序 batch 输出项，包含 `status`、`work_dir`、`error_code`、
+  `error_message` 以及可选 `detail`。
+- `to_string(TaskStatus)`：用于生成稳定状态文本的小工具函数。
 
-`TaskResult` is the C++ core equivalent of the Python execution layer's
-"success gives the caller a worker directory; failure keeps the failed slot
-localized" behavior.
+`TaskResult` 对应 Python 执行层中的核心行为：成功时把 worker directory 交给调用方，
+失败时把失败限制在对应任务槽位内。
 
-This module should describe execution outcome only. It should not own parsed PSF
-values, circuit metrics, objective scores, or optimizer decisions.
+该模块只描述执行结果，不应承载已解析 PSF 值、circuit metrics、objective scores 或
+optimizer decisions。
 
 ### `session.hpp`
 
-Simulator session abstraction.
+仿真器 session 抽象。
 
-This header defines:
+该头文件定义：
 
-- `SimulatorSession`: the abstract lifecycle interface implemented by concrete
-  simulator backends.
-- `SimulatorSessionPtr`: owning pointer type used by evaluator/pool factories.
+- `SimulatorSession`：由具体仿真器 backend 实现的抽象生命周期接口。
+- `SimulatorSessionPtr`：evaluator/pool factory 使用的 owning pointer 类型。
 
-The interface is intentionally small:
+该接口刻意保持很小：
 
-- `start()`: prepare and start a simulator worker.
-- `run(state, timeout)`: run one parameter state and return a `TaskResult`.
-- `stop(graceful)`: release the worker process/session.
-- `worker_id()` / `work_dir()`: expose stable worker identity and output
-  directory.
+- `start()`：准备并启动一个 simulator worker。
+- `run(state, timeout)`：运行一个参数状态并返回 `TaskResult`。
+- `stop(graceful)`：释放 worker process/session。
+- `worker_id()` / `work_dir()`：暴露稳定的 worker identity 与输出目录。
 
-Use this header when implementing a new simulator backend or when constructing
-test doubles such as fake/scripted sessions.
+实现新的 simulator backend，或构造 fake/scripted session 这类 test double 时，应使用该头文件。
 
-This module is simulator-neutral. Concrete process protocol details belong in
-backend-specific headers such as `spectre_session.hpp`.
+该模块保持仿真器无关。具体 process protocol 细节应放在 backend 专用头文件中，例如
+`spectre_session.hpp`。
 
 ### `evaluator.hpp`
 
-Batch execution facade.
+批量执行门面。
 
-This header defines:
+该头文件定义：
 
-- `SessionFactory`: factory callback used to create one session per worker.
-- `Evaluator`: high-level batch runner that owns a simulator pool and preserves
-  Python `GenericEvaluator.run(states, parse_func)` execution semantics at the
-  C++ core level.
-- `make_spectre_session_factory()`: default factory for Spectre sessions.
-- `make_spectre_evaluator(options)`: convenience constructor for the standard
-  Spectre-backed evaluator.
-- `generate_workspace_namespace()` and `join_path()`: small utility functions
-  used by the evaluator/pool setup.
+- `SessionFactory`：为每个 worker 创建一个 session 的 factory callback。
+- `Evaluator`：高层 batch runner，拥有 simulator pool，并在 C++ core 层保留 Python
+  `GenericEvaluator.run(states, parse_func)` 的执行语义。
+- `make_spectre_session_factory()`：Spectre session 默认 factory。
+- `make_spectre_evaluator(options)`：标准 Spectre-backed evaluator 的便捷构造函数。
+- `generate_workspace_namespace()` 与 `join_path()`：evaluator/pool setup 使用的小工具函数。
 
-`Evaluator::run(states)` returns a result vector with the same length and order
-as the input states. Task completion order may differ internally, but result
-placement is ordered by submission index.
+`Evaluator::run(states)` 返回与输入 states 等长且同序的结果向量。内部任务完成顺序可以不同，
+但结果放置顺序必须按提交 index 排列。
 
-The C++ evaluator returns `TaskResult` objects, not arbitrary business values.
-Language bindings, such as a future Python binding, may call a language-level
-`parse_func(work_dir)` after receiving successful `TaskResult` entries.
+C++ evaluator 返回 `TaskResult` 对象，而不是任意业务值。未来 Python binding 这类语言绑定层
+可以在收到成功的 `TaskResult` 后，再调用语言层 `parse_func(work_dir)`。
 
 ### `spectre_protocol.hpp`
 
-Small, testable helpers for Spectre interactive SKILL protocol formatting and
-completion classification.
+Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，特点是小而可测试。
 
-This header defines:
+该头文件定义：
 
-- `SpectreCompletion`: incremental classification of Spectre stdout lines.
-- `format_spectre_run_command(state)`: converts a `ParameterState` into the
-  SKILL command that sets parameters and runs `(sclRun "all")`.
-- `classify_spectre_completion_line(line, seen_resource_stats)`: recognizes
-  success/failure markers such as resource statistics followed by `t`, `nil`,
-  or classic `spectre completes ... 0 errors` lines.
+- `SpectreCompletion`：对 Spectre stdout 行进行增量完成状态分类。
+- `format_spectre_run_command(state)`：把 `ParameterState` 转换为设置参数并执行
+  `(sclRun "all")` 的 SKILL 命令。
+- `classify_spectre_completion_line(line, seen_resource_stats)`：识别 success/failure
+  marker，例如 resource statistics 后的 `t`、`nil`，或经典
+  `spectre completes ... 0 errors` 行。
 
-Use this module for protocol logic that should be independently unit tested
-without launching a real Spectre process.
+凡是应该在不启动真实 Spectre 进程时独立单测的 protocol logic，都应放在该模块。
 
-This module should not own process handles, pipes, worker directories, or retry
-policy. Those belong in `spectre_session.hpp` / `SpectreSession`.
+该模块不应拥有 process handle、pipe、worker directory 或 retry policy；这些职责属于
+`spectre_session.hpp` / `SpectreSession`。
 
 ### `spectre_session.hpp`
 
-Concrete Spectre interactive session backend.
+具体的 Spectre interactive session backend。
 
-This header defines:
+该头文件定义：
 
-- `SpectreSession`: `SimulatorSession` implementation backed by
-  `spectre +interactive`.
+- `SpectreSession`：基于 `spectre +interactive` 的 `SimulatorSession` 实现。
 
-Its current responsibilities are:
+当前职责包括：
 
-- prepare a worker directory;
-- launch Spectre with `+interactive -64 -o <work_dir>`;
-- wait for the SKILL interactive handshake;
-- initialize the circuit handle with `(setq top (sclGetCircuit ""))`;
-- dispatch one parameter state with the command generated by
-  `spectre_protocol.hpp`;
-- wait for completion, timeout, `nil`, EOF, or transport failure;
-- stop gracefully with `(sclQuit)` or force-kill when needed;
-- keep recent stdout lines for error diagnostics.
+- 准备 worker directory；
+- 使用 `+interactive -64 -o <work_dir>` 启动 Spectre；
+- 等待 SKILL interactive handshake；
+- 使用 `(setq top (sclGetCircuit ""))` 初始化 circuit handle；
+- 使用 `spectre_protocol.hpp` 生成的命令派发单个参数状态；
+- 等待 completion、timeout、`nil`、EOF 或 transport failure；
+- 使用 `(sclQuit)` 优雅停止，必要时 force-kill；
+- 保留最近 stdout 行用于错误诊断。
 
-This is the only public C++ header that should expose the concrete Spectre
-session class. Generic scheduling code should depend on `SimulatorSession`
-instead.
+这是唯一应该暴露具体 Spectre session class 的公开 C++ 头文件。通用 scheduling code 应依赖
+`SimulatorSession`，而不是直接依赖该类。
 
 ### `version.hpp`
 
-Small version helper.
+小型版本 helper。
 
-This header defines:
+该头文件定义：
 
-- `version()`: returns the current SPICEUnion library version string.
+- `version()`：返回当前 SPICEUnion library version string。
 
-It is mainly used by smoke tests and lightweight integration checks.
+它主要用于 smoke test 与轻量集成检查。
 
-## Layering Rules
+## 分层规则
 
-The current public header layering is:
+当前公开头文件分层如下：
 
 ```text
 core.hpp
@@ -160,18 +145,17 @@ spectre_protocol.hpp
   -> spectre_session.hpp
 ```
 
-Guidelines:
+约定：
 
-- Shared simulator-neutral types belong in `core.hpp` or `task_result.hpp`.
-- Abstract simulator lifecycle belongs in `session.hpp`.
-- Batch execution facade belongs in `evaluator.hpp`.
-- Spectre-specific protocol helpers belong in `spectre_protocol.hpp`.
-- Spectre process/session implementation belongs in `spectre_session.hpp`.
-- Result IR and PSF helper headers should be added later as separate modules;
-  do not add parsed waveform or metric types to `TaskResult`.
+- 共享的仿真器无关类型放在 `core.hpp` 或 `task_result.hpp`。
+- 抽象 simulator lifecycle 放在 `session.hpp`。
+- batch execution facade 放在 `evaluator.hpp`。
+- Spectre 专用 protocol helper 放在 `spectre_protocol.hpp`。
+- Spectre process/session 实现放在 `spectre_session.hpp`。
+- Result IR 与 PSF helper 头文件后续应作为独立模块添加；不要把 parsed waveform
+  或 metric type 塞进 `TaskResult`。
 
-## Naming Rules
+## 命名规则
 
-- Use stable domain names such as `evaluator.hpp`, `session.hpp`, and
-  `task_result.hpp`.
-- Do not use phase names such as `new`, `tmp`, `final`, `test2`, or `v2`.
+- 使用稳定领域名，例如 `evaluator.hpp`、`session.hpp` 与 `task_result.hpp`。
+- 不使用 `new`、`tmp`、`final`、`test2`、`v2` 这类阶段性名称。

@@ -1,6 +1,6 @@
 # src/pool
 
-Ordered worker scheduling and simulator session pool implementation lives here.
+本目录存放有序 worker 调度与 simulator session pool 实现。
 
-The pool layer owns idle-worker dispatch, result ordering, and lifecycle cleanup
-coordination. It should not know Spectre protocol details.
+pool 层负责 idle-worker dispatch、result ordering 与 lifecycle cleanup 协调。
+它不应知道 Spectre protocol 细节。

@@ -1,7 +1,6 @@
 # src/parse
 
-Result readers and low-level result helper implementation live here.
+本目录存放结果读取器与底层 result helper 实现。
 
-V1 starts with the minimal result model needed to cover the current Python
-`task_library.py` helper behavior. Complete netlist IR work is intentionally
-out of scope for M0/M1.
+V1 会先实现覆盖当前 Python `task_library.py` helper 行为所需的最小 result model。
+完整 netlist IR 工作明确不属于 M0/M1 范围。

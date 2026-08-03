@@ -1,19 +1,18 @@
 # doc
 
-This directory owns SPICEUnion documentation.
+本目录存放 SPICEUnion 项目文档。
 
-## Subdirectories
+## 子目录
 
-- `develop_doc/`: project development documents, including the authoritative
-  plan, implementation roadmap, and interview/resume positioning.
-- `study_notes/`: reusable study notes that support project development.
+- `develop_doc/`：项目开发文档，包括权威开发计划、实现路线图、面试与简历定位。
+- `study_notes/`：支持项目开发的可复用学习笔记。
 
-## Naming Rules
+## 命名规则
 
-- Use `README.md` for directory ownership documents.
-- Keep project development documents under `develop_doc/`.
-- Keep reusable learning notes under `study_notes/`.
-- Use stable responsibility names for planning documents.
-- Do not use phase-only names such as `new`, `final`, `tmp`, `test2`, or `v2`.
-- When a document becomes authoritative for a workflow, link it from the root
-  `README.md`.
+- 目录职责说明统一使用 `README.md`。
+- `README.md` 默认尽量使用中文；必要的技术名词、API 名、命令名可保留英文。
+- 项目开发文档统一放在 `develop_doc/`。
+- 可复用学习笔记统一放在 `study_notes/`。
+- 计划类文档使用稳定职责名。
+- 不使用 `new`、`final`、`tmp`、`test2`、`v2` 这类阶段性名称。
+- 当某个文档成为某条工作流的权威入口时，需要从根 `README.md` 链接过去。

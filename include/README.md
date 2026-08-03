@@ -1,9 +1,9 @@
 # include
 
-Public C and C++ headers live here.
+本目录存放公开 C / C++ 头文件。
 
-## Naming Rules
+## 命名规则
 
-- Public C ABI headers use the `su_` prefix for exported symbols.
-- Public C++ declarations live under `include/su/`.
-- Header names must describe responsibility, not development phase.
+- 公开 C ABI 头文件的导出符号使用 `su_` 前缀。
+- 公开 C++ 声明放在 `include/su/` 下。
+- 头文件名必须描述职责，而不是描述开发阶段。

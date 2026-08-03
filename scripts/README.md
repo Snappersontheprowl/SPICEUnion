@@ -1,6 +1,5 @@
 # scripts
 
-Developer and demo scripts live here.
+本目录存放开发脚本与 demo 脚本。
 
-Scripts should be small, reproducible wrappers around documented build, test, or
-environment-check commands.
+脚本应是小型、可复现的 wrapper，用于封装已文档化的构建、测试或环境检查命令。
