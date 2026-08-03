@@ -40,6 +40,45 @@
 该模块只描述执行结果，不应承载已解析 PSF 值、circuit metrics、objective scores 或
 optimizer decisions。
 
+### `result.hpp`
+
+仿真结果层的最小 ResultIR 与读取状态。
+
+该头文件当前定义：
+
+- `ResultStatus`：结果读取层的标准化状态，包括目录缺失、文件缺失、signal 缺失、
+  格式不支持、解析失败与非法输入。
+- `ResultError`：轻量错误描述。
+- `ReadResult<T>`：带显式状态的读取结果容器，用于区分真实 `0.0` 与读取失败。
+- `ResultDirectory`：`.raw` 结果目录定位结果。
+- `ScalarResult`：单 signal 标量结果。
+- `AcResponse`：AC 原始复数响应，保留 frequency、real、imag。
+- `AcDerivedView`：AC 派生视图，包含 magnitude_db 与 phase_deg。
+- `UgbwPhaseMarginResult`：UGBW / phase margin 通用数学结果。
+- `TranWaveform`：tran time/value 波形。
+- `SettlingTimeResult`：settling time 通用数学结果。
+- `SensitivityEntry`：legacy sensitivity 原始条目结构。
+
+该模块只表达仿真产物本身，不表达项目业务指标、objective、penalty 或 pass/fail。
+
+### `result_reader.hpp`
+
+结果读取与通用数学 helper 的公开 API 骨架。
+
+该头文件当前声明：
+
+- `find_result_directory(work_dir)`：定位 worker 目录下的 `.raw` 结果目录。
+- `read_dc_value(result_dir, signal_name)`：读取 `dcOp.dc` 单 signal 标量。
+- `read_ac_response(result_dir, signal_name, filename)`：读取 AC frequency 与复数响应。
+- `read_tran_waveform(result_dir, signal_name, filename)`：读取 tran time/value 波形。
+- `read_sensitivity_legacy(work_dir)`：读取 legacy sensitivity 条目。
+- `derive_ac_view(response)`：从 AC 复数响应派生 magnitude / phase。
+- `calculate_ugbw_and_phase_margin(response)`：计算 UGBW / phase margin。
+- `calculate_settling_time(waveform, target_value, error_band)`：计算 settling time。
+
+M2.1 只落地 API 骨架与 ResultIR 类型；具体 helper 实现按 M2.2 / M2.3 分阶段补齐。
+该头文件不得暴露 libpsf 类型。
+
 ### `session.hpp`
 
 仿真器 session 抽象。
@@ -137,8 +176,11 @@ Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，�
 ```text
 core.hpp
 task_result.hpp
-  -> session.hpp
-    -> spectre_session.hpp
+result.hpp
+  -> result_reader.hpp
+
+session.hpp
+  -> spectre_session.hpp
   -> evaluator.hpp
 
 spectre_protocol.hpp
@@ -148,14 +190,17 @@ spectre_protocol.hpp
 约定：
 
 - 共享的仿真器无关类型放在 `core.hpp` 或 `task_result.hpp`。
+- 结果层通用类型放在 `result.hpp`。
+- 结果读取 API 放在 `result_reader.hpp`。
 - 抽象 simulator lifecycle 放在 `session.hpp`。
 - batch execution facade 放在 `evaluator.hpp`。
 - Spectre 专用 protocol helper 放在 `spectre_protocol.hpp`。
 - Spectre process/session 实现放在 `spectre_session.hpp`。
-- Result IR 与 PSF helper 头文件后续应作为独立模块添加；不要把 parsed waveform
-  或 metric type 塞进 `TaskResult`。
+- 不要把 parsed waveform 或 metric type 塞进 `TaskResult`。
+- 不要在公开头文件中暴露 `PSFDataSet`、`PSFVector`、`PSFScalar` 或 `psf.h`。
 
 ## 命名规则
 
 - 使用稳定领域名，例如 `evaluator.hpp`、`session.hpp` 与 `task_result.hpp`。
+- 结果层使用稳定职责名，例如 `result.hpp` 与 `result_reader.hpp`。
 - 不使用 `new`、`tmp`、`final`、`test2`、`v2` 这类阶段性名称。

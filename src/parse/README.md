@@ -9,4 +9,8 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 若接入 `henjo/libpsf`，它只能作为可选内部 backend。公开头文件不得暴露 `PSFDataSet`、
 `PSFVector`、`PSFScalar` 或 `psf.h`，默认构建也不应依赖 libpsf。
 
+当前实现：
+
+- `result.cpp`：`ResultStatus` 稳定文本转换。
+
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。

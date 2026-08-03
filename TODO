@@ -2,23 +2,14 @@
 
 ## 当前阶段
 
-SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3。
+SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1。
 
-当前目标进入 M2：最小 ResultIR、通用结果读取 helper、清晰失败语义与 fixture
-回归测试。
+当前目标进入 M2.2：纯路径与纯数学 helper。
 
 Python `task_library.py` 只作为历史参考和 fixture 来源；C++ API 不为强行兼容
 Python 返回习惯而牺牲类型安全。
 
 ## 当前活跃待办
-
-### M2.1 ResultIR 与 API 骨架
-
-- [ ] 新增 `include/su/result.hpp`，定义 `ResultStatus`、错误语义与最小 ResultIR。
-- [ ] 新增 `include/su/result_reader.hpp`，定义通用读取和数学 helper API。
-- [ ] 明确 `ScalarResult`、`AcResponse`、`TranWaveform`、`SensitivityEntry` 的字段。
-- [ ] 确认 ResultIR 不包含业务指标、objective、penalty 或 pass/fail 语义。
-- [ ] 为 ResultIR 类型和失败状态补充单元测试。
 
 ### M2.2 纯路径与纯数学 helper
 

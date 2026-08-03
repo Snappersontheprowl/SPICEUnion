@@ -13,6 +13,7 @@ option(SPICEUNION_ENABLE_EXTERNAL_TESTS "Enable tests that require external EDA 
 add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
   src/core/task_result.cpp
+  src/parse/result.cpp
   src/pool/simulator_pool.cpp
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
@@ -72,6 +73,18 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_evaluator_contract_test)
+
+  add_executable(spiceunion_result_test
+    tests/result_test.cpp
+  )
+
+  target_link_libraries(spiceunion_result_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  gtest_discover_tests(spiceunion_result_test)
 
   add_executable(spiceunion_spectre_session_lifecycle_test
     tests/spectre_session_lifecycle_test.cpp
