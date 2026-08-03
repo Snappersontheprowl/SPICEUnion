@@ -10,6 +10,7 @@ This directory owns project-level planning and narrative documents.
 - `开发路线图.md`: the implementation roadmap, including stage tasks, expected
   file outputs, test outputs, completion definitions, non-goals, and suggested
   commit boundaries.
+- `study_notes/`: reusable study notes that support project development.
 - `简历亮点解析.md`: interview and resume positioning derived from the
   development plan.
 
