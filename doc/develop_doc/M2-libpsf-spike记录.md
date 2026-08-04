@@ -623,6 +623,8 @@ tests/fixtures/
     │   └── dcOp.dc
     ├── spectre_materials_dc_op.raw/
     │   └── dcOp.dc
+    ├── amp_ac_response.raw/
+    │   └── ac.ac
     ├── spectre_materials_stb_loop_gain.raw/
     │   └── stb.stb
     ├── tran_time_sweep.raw/
@@ -647,6 +649,7 @@ tests/fixtures/
 |---|---|---|---|
 | `dc_op_minimal.raw/dcOp.dc` | `henjo/libpsf` 上游测试数据 | 最小 DC scalar | `vout = 2.5` |
 | `spectre_materials_dc_op.raw/dcOp.dc` | `spectre_materials` 历史真实 Spectre 输出 | Cadence Spectre 23.1 DC scalar | `net6 = 0.8` |
+| `amp_ac_response.raw/ac.ac` | `spectre_materials` 历史真实 Spectre 输出 | 标准 AC swept complex response 读取 | `freq[0] = 1`，`net1` 共 51 点 |
 | `spectre_materials_stb_loop_gain.raw/stb.stb` | `spectre_materials` 历史真实 Spectre 输出 | STB / swept complex response 读取 | `freq[0] = 1`，`loopGain` 共 201 点 |
 | `tran_time_sweep.raw/tran.tran` | `henjo/libpsf` 上游 examples | 普通 transient waveform 读取 | `INN` 共 323 点，`time[0]=0`，`INN[0]=0.6` |
 | `spectre_materials_psfxl_tran.raw/tran.tran.tran` | `spectre_materials` 历史真实 Spectre 输出 | PSFXL transient 边界样本 | 当前 libpsf backend 返回 `kUnsupportedFormat` |
@@ -659,7 +662,6 @@ SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
 
 后续仍缺：
 
-- 标准 `ac.ac` fixture；
 - legacy sensitivity fixture。
 
 已知边界：
@@ -823,8 +825,65 @@ loopGain[1] ≈ (-287245, 30150.6)
 注意：
 
 - `read_ac_response()` 的默认文件名仍是 `ac.ac`，这是标准 AC 读取入口；
-- 目前尚缺标准 `ac.ac` fixture，因此当前测试先用 `stb.stb` 覆盖同类 swept
-  complex response 形态；
+- 当前已经同时用标准 `ac.ac` 与 `stb.stb` 覆盖同类 swept complex response 形态；
 - 若指定 signal 存在但不是 complex vector，例如把普通 transient double vector 传给
   `read_ac_response()`，backend 会返回 `kUnsupportedFormat`；
 - 默认构建仍不编译、不链接 libpsf，调用该入口会返回 `kUnsupportedFormat`。
+
+## 14. 标准 AC fixture 固化
+
+时间：2026-08-04
+
+用户提供标准 AC runtime 路径：
+
+```text
+~/my_lab/projects/spectre_materials/local/runtime/amp_ac_input_20260804_160332
+```
+
+其中可用 AC 主文件为：
+
+```text
+input.raw/ac.ac
+```
+
+该 netlist 中 AC 分析语句为：
+
+```text
+ac ac start=1 stop=1G annotate=status
+```
+
+使用 `local/external/libpsf/libpsf_probe` 检查后确认：
+
+```text
+is_swept=1
+nsweeps=1
+sweep_param_names: freq
+sweep_type=double_vector
+sweep_npoints=51
+signal_count=12
+signal net1: complex_double_vector, size=51
+```
+
+已固化为项目内 fixture：
+
+```text
+tests/fixtures/psf/amp_ac_response.raw/ac.ac
+```
+
+关键参考值：
+
+```text
+freq[0] = 1
+freq[1] ≈ 1.51356
+freq[4] ≈ 5.24807
+net1[0] ≈ (1.00000109476, -3.33776e-7)
+net1[1] ≈ (1.00000109476, -5.05190e-7)
+```
+
+新增测试使用默认文件名调用：
+
+```text
+read_ac_response(".../amp_ac_response.raw", "net1")
+```
+
+因此标准 `ac.ac` fixture 与 `read_ac_response()` 默认路径已经被覆盖。

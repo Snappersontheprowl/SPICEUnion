@@ -328,6 +328,27 @@ TEST(LibpsfAcReaderTest, ReadsStbProjectFixtureAsComplexResponse) {
   EXPECT_NEAR(result.value.imag[1], 30150.6, 1.0e-1);
 }
 
+TEST(LibpsfAcReaderTest, ReadsStandardAcProjectFixtureWithDefaultFilename) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "amp_ac_response.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "ac.ac")) << fixture;
+
+  const auto result = su::read_ac_response(fixture.string(), "net1");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "net1");
+  ASSERT_EQ(result.value.size(), 51U);
+  EXPECT_TRUE(result.value.shape_consistent());
+  EXPECT_DOUBLE_EQ(result.value.frequency_hz[0], 1.0);
+  EXPECT_NEAR(result.value.frequency_hz[1], 1.51356, 1.0e-5);
+  EXPECT_NEAR(result.value.frequency_hz[4], 5.24807, 1.0e-5);
+  EXPECT_NEAR(result.value.real[0], 1.00000109476, 1.0e-11);
+  EXPECT_NEAR(result.value.imag[0], -3.33776e-7, 1.0e-12);
+  EXPECT_NEAR(result.value.real[1], 1.00000109476, 1.0e-11);
+  EXPECT_NEAR(result.value.imag[1], -5.05190e-7, 1.0e-12);
+}
+
 TEST(LibpsfAcReaderTest, ReportsMissingComplexResponseSignal) {
   const std::filesystem::path fixture =
       std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_stb_loop_gain.raw";

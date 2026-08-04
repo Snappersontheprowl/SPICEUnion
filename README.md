@@ -39,8 +39,8 @@ M2.3 的 libpsf 可选 PSF 读取链路：
   `read_tran_waveform()` 可读取普通 time-sweep `tran.tran`。默认构建仍不依赖
   libpsf。第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
 
-下一阶段继续 M2.3：补齐标准 `ac.ac` / sensitivity fixture 与 legacy sensitivity
-读取能力，并单独评估 Spectre 23.1 PSFXL transient 支持。
+下一阶段继续 M2.3：补齐 sensitivity fixture 与 legacy sensitivity 读取能力，并单独评估
+Spectre 23.1 PSFXL transient 支持。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 

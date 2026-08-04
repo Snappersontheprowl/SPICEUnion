@@ -12,8 +12,9 @@
 - Fixture tests 使用 `tests/fixtures/` 中的小型固定仿真结果样本，验证 reader 解析
   是否稳定。
 - Result reader tests 启用 libpsf backend 后，会读取 `tests/fixtures/psf/` 中的
-  `dcOp.dc` fixture 验证 scalar 读取，读取 `stb.stb` fixture 验证 swept complex
-  response 读取，并读取普通 `tran.tran` fixture 验证 transient waveform 读取。
+  `dcOp.dc` fixture 验证 scalar 读取，读取标准 `ac.ac` 与 `stb.stb` fixture 验证
+  swept complex response 读取，并读取普通 `tran.tran` fixture 验证 transient
+  waveform 读取。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre 或 PDK 访问权限，默认必须禁用，除非显式启用。
 

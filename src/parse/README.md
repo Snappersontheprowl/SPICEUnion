@@ -28,8 +28,8 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
   `kUnsupportedFormat`。
 - `read_ac_response()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
   读取 swept complex PSF 数据，并将 sweep values 映射为 `frequency_hz`，将
-  complex vector 拆分为 `real` / `imag`。当前已用 `stb.stb` fixture 验证，
-  标准 `ac.ac` fixture 仍需补齐。
+  complex vector 拆分为 `real` / `imag`。当前已用标准 `ac.ac` fixture 与
+  `stb.stb` fixture 验证。
 - `read_sensitivity_legacy()`：仍是 M2.3 后续待实现的 `kUnsupportedFormat` stub。
 
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。
