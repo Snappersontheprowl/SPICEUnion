@@ -1,174 +1,16 @@
-# M2 libpsf 评估与接入策略
+# M2 libpsf 接入策略与当前口径
 
-时间：2026-08-03
+时间：2026-08-04
 
-## 1. 背景
+本文记录 M2 阶段 `henjo/libpsf` 在 SPICEUnion 中的当前接入口径。早期“是否可用”
+类探索表述已经删除；当前事实是：libpsf 已作为可选内部 backend 接入，并已覆盖
+DC、标准 AC、STB 与普通 transient fixture。
 
-当前 Python 版 `spectre_materials` 使用 `libpsf` 读取 Spectre PSF 结果。M2 开始进入
-SPICEUnion 的结果读取层，因此需要明确：
+## 当前结论
 
-- `henjo/libpsf` 能否在 C++ 版中复用；
-- 是否应该直接依赖它；
-- 是否需要立刻自研 PSF parser；
-- 如何避免第三方库影响 SPICEUnion 的公开 API 边界。
+`henjo/libpsf` 可以在 C++ 版本中使用，但只能作为内部 backend。
 
-结论先行：
-
-```text
-henjo/libpsf 能用于 C++，因为它本体就是 C++ 库，Python 只是 binding。
-但 SPICEUnion 不应把 libpsf 类型暴露到 include/su/。
-M2 应先设计自己的 ResultIR / result_reader API，再把 libpsf 作为可选内部 backend、
-fixture oracle 和 spike 对象。
-是否自研 native PSF parser，应在 ResultIR、fixture 和可选 backend 跑通后再决定。
-```
-
-## 2. 已确认事实
-
-### 2.1 libpsf 本体是 C++ 库
-
-`henjo/libpsf` 仓库说明其用途是读取 Cadence PSF waveform files 的 C++ library。
-仓库结构也包含：
-
-```text
-include/
-src/
-bindings/python/
-test/
-examples/
-```
-
-Python `libpsf.PSFDataSet(...)` 不是独立 Python parser，而是对 C++ `PSFDataSet` 的
-binding。
-
-参考资料：
-
-- <https://github.com/henjo/libpsf>
-- <https://raw.githubusercontent.com/henjo/libpsf/master/README.rst>
-
-### 2.2 libpsf 的 C++ API 可覆盖 M2 的部分需求
-
-上游公开头文件中存在 `PSFDataSet`，可读取 signal names、sweep values、signal vector
-和 signal scalar。概念上可以支撑：
-
-- `dcOp.dc` 标量读取；
-- `ac.ac` sweep axis 与 complex response 读取；
-- `tran.tran` time axis 与 waveform 读取；
-- sensitivity / info 文件的部分读取尝试。
-
-典型接口形态：
-
-```cpp
-PSFDataSet ds(filename);
-auto names = ds.get_signal_names();
-auto sweep = ds.get_sweep_values();
-auto scalar = ds.get_signal_scalar(signal_name);
-auto vector = ds.get_signal_vector(signal_name);
-```
-
-这说明它“能用得上”，但不意味着它适合直接成为 SPICEUnion 的公开接口。
-
-### 2.3 license 是 LGPL-3.0
-
-`henjo/libpsf` 使用 LGPL-3.0。
-
-参考资料：
-
-- <https://raw.githubusercontent.com/henjo/libpsf/master/COPYING>
-
-工程含义：
-
-- 可以考虑动态链接的可选依赖。
-- 不建议把源码直接复制进 SPICEUnion core。
-- 不建议在没有 license / 分发方案评估前，将其静态链接进单二进制交付路径。
-- 若未来产品化或对外分发，需要重新审视合规要求。
-
-本项目文档中的 license 判断只作为工程风险提醒，不替代正式法律意见。
-
-### 2.4 上游维护和构建形态偏老
-
-上游主线仓库使用 autotools，README 中的依赖包含 autoconf、automake、libtool、Boost、
-Python / NumPy header 等。Python binding 部分使用 Boost.Python，构建说明偏老。
-
-已观察到的风险：
-
-- 构建系统不是现代 CMake；
-- Python binding 时代较老，但 C++ core 仍可独立评估；
-- 上游维护节奏慢，部分现代化和 bug fix 可能存在于 fork 或 PR 中；
-- 大结果文件、特殊 PSF 方言、现代 Spectre 输出的稳定性需要实测；
-- 裸指针和异常风格不适合直接暴露给 SPICEUnion 用户。
-
-这些风险意味着：
-
-```text
-libpsf 可以作为 backend，但不应决定 SPICEUnion 的 API 形状。
-```
-
-## 3. 不推荐方案
-
-### 3.1 不推荐直接暴露 libpsf API
-
-不推荐在公开头文件中出现：
-
-```cpp
-#include <psf.h>
-
-PSFDataSet
-PSFVector
-PSFScalar
-```
-
-也不推荐让用户直接写：
-
-```cpp
-su::Evaluator evaluator(...);
-PSFDataSet ds(result.work_dir + "/xxx.raw/ac.ac");
-```
-
-原因：
-
-- 会让 SPICEUnion 的公开 API 绑定到第三方库；
-- 会把 PSF 格式细节泄漏到用户层；
-- 会把裸指针 ownership、第三方异常和老式类型系统暴露出去；
-- 未来替换 parser 时会破坏用户代码；
-- C ABI / Python binding 会被迫处理 libpsf 的对象生命周期。
-
-### 3.2 不推荐马上自研完整 PSF parser
-
-也不推荐 M2 一开始就直接实现完整 native PSF parser。
-
-原因：
-
-- ResultIR 和失败语义还没落地；
-- fixture 和参考数值还没固定；
-- 当前只需要 dc/ac/tran/sens 子集；
-- 完整 PSF 方言空间大，容易拖垮 M2；
-- 过早自研会把开发重心从“稳定 API”带偏到“格式考古”。
-
-M2 的核心不是炫技式 parser，而是：
-
-```text
-清晰 ResultIR + 可测试读取原语 + 稳定失败语义。
-```
-
-## 4. 推荐方案
-
-推荐采用三层结构：
-
-```text
-include/su/result.hpp
-include/su/result_reader.hpp
-  -> SPICEUnion 公开 ResultIR / result_reader API
-
-src/parse/libpsf_reader.hpp
-src/parse/libpsf_reader.cpp
-  -> 可选 libpsf backend，内部把 PSFDataSet 转换为 ResultIR
-
-src/parse/native_psf_reader.hpp
-src/parse/native_psf_reader.cpp
-  -> 后续可选 native parser，替换或补充 libpsf backend
-```
-
-公开 API 只表达 SPICEUnion 自己的类型：
+SPICEUnion 的公开接口保持为自己的 ResultIR：
 
 ```cpp
 ReadResult<ScalarResult> read_dc_value(...);
@@ -177,145 +19,176 @@ ReadResult<TranWaveform> read_tran_waveform(...);
 ReadResult<std::vector<SensitivityEntry>> read_sensitivity_legacy(...);
 ```
 
-内部 backend 负责转换：
+libpsf 类型不得出现在公开头文件中。
+
+当前策略：
+
+```text
+公开 API       -> SPICEUnion ResultIR / ReadResult<T>
+内部 backend   -> henjo/libpsf PSFDataSet
+默认构建       -> 不依赖 libpsf
+显式开关       -> SPICEUNION_ENABLE_LIBPSF_READER=ON
+native parser  -> 后续可选演进方向，不属于当前已完成事实
+```
+
+## 已确认事实
+
+### libpsf 本体是 C++ 库
+
+`henjo/libpsf` 是读取 Cadence PSF waveform files 的 C++ library，Python 版
+`libpsf.PSFDataSet(...)` 是对 C++ `PSFDataSet` 的 binding。
+
+工程含义：
+
+- C++ 版本可以复用其核心读取能力。
+- SPICEUnion 不需要通过 Python binding 间接读取 PSF。
+- 第三方 API 必须封装在 `src/parse/` 内部。
+
+### license 是 LGPL-3.0
+
+`henjo/libpsf` 使用 LGPL-3.0。
+
+工程口径：
+
+- 不复制 libpsf 源码到 SPICEUnion core。
+- 不让默认构建强依赖 libpsf。
+- 产品化分发或静态链接场景需要单独处理 license notice 和合规策略。
+- 本项目文档中的 license 判断只作为工程风险提醒，不替代正式法律意见。
+
+### 上游构建形态偏老
+
+上游主线使用 autotools，Python binding 使用 Boost.Python，构建方式不适合作为
+SPICEUnion 默认依赖。
+
+当前处理方式：
+
+- SPICEUnion 不自动下载或构建 libpsf。
+- 本机 spike 使用 `local/external/libpsf/` 保存外部源码、构建和安装产物。
+- CMake 通过显式 include/library 路径或本机 spike install 路径接入。
+
+## 当前实现结构
+
+```text
+include/su/result.hpp
+include/su/result_reader.hpp
+  -> SPICEUnion 公开 ResultIR / result_reader API
+
+src/parse/result_reader.cpp
+  -> 公开入口调度与默认 unsupported 行为
+
+src/parse/libpsf_backend.hpp
+src/parse/libpsf_backend.cpp
+  -> 可选 libpsf backend
+```
+
+公开 API 只表达 SPICEUnion 类型：
 
 ```text
 PSFDataSet / PSFVector / PSFScalar
   -> ScalarResult / AcResponse / TranWaveform / SensitivityEntry
 ```
 
-这样 libpsf 只是“轮子”，不是“车架”。
+## CMake 接入策略
 
-## 5. CMake 接入策略
-
-M2 初期不应让默认构建依赖 libpsf。
-
-建议新增可选开关：
+当前开关：
 
 ```cmake
 SPICEUNION_ENABLE_LIBPSF_READER=OFF
 ```
 
-默认：
+默认构建：
 
-```text
-OFF
+- 不寻找 libpsf。
+- 不编译 `src/parse/libpsf_backend.cpp`。
+- 调用真实文件读取入口时返回 `kUnsupportedFormat`。
+
+启用构建：
+
+```bash
+cmake -S . -B cmake-build-libpsf \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DSPICEUNION_BUILD_TESTS=ON \
+  -DSPICEUNION_ENABLE_EXTERNAL_TESTS=OFF \
+  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
 ```
 
-原因：
-
-- 保持默认开发环境轻量；
-- 默认测试不被第三方库和 license 环境卡住；
-- 让 M2.1 / M2.2 可以先完成 ResultIR 与纯数学 helper；
-- 等 libpsf spike 成功后再打开真实文件读取路径。
-
-启用时可优先尝试：
+可显式指定：
 
 ```cmake
-find_package(PkgConfig)
-pkg_check_modules(LIBPSF libpsf)
+SPICEUNION_LIBPSF_INCLUDE_DIR=/path/to/libpsf/include
+SPICEUNION_LIBPSF_LIBRARY=/path/to/libpsf.a
 ```
 
-若系统没有 `libpsf.pc`，再考虑手动指定：
+## 当前支持范围
 
-```cmake
-SPICEUNION_LIBPSF_INCLUDE_DIR
-SPICEUNION_LIBPSF_LIBRARY
-```
+| 入口 | 默认构建 | 启用 libpsf backend 后 |
+|---|---|---|
+| `read_dc_value()` | `kUnsupportedFormat` | 读取 `dcOp.dc` 单信号 scalar |
+| `read_ac_response()` | `kUnsupportedFormat` | 读取标准 `ac.ac` / `stb.stb` swept complex response |
+| `read_tran_waveform()` | `kUnsupportedFormat` | 读取普通 time-sweep `tran.tran` |
+| `read_sensitivity_legacy()` | `kUnsupportedFormat` | 当前仍为 stub |
 
-不建议在第一阶段自动下载、编译、安装 libpsf。
+当前明确不支持：
 
-## 6. 建议实施顺序
+- Spectre 23.1 PSFXL transient。
+- 尚未固化的 legacy sensitivity 文件。
+- 完整 PSF 方言世界。
 
-### 6.1 M2.1 不依赖 libpsf
+## backend 边界规则
 
-先完成：
+所有 parser backend 必须遵守：
 
-```text
-include/su/result.hpp
-include/su/result_reader.hpp
-tests/result_test.cpp
-```
+- 不暴露第三方库类型到 `include/su/`。
+- 不把 backend exception 直接抛给公开 API 用户。
+- 不用 `0.0`、空数组或 `None` 表示失败。
+- 不解释业务 signal 含义。
+- 不定义 objective、penalty 或 pass/fail。
+- 不在 `TaskResult` 中塞 waveform 或 metric。
+- 不让默认构建依赖外部 PSF parser。
+- backend 替换不应影响 `result.hpp` / `result_reader.hpp` 用户代码。
 
-定义：
+## 当前测试策略
 
-- `ResultStatus`
-- `ReadResult<T>`
-- `ScalarResult`
-- `AcResponse`
-- `AcDerivedView`
-- `TranWaveform`
-- `SensitivityEntry`
+默认单元测试不依赖 libpsf：
 
-验收：
+- ResultIR 类型测试。
+- 错误状态测试。
+- `.raw` 目录定位测试。
+- AC 数学 helper 测试。
+- settling time helper 测试。
 
-- 公开头文件不 include `psf.h`。
-- 类型不包含业务指标语义。
-- 错误状态可区分真实 `0.0` 和读取失败。
+启用 `SPICEUNION_ENABLE_LIBPSF_READER=ON` 后额外覆盖：
 
-### 6.2 M2.2 仍不依赖 libpsf
+- `dcOp.dc` 正常读取。
+- 标准 `ac.ac` 正常读取。
+- `stb.stb` 正常读取。
+- 普通 `tran.tran` 正常读取。
+- 文件缺失。
+- signal 缺失。
+- unsupported format。
+- PSFXL transient 边界样本。
 
-先实现纯路径与纯数学 helper：
+Python / libpsf 可以作为参考数值来源，但对照重点是数值语义：
 
-- `.raw` 目录定位；
-- AC magnitude / phase 计算；
-- UGBW / phase margin 计算；
-- waveform settling time 计算。
+- C++ 结果与参考值在容差内一致。
+- C++ 失败语义允许与 Python 不同。
+- 真实数值 `0.0` 与读取失败必须可区分。
 
-这些能力不需要 PSF parser，适合先用人工数组和临时目录测试。
+## native parser 当前口径
 
-### 6.3 M2.3 做 libpsf spike
+native PSF parser 不是当前已完成能力。
 
-单独做一个 libpsf 可用性 spike，目标不是立即合入核心，而是回答：
+只有满足以下条件之一时，才重新评估 native parser：
 
-- 当前机器是否能编译 / 链接 libpsf；
-- 是否能用 C++ 读取当前 Spectre 生成的 `dcOp.dc`；
-- 是否能读取 `ac.ac` 的 sweep 与 complex response；
-- 是否能读取 `tran.tran` 的 time axis 与 waveform；
-- 是否能读取 sensitivity / info 文件；
-- 对大文件或真实 AMP fixture 是否稳定；
-- 是否能通过 pkg-config 或显式 include/library 路径接入 CMake；
-- license / 分发方式是否可接受。
+- libpsf 无法覆盖目标格式。
+- LGPL / 分发约束影响目标交付。
+- 性能无法满足后续 benchmark 目标。
+- 需要更细粒度错误恢复。
+- 需要完全控制内存布局和 C ABI。
+- 当前 fixture 已经明确 native parser 的最小支持子集。
 
-建议产出：
-
-```text
-doc/develop_doc/M2-libpsf-spike记录.md
-tests/manual/libpsf_probe.cpp
-```
-
-`tests/manual/` 只放人工验证或外部依赖验证，不进入默认测试。
-
-### 6.4 M2.4 做可选 libpsf backend
-
-如果 spike 成功，再实现：
-
-```text
-src/parse/libpsf_reader.hpp
-src/parse/libpsf_reader.cpp
-```
-
-要求：
-
-- 只在 `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时编译；
-- 不在 `include/su/` 中暴露 libpsf 类型；
-- 把 libpsf exception 映射为 `ResultStatus`；
-- 把裸指针 ownership 包在内部 RAII helper 中；
-- 正常路径和失败路径都有测试；
-- 测试可根据开关跳过。
-
-### 6.5 M2.5 决定是否自研 native parser
-
-在下列信息明确之后，再决定是否自研：
-
-- ResultIR 是否稳定；
-- fixture 是否覆盖真实需求；
-- libpsf backend 是否能稳定读取目标文件；
-- 性能是否足够；
-- LGPL / 分发是否可接受；
-- native parser 的最小支持子集是否明确。
-
-若自研，目标也应是“最小可用子集”，不是完整 PSF 世界：
+当前 native parser 的可能最小支持子集是：
 
 - `dcOp.dc`
 - `ac.ac`
@@ -323,100 +196,14 @@ src/parse/libpsf_reader.cpp
 - `dcOpInfo.info`
 - legacy sensitivity
 
-## 7. backend 边界规则
+## 当前剩余事项
 
-所有 parser backend 必须遵守：
+通用仿真结果解析工作当前告一段落。
 
-- 不暴露第三方库类型到 `include/su/`。
-- 不把 backend exception 直接抛给公开 API 用户。
-- 不用 `0.0` / 空数组 / `None` 表示失败。
-- 不解释业务 signal 含义。
-- 不定义 objective / penalty / pass-fail。
-- 不在 `TaskResult` 中塞 waveform 或 metric。
-- 不让默认构建依赖外部 PSF parser。
-- backend 替换不应影响 `result.hpp` / `result_reader.hpp` 的用户代码。
+仍需保留的未完成事项：
 
-## 8. 测试策略
+- legacy sensitivity：缺 fixture、缺可信参考值，读取入口仍为 stub。
+- Spectre 23.1 PSFXL transient：已有边界 fixture，当前明确不支持，后续需单独决策。
 
-测试分四类：
-
-### 8.1 默认单元测试
-
-默认启用，不依赖 libpsf：
-
-- ResultIR 类型测试；
-- 错误状态测试；
-- `.raw` 目录定位测试；
-- AC 数学 helper 测试；
-- settling time helper 测试。
-
-### 8.2 manual libpsf probe
-
-人工启用，不进入默认测试：
-
-- 编译 / 链接 libpsf；
-- 读取真实 Spectre 文件；
-- 输出 signal names、sweep size、数据类型和前几个值；
-- 记录失败文件和异常信息。
-
-### 8.3 可选 backend 测试
-
-仅在 `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时启用：
-
-- dc/ac/tran/sens 正常读取；
-- 文件缺失；
-- signal 缺失；
-- unsupported format；
-- parse error；
-- 大文件 smoke test。
-
-### 8.4 reference 对照测试
-
-Python / libpsf 可以作为参考数值来源，但对照重点是数值语义：
-
-- C++ 结果与参考值在容差内一致；
-- 失败语义允许与 Python 不同；
-- 文档记录有意差异。
-
-## 9. 何时接受 libpsf backend
-
-满足以下条件时，可以接受 libpsf backend 进入 M2：
-
-- 默认构建不依赖 libpsf；
-- 开关关闭时所有默认测试通过；
-- 开关开启时能读取目标 fixture；
-- libpsf 类型不出现在 `include/su/`；
-- license / third-party notice 有记录；
-- CMake 接入方式可复现；
-- 错误映射到 `ResultStatus`；
-- backend 有清晰 README 或文档小节说明。
-
-## 10. 何时启动自研 native parser
-
-满足任一条件时，可以考虑启动 native parser：
-
-- libpsf 无法稳定读取当前 Spectre 输出；
-- libpsf 构建成本过高；
-- LGPL / 分发约束影响目标交付；
-- 性能无法满足 benchmark 目标；
-- 需要更细粒度错误恢复；
-- 需要完全控制内存布局和 C ABI；
-- 当前 fixture 已经明确 native parser 的最小支持子集。
-
-不满足这些条件时，不急着自研。
-
-## 11. 最终决策口径
-
-M2 的 parser 策略是：
-
-```text
-先建自己的 ResultIR 和 result_reader API；
-再用 libpsf 验证真实 PSF 读取路径；
-把 libpsf 封装为可选内部 backend；
-等真实需求、fixture、性能和分发约束明确后，再决定是否自研 native parser。
-```
-
-这让 SPICEUnion 同时避免两种风险：
-
-- 盲目造轮子，过早陷入 PSF 格式细节；
-- 盲目依赖旧轮子，把公开 API 和分发策略锁死。
+除此之外，DC、标准 AC、STB 与普通 transient 的通用读取链路已经完成项目内 fixture
+验证。

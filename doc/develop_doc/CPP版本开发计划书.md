@@ -163,7 +163,8 @@ Python 版的 `parse_func(work_dir) -> Any` 不能原样下沉到 C ABI。SPICEU
 - C++ 核心只保证“执行仿真并交付 worker `work_dir`”，核心 `TaskResult` 不承载上游任意业务对象。
 - C ABI 暴露稳定的执行结果结构：状态码、工作目录、错误码、错误文本；内存由 SPICEUnion 分配时，必须提供对应 `su_free_*` 释放函数。
 - Python binding 在拿到 `TaskResult.work_dir` 后调用 Python 侧 `parse_func(work_dir)`，再组装 Python 结果列表。因此 Python 层可以保留 `Any` 语义。
-- 若仿真失败，Python binding 返回 `None` 或后续定义的失败对象；默认行为应兼容 Python 版“对应位置为空”的语义。
+- 若仿真失败，C++ 结果层使用明确状态与错误文本表达失败；Python binding 可在语言层选择
+  转换为 `None` 或失败对象，但不要求 C++ core 兼容 Python 版“对应位置为空”的失败返回习惯。
 - 若 Python `parse_func` 抛异常，只影响对应任务结果，不影响其他任务；异常文本应进入日志或失败对象。
 - C++ 原生用户若需要业务解析，应直接读取 `TaskResult.work_dir` 或调用结果 helper，不通过 C ABI 模拟 Python 的任意回调对象。
 

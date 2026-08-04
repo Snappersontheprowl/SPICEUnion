@@ -16,13 +16,13 @@ interactive session、PDK、license 或 netlist 生成流程。
 | `tran_time_sweep.raw/` | `tran.tran` | `henjo/libpsf` 上游 `examples/data/timeSweep` | 普通 time-sweep transient waveform 读取 | `INN` 共 323 点，`time[0] = 0`，`INN[0] = 0.6` |
 | `spectre_materials_psfxl_tran.raw/` | `tran.tran.tran` + `.psfxl` + `.sig` | `spectre_materials/local/runtime/amp_tran_input_20260804_1435/input.raw` | Spectre 23.1 PSFXL transient 边界样本 | 当前 `henjo/libpsf` backend 明确返回 `kUnsupportedFormat` |
 
-## 暂缺 fixture
+## 当前缺口
 
-以下样本暂缺，M2.3 后续需要补齐：
+以下样本当前缺失：
 
 - legacy sensitivity 结果：用于验证 `read_sensitivity_legacy()`。
 
-以下样本已有，但仍需后续支持：
+以下样本已有，但当前明确不支持：
 
 - Spectre 23.1 PSFXL transient：`spectre_materials_psfxl_tran.raw/` 已保留样本，但当前
   `henjo/libpsf` backend 无法解析其 `.psfxl` 数据。
