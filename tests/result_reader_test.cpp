@@ -208,15 +208,17 @@ TEST(TranMathTest, RejectsInvalidWaveformShape) {
 TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
 #if SPICEUNION_ENABLE_LIBPSF_READER
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
+            su::ResultStatus::kFileNotFound);
   EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
             su::ResultStatus::kFileNotFound);
 #else
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kUnsupportedFormat);
+  EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
+            su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
             su::ResultStatus::kUnsupportedFormat);
 #endif
-  EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
-            su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_sensitivity_legacy("work").status, su::ResultStatus::kUnsupportedFormat);
 }
 
@@ -300,6 +302,51 @@ TEST(LibpsfTranReaderTest, ReportsPsfxlTransientAsUnsupported) {
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran.tran.sig")) << fixture;
 
   const auto result = su::read_tran_waveform(fixture.string(), "net6", "tran.tran.tran");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kUnsupportedFormat);
+}
+
+TEST(LibpsfAcReaderTest, ReadsStbProjectFixtureAsComplexResponse) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_stb_loop_gain.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "stb.stb")) << fixture;
+
+  const auto result = su::read_ac_response(fixture.string(), "loopGain", "stb.stb");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "loopGain");
+  ASSERT_EQ(result.value.size(), 201U);
+  EXPECT_TRUE(result.value.shape_consistent());
+  EXPECT_DOUBLE_EQ(result.value.frequency_hz[0], 1.0);
+  EXPECT_NEAR(result.value.frequency_hz[1], 1.12202, 1.0e-5);
+  EXPECT_NEAR(result.value.frequency_hz[4], 1.58489, 1.0e-5);
+  EXPECT_NEAR(result.value.real[0], -287890.0, 1.0);
+  EXPECT_NEAR(result.value.imag[0], 26932.1, 1.0e-1);
+  EXPECT_NEAR(result.value.real[1], -287245.0, 1.0);
+  EXPECT_NEAR(result.value.imag[1], 30150.6, 1.0e-1);
+}
+
+TEST(LibpsfAcReaderTest, ReportsMissingComplexResponseSignal) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_stb_loop_gain.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "stb.stb")) << fixture;
+
+  const auto result = su::read_ac_response(fixture.string(), "missing_signal", "stb.stb");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
+}
+
+TEST(LibpsfAcReaderTest, ReportsRealWaveformAsUnsupportedComplexResponse) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "tran_time_sweep.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran")) << fixture;
+
+  const auto result = su::read_ac_response(fixture.string(), "INN", "tran.tran");
 
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(result.status, su::ResultStatus::kUnsupportedFormat);

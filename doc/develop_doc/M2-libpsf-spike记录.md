@@ -625,6 +625,12 @@ tests/fixtures/
     │   └── dcOp.dc
     ├── spectre_materials_stb_loop_gain.raw/
     │   └── stb.stb
+    ├── tran_time_sweep.raw/
+    │   └── tran.tran
+    ├── spectre_materials_psfxl_tran.raw/
+    │   ├── tran.tran.tran
+    │   ├── tran.tran.tran.psfxl
+    │   └── tran.tran.tran.sig
     └── README.md
 ```
 
@@ -641,7 +647,9 @@ tests/fixtures/
 |---|---|---|---|
 | `dc_op_minimal.raw/dcOp.dc` | `henjo/libpsf` 上游测试数据 | 最小 DC scalar | `vout = 2.5` |
 | `spectre_materials_dc_op.raw/dcOp.dc` | `spectre_materials` 历史真实 Spectre 输出 | Cadence Spectre 23.1 DC scalar | `net6 = 0.8` |
-| `spectre_materials_stb_loop_gain.raw/stb.stb` | `spectre_materials` 历史真实 Spectre 输出 | 后续 STB / swept complex vector 读取 | `freq[0] = 1`，`loopGain` 共 201 点 |
+| `spectre_materials_stb_loop_gain.raw/stb.stb` | `spectre_materials` 历史真实 Spectre 输出 | STB / swept complex response 读取 | `freq[0] = 1`，`loopGain` 共 201 点 |
+| `tran_time_sweep.raw/tran.tran` | `henjo/libpsf` 上游 examples | 普通 transient waveform 读取 | `INN` 共 323 点，`time[0]=0`，`INN[0]=0.6` |
+| `spectre_materials_psfxl_tran.raw/tran.tran.tran` | `spectre_materials` 历史真实 Spectre 输出 | PSFXL transient 边界样本 | 当前 libpsf backend 返回 `kUnsupportedFormat` |
 
 测试已从本机绝对路径切换到：
 
@@ -772,3 +780,51 @@ PSFDoubleVector(signal) -> TranWaveform.value
 2. 调用 Cadence `psf` / `psfxlc` 做外部转换，但这会引入 Cadence runtime 依赖，
    不适合作为默认 reader backend。
 3. 调整仿真输出格式，生成 `henjo/libpsf` 能读的普通 PSF / psfascii fixture。
+
+## 13. Swept complex response 读取落地
+
+时间：2026-08-04
+
+为完成 M2.3 中频域结果的第一条真实读取链路，已将
+`read_ac_response()` 接到可选 libpsf backend：
+
+```text
+read_ac_response(result_dir, signal_name, filename="ac.ac")
+  -> src/parse/result_reader.cpp
+  -> src/parse/libpsf_backend.cpp
+  -> henjo/libpsf PSFDataSet
+```
+
+当前实现读取的是 PSF swept complex vector：
+
+```text
+PSF sweep values                  -> AcResponse.frequency_hz
+PSFComplexDoubleVector(signal)    -> AcResponse.real / AcResponse.imag
+```
+
+已用项目内 STB fixture 验证：
+
+```text
+tests/fixtures/psf/spectre_materials_stb_loop_gain.raw/stb.stb
+signal = loopGain
+```
+
+关键参考值：
+
+```text
+point count = 201
+freq[0] = 1
+freq[1] ≈ 1.12202
+freq[4] ≈ 1.58489
+loopGain[0] ≈ (-287890, 26932.1)
+loopGain[1] ≈ (-287245, 30150.6)
+```
+
+注意：
+
+- `read_ac_response()` 的默认文件名仍是 `ac.ac`，这是标准 AC 读取入口；
+- 目前尚缺标准 `ac.ac` fixture，因此当前测试先用 `stb.stb` 覆盖同类 swept
+  complex response 形态；
+- 若指定 signal 存在但不是 complex vector，例如把普通 transient double vector 传给
+  `read_ac_response()`，backend 会返回 `kUnsupportedFormat`；
+- 默认构建仍不编译、不链接 libpsf，调用该入口会返回 `kUnsupportedFormat`。

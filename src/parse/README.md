@@ -16,7 +16,8 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
   waveform settling time，以及公开 result reader 入口。
 - `libpsf_backend.cpp`：可选内部 backend。仅在
   `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时编译，用 `henjo/libpsf` 读取 `dcOp.dc`
-  单信号 scalar；默认构建不编译该文件。
+  单信号 scalar、swept complex response 和普通 time-sweep transient；默认构建不编译
+  该文件。
 
 当前文件读取状态：
 
@@ -25,7 +26,10 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 - `read_tran_waveform()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
   读取普通 time-sweep `tran.tran`。Spectre 23.1 PSFXL transient 当前明确返回
   `kUnsupportedFormat`。
-- `read_ac_response()`、`read_sensitivity_legacy()`：仍是 M2.3 后续待实现的
-  `kUnsupportedFormat` stub。
+- `read_ac_response()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
+  读取 swept complex PSF 数据，并将 sweep values 映射为 `frequency_hz`，将
+  complex vector 拆分为 `real` / `imag`。当前已用 `stb.stb` fixture 验证，
+  标准 `ac.ac` fixture 仍需补齐。
+- `read_sensitivity_legacy()`：仍是 M2.3 后续待实现的 `kUnsupportedFormat` stub。
 
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。

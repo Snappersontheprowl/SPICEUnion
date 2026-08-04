@@ -1,5 +1,6 @@
 #include "src/parse/libpsf_backend.hpp"
 
+#include <complex>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -36,6 +37,13 @@ ReadResult<TranWaveform> make_psf_tran_exception_failure(const std::filesystem::
   return ReadResult<TranWaveform>::failure(
       ResultStatus::kParseError,
       "failed to read transient signal '" + signal_name + "' from PSF file: " + psf_file.string());
+}
+
+ReadResult<AcResponse> make_psf_ac_exception_failure(const std::filesystem::path& psf_file,
+                                                     const std::string& signal_name) {
+  return ReadResult<AcResponse>::failure(
+      ResultStatus::kParseError,
+      "failed to read complex response '" + signal_name + "' from PSF file: " + psf_file.string());
 }
 
 template <typename T>
@@ -93,6 +101,87 @@ ReadResult<ScalarResult> read_dc_value_with_libpsf(const std::string& result_dir
         "std exception while reading PSF file '" + psf_file.string() + "': " + error.what());
   } catch (...) {
     return make_psf_exception_failure(psf_file, signal_name);
+  }
+}
+
+ReadResult<AcResponse> read_ac_response_with_libpsf(const std::string& result_dir,
+                                                    const std::string& signal_name,
+                                                    const std::string& filename) {
+  if (result_dir.empty()) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kInvalidInput,
+                                           "result_dir must not be empty");
+  }
+  if (signal_name.empty()) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kInvalidInput,
+                                           "signal_name must not be empty");
+  }
+  if (filename.empty()) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kInvalidInput,
+                                           "filename must not be empty");
+  }
+
+  const std::filesystem::path psf_file = result_file_path(result_dir, filename);
+  std::error_code error;
+  if (!std::filesystem::exists(psf_file, error) ||
+      !std::filesystem::is_regular_file(psf_file, error)) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kFileNotFound,
+                                           "AC/STB PSF file was not found: " + psf_file.string());
+  }
+
+  try {
+    PSFDataSet dataset(psf_file.string());
+    std::unique_ptr<PSFVector> sweep(dataset.get_sweep_values());
+    auto* frequency = dynamic_cast<PSFDoubleVector*>(sweep.get());
+    if (frequency == nullptr) {
+      return ReadResult<AcResponse>::failure(
+          ResultStatus::kUnsupportedFormat,
+          "AC/STB sweep values are not a double vector: " + psf_file.string());
+    }
+
+    std::unique_ptr<PSFBase> signal(dataset.get_signal(signal_name));
+    auto* values = dynamic_cast<PSFComplexDoubleVector*>(signal.get());
+    if (values == nullptr) {
+      return ReadResult<AcResponse>::failure(
+          ResultStatus::kUnsupportedFormat,
+          "AC/STB signal is not a complex double vector: " + signal_name);
+    }
+
+    AcResponse response;
+    response.signal = signal_name;
+    response.frequency_hz = copy_vector(*frequency);
+    response.real.reserve(values->size());
+    response.imag.reserve(values->size());
+    for (const auto& value : *values) {
+      response.real.push_back(value.real());
+      response.imag.push_back(value.imag());
+    }
+
+    if (!response.shape_consistent()) {
+      return ReadResult<AcResponse>::failure(
+          ResultStatus::kParseError,
+          "AC/STB frequency and signal vector lengths differ: " + signal_name);
+    }
+
+    return ReadResult<AcResponse>::success(std::move(response));
+  } catch (const FileOpenError&) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kFileNotFound,
+                                           "failed to open AC/STB PSF file: " +
+                                               psf_file.string());
+  } catch (const NotFound&) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kSignalNotFound,
+                                           "signal was not found in AC/STB PSF: " + signal_name);
+  } catch (const InvalidFileError&) {
+    return ReadResult<AcResponse>::failure(ResultStatus::kParseError,
+                                           "invalid AC/STB PSF file: " + psf_file.string());
+  } catch (const DataSetNotOpen&) {
+    return make_psf_ac_exception_failure(psf_file, signal_name);
+  } catch (const std::exception& error) {
+    return ReadResult<AcResponse>::failure(
+        ResultStatus::kParseError,
+        "std exception while reading AC/STB PSF file '" + psf_file.string() + "': " +
+            error.what());
+  } catch (...) {
+    return make_psf_ac_exception_failure(psf_file, signal_name);
   }
 }
 

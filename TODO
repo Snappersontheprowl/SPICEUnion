@@ -3,11 +3,12 @@
 ## 当前阶段
 
 SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2，并已完成
-M2.3 的 libpsf 本地 CMake 构建 spike、可选 CMake backend 开关与
-`dcOp.dc` 单信号读取链路，第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
+M2.3 的 libpsf 本地 CMake 构建 spike、可选 CMake backend 开关、`dcOp.dc`
+单信号读取、swept complex response 读取与普通 time-sweep transient 读取链路，
+第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
 
-当前目标继续 M2.3：补齐标准 AC、legacy sensitivity fixture 与最小文件读取能力，并
-单独评估 Spectre 23.1 PSFXL transient 支持。
+当前目标继续 M2.3：补齐标准 `ac.ac`、legacy sensitivity fixture 与 sensitivity
+读取能力，并单独评估 Spectre 23.1 PSFXL transient 支持。
 
 Python `task_library.py` 只作为历史参考和 fixture 来源；C++ API 不为强行兼容
 Python 返回习惯而牺牲类型安全。
@@ -16,11 +17,11 @@ Python 返回习惯而牺牲类型安全。
 
 ### M2.3 最小文件读取能力
 
-- [ ] 补齐标准 AC、legacy sensitivity fixture 或生成脚本。
-- [ ] 实现 `ac.ac` frequency 与 complex response 读取。
+- [ ] 补齐标准 `ac.ac`、legacy sensitivity fixture 或生成脚本。
+- [ ] 用标准 `ac.ac` fixture 补充 `read_ac_response()` 验证。
 - [ ] 评估 Spectre 23.1 PSFXL transient 的解析或转换路径。
 - [ ] 实现 legacy sensitivity 结果读取。
-- [ ] 为标准 AC、legacy sensitivity 建立可信参考数值。
+- [ ] 为标准 `ac.ac`、legacy sensitivity 建立可信参考数值。
 - [ ] 记录 C++ helper 与 Python helper 在失败语义上的有意差异。
 
 ## 暂缓池

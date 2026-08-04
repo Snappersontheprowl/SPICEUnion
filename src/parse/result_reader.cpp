@@ -78,11 +78,15 @@ ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
                                         const std::string& filename) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+  return parse::read_ac_response_with_libpsf(result_dir, signal_name, filename);
+#else
   (void)result_dir;
   (void)signal_name;
   (void)filename;
   return ReadResult<AcResponse>::failure(ResultStatus::kUnsupportedFormat,
-                                         "AC file reading is scheduled for M2.3");
+                                         "AC file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
 }
 
 ReadResult<TranWaveform> read_tran_waveform(const std::string& result_dir,
