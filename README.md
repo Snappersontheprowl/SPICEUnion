@@ -34,10 +34,12 @@ M2.3 的 libpsf 可选 DC 读取链路：
 - M2.2：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、waveform
   settling time 等纯路径 / 纯数学 helper 已实现。
 - M2.3：`henjo/libpsf` 已完成本地 CMake spike；`read_dc_value()` 在显式启用
-  `SPICEUNION_ENABLE_LIBPSF_READER` 时可读取 `dcOp.dc` 单信号 scalar。默认构建
-  仍不依赖 libpsf。第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
+  `SPICEUNION_ENABLE_LIBPSF_READER` 时可读取 `dcOp.dc` 单信号 scalar；
+  `read_tran_waveform()` 可读取普通 time-sweep `tran.tran`。默认构建仍不依赖
+  libpsf。第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
 
-下一阶段继续 M2.3：补齐标准 ac/tran/sens fixture 与最小文件读取能力。
+下一阶段继续 M2.3：补齐标准 ac/sens fixture 与最小文件读取能力，并单独评估
+Spectre 23.1 PSFXL transient 支持。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 

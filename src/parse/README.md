@@ -22,7 +22,10 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 
 - `read_dc_value()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
   `dcOp.dc`。
-- `read_ac_response()`、`read_tran_waveform()`、`read_sensitivity_legacy()`：仍是
-  M2.3 后续待实现的 `kUnsupportedFormat` stub。
+- `read_tran_waveform()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
+  读取普通 time-sweep `tran.tran`。Spectre 23.1 PSFXL transient 当前明确返回
+  `kUnsupportedFormat`。
+- `read_ac_response()`、`read_sensitivity_legacy()`：仍是 M2.3 后续待实现的
+  `kUnsupportedFormat` stub。
 
 完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。

@@ -652,5 +652,123 @@ SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
 后续仍缺：
 
 - 标准 `ac.ac` fixture；
-- 标准 `tran.tran` fixture；
 - legacy sensitivity fixture。
+
+已知边界：
+
+- Spectre 23.1 PSFXL transient fixture 已纳入，但当前 libpsf backend 不支持。
+
+## 12. Transient 读取与 PSFXL 边界
+
+时间：2026-08-04
+
+用户提供 transient 结果路径：
+
+```text
+~/my_lab/projects/spectre_materials/local/runtime/amp_tran_input_20260804_1435/input.raw
+```
+
+目录中 transient 主文件为：
+
+```text
+tran.tran.tran
+tran.tran.tran.psfxl
+tran.tran.tran.sig
+```
+
+该结果是 Spectre 23.1 PSF/PSFXL transient。直接使用 `henjo/libpsf` probe 读取：
+
+```bash
+local/external/libpsf/libpsf_probe \
+  ~/my_lab/projects/spectre_materials/local/runtime/amp_tran_input_20260804_1435/input.raw/tran.tran.tran
+```
+
+结果：
+
+```text
+std_exception=std::exception
+```
+
+Cadence `psf` 工具可以识别该文件类型：
+
+```bash
+/opt/cadence/IC231/tools/dfII/bin/psf -d \
+  ~/my_lab/projects/spectre_materials/local/runtime/amp_tran_input_20260804_1435/input.raw/tran.tran.tran
+```
+
+结果：
+
+```text
+pslTranQuery
+```
+
+但 `psf -s -t net6` 只能稳定输出 trace 元数据，未得到可直接用于 C++ backend 的普通
+waveform 数据。该样本显示：
+
+```text
+net6 trace: 754 points, min≈0.3000000744380708, max≈1.299994069145056
+```
+
+因此当前判断：
+
+```text
+henjo/libpsf backend 不直接支持该 Spectre 23.1 PSFXL transient 形态。
+```
+
+已将该样本固化为边界 fixture：
+
+```text
+tests/fixtures/psf/spectre_materials_psfxl_tran.raw/
+├── tran.tran.tran
+├── tran.tran.tran.psfxl
+└── tran.tran.tran.sig
+```
+
+当前 C++ 行为：
+
+```text
+read_tran_waveform(..., filename="tran.tran.tran")
+  -> 若发现同名 .psfxl 或 .sig
+  -> 返回 kUnsupportedFormat
+```
+
+同时，为完成 M2.3 普通 transient waveform 读取，已从 `henjo/libpsf` 上游 examples
+固化一个可解析的 time-sweep fixture：
+
+```text
+tests/fixtures/psf/tran_time_sweep.raw/tran.tran
+```
+
+其特征：
+
+```text
+sweep_param_names: time
+sweep_npoints=323
+signal INN: double_vector, size=323
+time[0]=0
+time[1]=2e-11
+time[4]=1.2e-10
+INN[0]=0.6
+INN[1]≈0.575131
+INN[4]≈0.500197
+```
+
+新增 C++ 能力：
+
+```text
+read_tran_waveform(result_dir, signal_name, filename="tran.tran")
+```
+
+在启用 `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时，可以读取普通 time-sweep PSF：
+
+```text
+PSF sweep values -> TranWaveform.time_s
+PSFDoubleVector(signal) -> TranWaveform.value
+```
+
+后续 PSFXL 支持需要单独决策，可能路线：
+
+1. 研究 Cadence PSFXL 二进制格式并实现 native parser。
+2. 调用 Cadence `psf` / `psfxlc` 做外部转换，但这会引入 Cadence runtime 依赖，
+   不适合作为默认 reader backend。
+3. 调整仿真输出格式，生成 `henjo/libpsf` 能读的普通 PSF / psfascii fixture。

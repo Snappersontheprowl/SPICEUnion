@@ -208,12 +208,14 @@ TEST(TranMathTest, RejectsInvalidWaveformShape) {
 TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
 #if SPICEUNION_ENABLE_LIBPSF_READER
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
+            su::ResultStatus::kFileNotFound);
 #else
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kUnsupportedFormat);
+  EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
+            su::ResultStatus::kUnsupportedFormat);
 #endif
   EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
-            su::ResultStatus::kUnsupportedFormat);
-  EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
             su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_sensitivity_legacy("work").status, su::ResultStatus::kUnsupportedFormat);
 }
@@ -256,6 +258,51 @@ TEST(LibpsfDcReaderTest, ReadsSpectreClProjectFixtureDcOpScalar) {
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(result.value.signal, "net6");
   EXPECT_DOUBLE_EQ(result.value.value, 0.8);
+}
+
+TEST(LibpsfTranReaderTest, ReadsProjectFixtureTranWaveform) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "tran_time_sweep.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran")) << fixture;
+
+  const auto result = su::read_tran_waveform(fixture.string(), "INN");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "INN");
+  ASSERT_EQ(result.value.size(), 323U);
+  EXPECT_DOUBLE_EQ(result.value.time_s[0], 0.0);
+  EXPECT_NEAR(result.value.time_s[1], 2.0e-11, 1.0e-18);
+  EXPECT_NEAR(result.value.time_s[4], 1.2e-10, 1.0e-18);
+  EXPECT_NEAR(result.value.value[0], 0.6, 1.0e-12);
+  EXPECT_NEAR(result.value.value[1], 0.575131, 1.0e-6);
+  EXPECT_NEAR(result.value.value[4], 0.500197, 1.0e-6);
+}
+
+TEST(LibpsfTranReaderTest, ReportsMissingTranSignal) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "tran_time_sweep.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran")) << fixture;
+
+  const auto result = su::read_tran_waveform(fixture.string(), "missing_signal");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
+}
+
+TEST(LibpsfTranReaderTest, ReportsPsfxlTransientAsUnsupported) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_psfxl_tran.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran.tran")) << fixture;
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran.tran.psfxl")) << fixture;
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran.tran.sig")) << fixture;
+
+  const auto result = su::read_tran_waveform(fixture.string(), "net6", "tran.tran.tran");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kUnsupportedFormat);
 }
 
 #endif
