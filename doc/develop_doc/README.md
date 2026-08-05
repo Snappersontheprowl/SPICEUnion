@@ -10,6 +10,8 @@
   fixture 策略与职责边界。
 - `M2-libpsf-spike记录.md`：M2.3 libpsf 接入状态、已支持格式、fixture、测试结果与
   当前剩余边界；同时记录 license 风险、backend 边界与 native parser 决策口径。
+- `M3-Ngspice最小接入记录.md`：M3.0 Ngspice 最小 batch adapter、RC AC 示例、
+  输出解析、测试状态与当前边界。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

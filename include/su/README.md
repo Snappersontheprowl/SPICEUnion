@@ -98,7 +98,7 @@ dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文�
 实现新的 simulator backend，或构造 fake/scripted session 这类 test double 时，应使用该头文件。
 
 该模块保持仿真器无关。具体 process protocol 细节应放在 backend 专用头文件中，例如
-`spectre_session.hpp`。
+`spectre_session.hpp` 或 `ngspice_session.hpp`。
 
 ### `evaluator.hpp`
 
@@ -111,6 +111,8 @@ dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文�
   `GenericEvaluator.run(states, parse_func)` 的执行语义。
 - `make_spectre_session_factory()`：Spectre session 默认 factory。
 - `make_spectre_evaluator(options)`：标准 Spectre-backed evaluator 的便捷构造函数。
+- `make_ngspice_session_factory()`：Ngspice session 默认 factory。
+- `make_ngspice_evaluator(options)`：标准 Ngspice-backed evaluator 的便捷构造函数。
 - `generate_workspace_namespace()` 与 `join_path()`：evaluator/pool setup 使用的小工具函数。
 
 `Evaluator::run(states)` 返回与输入 states 等长且同序的结果向量。内部任务完成顺序可以不同，
@@ -159,6 +161,34 @@ Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，�
 这是唯一应该暴露具体 Spectre session class 的公开 C++ 头文件。通用 scheduling code 应依赖
 `SimulatorSession`，而不是直接依赖该类。
 
+### `ngspice_session.hpp`
+
+具体的 Ngspice batch session backend。
+
+该头文件当前定义：
+
+- `NgspiceRcAcConfig`：M3.0 内置 RC low-pass AC 示例配置。
+- `ngspice_rc_ac_config_from_state(state)`：从 `ParameterState` 读取
+  `resistance_ohm`、`capacitance_f`、`ac_start_hz`、`ac_stop_hz` 与
+  `points_per_decade`。
+- `render_ngspice_rc_ac_netlist(config, output_filename)`：生成第一版内置 RC AC netlist。
+- `read_ngspice_wrdata_ac_response(data_path, signal_name)`：读取 Ngspice
+  `wrdata v(out)` 三列文本，映射为 `AcResponse`。
+- `NgspiceSession`：基于 `ngspice -b` 的 `SimulatorSession` 实现。
+
+当前职责包括：
+
+- 准备 worker directory；
+- 查找 `SPICEUNION_NGSPICE`、`ngspice_con` 或 `ngspice`；
+- 为每次 run 生成 `rc_ac.cir`；
+- 调用 `ngspice -b rc_ac.cir`；
+- 生成 `rc_ac.out` 与 `ngspice.log`；
+- 将三列 AC 输出验证为 M2 `AcResponse`；
+- 按 timeout、启动失败、仿真失败和 parse failure 返回 `TaskResult`。
+
+该模块是 M3.0 的最小第二仿真器 backend，不表示完整 Ngspice 支持。不要在这里提前引入
+完整 netlist IR、binary raw parser 或业务指标。
+
 ### `version.hpp`
 
 小型版本 helper。
@@ -180,6 +210,7 @@ result.hpp
   -> result_reader.hpp
 
 session.hpp
+  -> ngspice_session.hpp
   -> spectre_session.hpp
   -> evaluator.hpp
 
@@ -194,6 +225,7 @@ spectre_protocol.hpp
 - 结果读取 API 放在 `result_reader.hpp`。
 - 抽象 simulator lifecycle 放在 `session.hpp`。
 - batch execution facade 放在 `evaluator.hpp`。
+- Ngspice batch backend 放在 `ngspice_session.hpp`。
 - Spectre 专用 protocol helper 放在 `spectre_protocol.hpp`。
 - Spectre process/session 实现放在 `spectre_session.hpp`。
 - 不要把 parsed waveform 或 metric type 塞进 `TaskResult`。

@@ -277,7 +277,7 @@ public:
 | M0 设计定型（1 周） | 本计划书定稿；根 README/TODO 完成；独立仓库初始化；CMake / CI 骨架（编译 + 单测）；Fake / Scripted session 契约测试草案 | 仓库可配置、可编译、hello 单测通过；执行层核心类型与跨语言边界写入文档；M1.1 开发任务清楚 |
 | M1 单仿真器核心（2 周） | `SimulatorSession`(Spectre) + 进程池/线程池 + C ABI + pybind11 + Python `GenericEvaluator` 等价门面 | 覆盖 Python 版主契约：并行预热、命名空间隔离、空闲 worker 调度、输入保序、启动失败传播、timeout/transport failure 回收；单 worker 连续 1000 次运行无泄漏 |
 | M2 结果层（1 周） | 最小 ResultIR + 通用结果读取 helper + UGBW/PM/建立时间 + `.raw` 目录定位 + 固定 fixture | C++ API 具备清晰失败语义；参考 libpsf / Python 数值但不强行复制 Python 失败返回习惯；benchmark 入口可运行 |
-| M3 多仿真器抽象（1–2 周） | 网表 IR / 结果 IR 定型；Ngspice 全量适配；Xyce/Hspice 注册式占位 | 同一任务以两种仿真器各跑一遍，IR 结果一致 |
+| M3 多仿真器抽象（1–2 周） | 先用 Ngspice 最小 batch adapter 验证第二真实仿真器，再按真实消费者扩展网表 / 结果 IR；Xyce/Hspice 不提前占位 | 至少两个仿真器能输出同类 IR；IR 扩展有真实消费者；文档记录保留与拒绝的抽象 |
 | M3.5 池库提取（1 周） | 两池组件提取为独立仓库 `OrderedConcurrentPool`：独立测试/基准/README；SPICEUnion 改为依赖该库 | `OrderedConcurrentPool` 可独立构建运行；SPICEUnion 依赖后全部测试通过；API 冻结 |
 | M4 服务化与部署（1 周） | 一键安装脚本；单二进制 demo；性能基准报告 | `./install.sh && demo` 一条命令跑通；基准文档含对比图 |
 | M5 面试打磨（1 周） | demo 场景、演讲故事线、README | 30 分钟 demo 脚本可完整演示 |

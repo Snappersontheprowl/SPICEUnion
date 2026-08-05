@@ -58,6 +58,7 @@ add_library(spiceunion_core STATIC
   src/parse/result.cpp
   src/parse/result_reader.cpp
   src/pool/simulator_pool.cpp
+  src/session/ngspice_session.cpp
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
   src/core/version.cpp
@@ -191,6 +192,23 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_spectre_session_lifecycle_test)
+
+  add_executable(spiceunion_ngspice_session_test
+    tests/ngspice_session_test.cpp
+  )
+
+  target_link_libraries(spiceunion_ngspice_session_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_ngspice_session_test
+    PRIVATE
+      SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
+  )
+
+  gtest_discover_tests(spiceunion_ngspice_session_test)
 
   add_executable(spiceunion_spectre_protocol_test
     tests/spectre_protocol_test.cpp

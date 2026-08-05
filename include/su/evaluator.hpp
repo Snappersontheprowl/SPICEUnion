@@ -48,6 +48,9 @@ class Evaluator {
 SessionFactory make_spectre_session_factory();
 Evaluator make_spectre_evaluator(EvaluatorOptions options);
 
+SessionFactory make_ngspice_session_factory();
+Evaluator make_ngspice_evaluator(EvaluatorOptions options);
+
 std::string generate_workspace_namespace();
 std::string join_path(const std::string& left, const std::string& right);
 

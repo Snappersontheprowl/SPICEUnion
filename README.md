@@ -18,8 +18,8 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2，并已推进
-M2.3 的 libpsf 可选 PSF 读取链路：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3，并已完成
+M3.0 的 Ngspice 最小 batch adapter：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -38,9 +38,13 @@ M2.3 的 libpsf 可选 PSF 读取链路：
   单信号 scalar，`read_ac_response()` 可读取 swept complex response，
   `read_tran_waveform()` 可读取普通 time-sweep `tran.tran`。默认构建仍不依赖
   libpsf。第一批 PSF fixture 已固化到 `tests/fixtures/psf/`。
+- M3.0：`NgspiceSession` 已作为第二个真实 simulator backend 接入；当前支持内置
+  RC low-pass AC batch 示例，调用 `ngspice -b` 生成三列 `wrdata v(out)` 文本输出，
+  并映射到 M2 `AcResponse`。默认测试不依赖 Ngspice，外部测试显式启用后会真实运行
+  Ngspice 并验证 -3 dB 频率。
 
-下一阶段继续 M2.3：补齐 sensitivity fixture 与 legacy sensitivity 读取能力，并单独评估
-Spectre 23.1 PSFXL transient 支持。
+下一阶段若继续 M3，应优先增加第二个 Ngspice 示例或比较 Spectre / Ngspice 同类 IR
+复用情况；legacy sensitivity 与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 
@@ -94,6 +98,8 @@ SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价�
   失败语义与职责边界。
 - `doc/develop_doc/M2-libpsf-spike记录.md`：libpsf 可选 backend 的当前状态、
   fixture、测试结果、license 风险与 native parser 决策口径。
+- `doc/develop_doc/M3-Ngspice最小接入记录.md`：Ngspice 最小 batch adapter、
+  RC AC 示例、输出解析、测试状态与当前边界。
 - `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
   commit 边界。
 - `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。

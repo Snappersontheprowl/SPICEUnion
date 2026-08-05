@@ -15,8 +15,10 @@
   `dcOp.dc` fixture 验证 scalar 读取，读取标准 `ac.ac` 与 `stb.stb` fixture 验证
   swept complex response 读取，并读取普通 `tran.tran` fixture 验证 transient
   waveform 读取。
+- Ngspice session tests 默认验证 RC AC 配置、netlist 渲染和三列 `wrdata` AC 输出解析；
+  启用外部测试后，会真实调用 `ngspice -b` 并通过 evaluator / pool 跑 batch。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
-- 外部测试可能依赖 Spectre 或 PDK 访问权限，默认必须禁用，除非显式启用。
+- 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
 
 ## 命令
 
@@ -35,6 +37,8 @@ cmake --preset external
 cmake --build --preset external
 ctest --preset external
 ```
+
+该 preset 同时会运行外部 Ngspice 测试；若 `ngspice` 不在 `PATH` 中，对应测试会 skip。
 
 本机 libpsf reader 测试：
 
@@ -57,3 +61,5 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - Spectre interactive handshake 与 stop；
 - single-session `(sclRun "all")`；
 - 默认 Spectre evaluator multi-worker batch。
+- Ngspice RC low-pass AC batch session；
+- 默认 Ngspice evaluator multi-worker batch。

@@ -1,6 +1,7 @@
 #include "su/evaluator.hpp"
 
 #include "src/pool/simulator_pool.hpp"
+#include "su/ngspice_session.hpp"
 #include "su/spectre_session.hpp"
 
 #include <unistd.h>
@@ -69,6 +70,17 @@ SessionFactory make_spectre_session_factory() {
 
 Evaluator make_spectre_evaluator(EvaluatorOptions options) {
   return Evaluator(std::move(options), make_spectre_session_factory());
+}
+
+SessionFactory make_ngspice_session_factory() {
+  return [](std::size_t worker_id, const EvaluatorOptions& options,
+            const std::string& work_dir) -> SimulatorSessionPtr {
+    return SimulatorSessionPtr(new NgspiceSession(worker_id, options, work_dir));
+  };
+}
+
+Evaluator make_ngspice_evaluator(EvaluatorOptions options) {
+  return Evaluator(std::move(options), make_ngspice_session_factory());
 }
 
 std::string generate_workspace_namespace() {
