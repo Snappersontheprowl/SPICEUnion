@@ -8,10 +8,8 @@
   执行层契约与验收标准。
 - `M2结果层职责边界与契约.md`：M2 的 ResultIR、结果读取 helper、失败语义、
   fixture 策略与职责边界。
-- `M2-libpsf评估与接入策略.md`：M2 中 libpsf 的当前接入口径、CMake 开关、
-  license 风险、backend 边界与 native parser 决策口径。
 - `M2-libpsf-spike记录.md`：M2.3 libpsf 接入状态、已支持格式、fixture、测试结果与
-  当前剩余边界。
+  当前剩余边界；同时记录 license 风险、backend 边界与 native parser 决策口径。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

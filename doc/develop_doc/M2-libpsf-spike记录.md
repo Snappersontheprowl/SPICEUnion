@@ -45,6 +45,18 @@ local/external/libpsf/install/lib64/libpsf.a
 - 本机临时 CMake 构建脚本只服务验证，不代表上游源码被纳入项目。
 - Cadence 自带 `libpsf.so` 不是 `henjo/libpsf` API，不能按 `PSFDataSet` 方式使用。
 
+## License 与分发口径
+
+`henjo/libpsf` 使用 LGPL-3.0。
+
+当前工程口径：
+
+- 不复制 libpsf 源码到 SPICEUnion core。
+- 不让默认构建强依赖 libpsf。
+- 产品化分发或静态链接场景需要单独处理 license notice 和合规策略。
+- 根 `TODO` 保留 `libpsf backend 产品化分发与 license notice` 监控项。
+- 本项目文档中的 license 判断只作为工程风险提醒，不替代正式法律意见。
+
 ## CMake 接入状态
 
 当前 CMake 开关：
@@ -98,6 +110,19 @@ tests/manual/libpsf_probe.cpp
 ```
 
 manual probe 只用于人工检查 PSF 文件结构，不进入默认 `ctest`。
+
+## backend 边界规则
+
+所有 parser backend 必须遵守：
+
+- 不暴露第三方库类型到 `include/su/`。
+- 不把 backend exception 直接抛给公开 API 用户。
+- 不用 `0.0`、空数组或 `None` 表示失败。
+- 不解释业务 signal 含义。
+- 不定义 objective、penalty 或 pass/fail。
+- 不在 `TaskResult` 中塞 waveform 或 metric。
+- 不让默认构建依赖外部 PSF parser。
+- backend 替换不应影响 `result.hpp` / `result_reader.hpp` 用户代码。
 
 ## 当前支持的读取能力
 
@@ -215,6 +240,27 @@ read_tran_waveform(..., filename="tran.tran.tran")
 2. 调用 Cadence 工具做外部转换，但这会引入 Cadence runtime 依赖，不适合作为默认
    reader backend。
 3. 调整仿真输出格式，生成 `henjo/libpsf` 能读取的普通 PSF / psfascii fixture。
+
+### native parser 当前口径
+
+native PSF parser 不是当前已完成能力。
+
+只有满足以下条件之一时，才重新评估 native parser：
+
+- libpsf 无法覆盖目标格式。
+- LGPL / 分发约束影响目标交付。
+- 性能无法满足后续 benchmark 目标。
+- 需要更细粒度错误恢复。
+- 需要完全控制内存布局和 C ABI。
+- 当前 fixture 已经明确 native parser 的最小支持子集。
+
+当前 native parser 的可能最小支持子集是：
+
+- `dcOp.dc`
+- `ac.ac`
+- `tran.tran`
+- `dcOpInfo.info`
+- legacy sensitivity
 
 ## 测试状态
 
