@@ -176,6 +176,24 @@ if(SPICEUNION_BUILD_TESTS)
 
   gtest_discover_tests(spiceunion_result_reader_test)
 
+  add_executable(spiceunion_simulation_semantics_test
+    tests/simulation_semantics_test.cpp
+  )
+
+  target_link_libraries(spiceunion_simulation_semantics_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_simulation_semantics_test
+    PRIVATE
+      SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
+      SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+  )
+
+  gtest_discover_tests(spiceunion_simulation_semantics_test)
+
   add_executable(spiceunion_spectre_session_lifecycle_test
     tests/spectre_session_lifecycle_test.cpp
   )

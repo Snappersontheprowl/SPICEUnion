@@ -1,0 +1,10 @@
+simulator lang=spectre
+
+parameters r=1k c=1p
+
+Vin (in 0) vsource dc=0 mag=1
+R1 (in out) resistor r=r
+C1 (out 0) capacitor c=c
+
+ac ac start=1Meg stop=10G dec=100
+save out

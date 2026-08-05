@@ -18,8 +18,8 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0，并已完成
-M3.1 的 Ngspice TRAN 最小接入：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0、M3.1，并已完成
+M3.2 的 Spectre / Ngspice 同类 AC 语义对照：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -46,10 +46,14 @@ M3.1 的 Ngspice TRAN 最小接入：
   AC 或 RC charging TRAN。TRAN 路径调用 `ngspice -b` 生成两列
   `wrdata v(out)` 文本输出，并映射到 M2 `TranWaveform`；external 测试会验证
   RC 充电曲线在 `τ = RC`、`5τ` 与终点处符合理论预期。
+- M3.2：新增 Spectre RC low-pass AC 源 fixture，并用本机 Spectre 23.1 生成普通
+  PSF fixture `spectre_rc_lowpass_ac.raw/ac.ac`。新增 `tests/support/rc_semantics.hpp`
+  与 `spiceunion_simulation_semantics_test`，让 Spectre PSF 读取结果和 Ngspice external
+  AC 结果复用同一套 RC low-pass AC 语义检查。
 
-下一阶段若继续 M3，应优先比较 Spectre / Ngspice 在同类 AC 或 TRAN 任务上的 IR 复用
-情况，或在真实消费者出现后评估 `.dc` sweep 是否需要新的 ResultIR；legacy sensitivity
-与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
+下一阶段若继续 M3，应优先评估是否需要 Spectre / Ngspice 同类 TRAN 对照，或在真实
+消费者出现后评估 `.dc` sweep 是否需要新的 ResultIR；legacy sensitivity 与 Spectre 23.1
+PSFXL transient 仍保留为边界事项。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 
@@ -107,6 +111,8 @@ SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价�
   RC AC 示例、输出解析、测试状态与当前边界。
 - `doc/develop_doc/M3.1-Ngspice瞬态与跨后端AC语义对照.md`：Ngspice RC
   charging TRAN 接入、`NgspiceBuiltinTask`、TRAN 输出解析与 AC/TRAN 语义检查。
+- `doc/develop_doc/M3.2-Spectre与Ngspice同类AC语义对照.md`：Spectre RC
+  low-pass AC 源 fixture、固化 PSF 结果、公共 RC AC 语义测试 helper 与当前结论。
 - `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
   commit 边界。
 - `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。

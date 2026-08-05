@@ -11,10 +11,14 @@
   M2.3 文件读取行为。默认构建下真实 PSF 读取保持禁用。
 - Fixture tests 使用 `tests/fixtures/` 中的小型固定仿真结果样本，验证 reader 解析
   是否稳定。
+- Simulation semantic tests 使用 `tests/support/` 中的公共语义 helper，验证不同 backend
+  读出的 ResultIR 是否满足同一类电路的物理语义。
 - Result reader tests 启用 libpsf backend 后，会读取 `tests/fixtures/psf/` 中的
   `dcOp.dc` fixture 验证 scalar 读取，读取标准 `ac.ac` 与 `stb.stb` fixture 验证
   swept complex response 读取，并读取普通 `tran.tran` fixture 验证 transient
   waveform 读取。
+- Spectre fixture 源 netlist 位于 `tests/fixtures/spectre/`；固化后的普通 PSF 结果位于
+  `tests/fixtures/psf/`。
 - Ngspice session tests 默认验证 RC AC / RC TRAN 配置、netlist 渲染，以及三列 AC /
   两列 TRAN `wrdata` 输出解析；启用外部测试后，会真实调用 `ngspice -b` 并通过
   evaluator / pool 跑 AC 与 TRAN batch。
@@ -56,7 +60,9 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 ```
 
 该测试默认尝试使用 `local/external/libpsf/install` 中的 `henjo/libpsf`，并读取
-`tests/fixtures/psf/` 中已提交的小型 PSF fixture。libpsf 本身仍不属于默认 CI 契约。
+`tests/fixtures/psf/` 中已提交的小型 PSF fixture。启用 libpsf 后还会运行
+`spiceunion_simulation_semantics_test`，验证 Spectre RC low-pass AC fixture 读出的
+`AcResponse` 满足与 Ngspice RC AC 相同的 -3 dB 频率语义。libpsf 本身仍不属于默认 CI 契约。
 
 外部测试当前覆盖：
 
