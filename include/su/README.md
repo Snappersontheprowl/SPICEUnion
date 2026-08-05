@@ -111,8 +111,13 @@ dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文�
   `GenericEvaluator.run(states, parse_func)` 的执行语义。
 - `make_spectre_session_factory()`：Spectre session 默认 factory。
 - `make_spectre_evaluator(options)`：标准 Spectre-backed evaluator 的便捷构造函数。
-- `make_ngspice_session_factory()`：Ngspice session 默认 factory。
-- `make_ngspice_evaluator(options)`：标准 Ngspice-backed evaluator 的便捷构造函数。
+- `make_ngspice_session_factory()`：Ngspice session 默认 factory，默认运行内置 RC AC。
+- `make_ngspice_session_factory(task)`：按 `NgspiceBuiltinTask` 创建 Ngspice session
+  factory。
+- `make_ngspice_evaluator(options)`：标准 Ngspice-backed evaluator 的便捷构造函数，默认
+  运行内置 RC AC。
+- `make_ngspice_evaluator(options, task)`：按 `NgspiceBuiltinTask` 创建 Ngspice-backed
+  evaluator。
 - `generate_workspace_namespace()` 与 `join_path()`：evaluator/pool setup 使用的小工具函数。
 
 `Evaluator::run(states)` 返回与输入 states 等长且同序的结果向量。内部任务完成顺序可以不同，
@@ -167,27 +172,37 @@ Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，�
 
 该头文件当前定义：
 
-- `NgspiceRcAcConfig`：M3.0 内置 RC low-pass AC 示例配置。
+- `NgspiceBuiltinTask`：Ngspice 内置任务选择枚举，当前支持 `kRcAc` 与 `kRcTran`。
+- `NgspiceRcAcConfig`：内置 RC low-pass AC 示例配置。
+- `NgspiceRcTranConfig`：内置 RC charging TRAN 示例配置。
 - `ngspice_rc_ac_config_from_state(state)`：从 `ParameterState` 读取
   `resistance_ohm`、`capacitance_f`、`ac_start_hz`、`ac_stop_hz` 与
   `points_per_decade`。
-- `render_ngspice_rc_ac_netlist(config, output_filename)`：生成第一版内置 RC AC netlist。
+- `ngspice_rc_tran_config_from_state(state)`：从 `ParameterState` 读取
+  `resistance_ohm`、`capacitance_f`、`input_voltage_v`、`tran_step_s` 与
+  `tran_stop_s`。
+- `render_ngspice_rc_ac_netlist(config, output_filename)`：生成内置 RC AC netlist。
+- `render_ngspice_rc_tran_netlist(config, output_filename)`：生成内置 RC charging TRAN
+  netlist。
 - `read_ngspice_wrdata_ac_response(data_path, signal_name)`：读取 Ngspice
   `wrdata v(out)` 三列文本，映射为 `AcResponse`。
+- `read_ngspice_wrdata_tran_waveform(data_path, signal_name)`：读取 Ngspice
+  `wrdata v(out)` 两列 transient 文本，映射为 `TranWaveform`。
 - `NgspiceSession`：基于 `ngspice -b` 的 `SimulatorSession` 实现。
 
 当前职责包括：
 
 - 准备 worker directory；
 - 查找 `SPICEUNION_NGSPICE`、`ngspice_con` 或 `ngspice`；
-- 为每次 run 生成 `rc_ac.cir`；
-- 调用 `ngspice -b rc_ac.cir`；
-- 生成 `rc_ac.out` 与 `ngspice.log`；
+- 按 `NgspiceBuiltinTask` 为每次 run 生成 `rc_ac.cir` 或 `rc_tran.cir`；
+- 调用 `ngspice -b`；
+- 生成 `rc_ac.out` / `rc_tran.out` 与 `ngspice.log`；
 - 将三列 AC 输出验证为 M2 `AcResponse`；
+- 将两列 TRAN 输出验证为 M2 `TranWaveform`；
 - 按 timeout、启动失败、仿真失败和 parse failure 返回 `TaskResult`。
 
-该模块是 M3.0 的最小第二仿真器 backend，不表示完整 Ngspice 支持。不要在这里提前引入
-完整 netlist IR、binary raw parser 或业务指标。
+该模块是 M3 的第二仿真器 backend，当前只支持两个内置教学级 batch 任务，不表示完整
+Ngspice 支持。不要在这里提前引入完整 netlist IR、binary raw parser 或业务指标。
 
 ### `version.hpp`
 

@@ -73,14 +73,22 @@ Evaluator make_spectre_evaluator(EvaluatorOptions options) {
 }
 
 SessionFactory make_ngspice_session_factory() {
-  return [](std::size_t worker_id, const EvaluatorOptions& options,
-            const std::string& work_dir) -> SimulatorSessionPtr {
-    return SimulatorSessionPtr(new NgspiceSession(worker_id, options, work_dir));
+  return make_ngspice_session_factory(NgspiceBuiltinTask::kRcAc);
+}
+
+SessionFactory make_ngspice_session_factory(NgspiceBuiltinTask task) {
+  return [task](std::size_t worker_id, const EvaluatorOptions& options,
+                const std::string& work_dir) -> SimulatorSessionPtr {
+    return SimulatorSessionPtr(new NgspiceSession(worker_id, options, work_dir, task));
   };
 }
 
 Evaluator make_ngspice_evaluator(EvaluatorOptions options) {
-  return Evaluator(std::move(options), make_ngspice_session_factory());
+  return make_ngspice_evaluator(std::move(options), NgspiceBuiltinTask::kRcAc);
+}
+
+Evaluator make_ngspice_evaluator(EvaluatorOptions options, NgspiceBuiltinTask task) {
+  return Evaluator(std::move(options), make_ngspice_session_factory(task));
 }
 
 std::string generate_workspace_namespace() {

@@ -13,6 +13,7 @@
 namespace su {
 
 class SimulatorPool;
+enum class NgspiceBuiltinTask;
 
 using SessionFactory = std::function<SimulatorSessionPtr(
     std::size_t worker_id, const EvaluatorOptions& options, const std::string& work_dir)>;
@@ -49,7 +50,9 @@ SessionFactory make_spectre_session_factory();
 Evaluator make_spectre_evaluator(EvaluatorOptions options);
 
 SessionFactory make_ngspice_session_factory();
+SessionFactory make_ngspice_session_factory(NgspiceBuiltinTask task);
 Evaluator make_ngspice_evaluator(EvaluatorOptions options);
+Evaluator make_ngspice_evaluator(EvaluatorOptions options, NgspiceBuiltinTask task);
 
 std::string generate_workspace_namespace();
 std::string join_path(const std::string& left, const std::string& right);

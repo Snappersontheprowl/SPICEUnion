@@ -23,8 +23,10 @@
 
 namespace {
 
-constexpr const char* kDefaultNgspiceOutput = "rc_ac.out";
-constexpr const char* kDefaultNgspiceNetlist = "rc_ac.cir";
+constexpr const char* kNgspiceRcAcOutput = "rc_ac.out";
+constexpr const char* kNgspiceRcAcNetlist = "rc_ac.cir";
+constexpr const char* kNgspiceRcTranOutput = "rc_tran.out";
+constexpr const char* kNgspiceRcTranNetlist = "rc_tran.cir";
 constexpr const char* kDefaultNgspiceLog = "ngspice.log";
 
 bool make_directories(const std::string& path) {
@@ -101,6 +103,14 @@ std::string format_spice_double(double value) {
   std::ostringstream stream;
   stream << std::scientific << std::setprecision(17) << value;
   return stream.str();
+}
+
+bool is_finite(double value) {
+  return std::isfinite(value);
+}
+
+bool is_positive_finite(double value) {
+  return is_finite(value) && value > 0.0;
 }
 
 double state_value_or(const su::ParameterState& state, const std::string& name,
@@ -202,6 +212,96 @@ ProcessResult run_ngspice_batch(const std::string& executable, const std::string
   return ProcessResult{-1, true, "ngspice run timed out"};
 }
 
+su::TaskResult run_rc_ac_task(const std::string& executable, const std::string& work_dir,
+                              const su::ParameterState& state, std::chrono::seconds timeout) {
+  const auto config = su::ngspice_rc_ac_config_from_state(state);
+  const auto netlist_path = join_path_local(work_dir, kNgspiceRcAcNetlist);
+  const auto output_path = join_path_local(work_dir, kNgspiceRcAcOutput);
+  const auto log_path = join_path_local(work_dir, kDefaultNgspiceLog);
+
+  try {
+    const auto netlist = su::render_ngspice_rc_ac_netlist(config, kNgspiceRcAcOutput);
+    if (!write_text_file(netlist_path, netlist)) {
+      return su::TaskResult::failure(su::TaskStatus::kTransportFailure, work_dir,
+                                     "failed to write Ngspice netlist: " + netlist_path);
+    }
+  } catch (const std::exception& error) {
+    return su::TaskResult::failure(su::TaskStatus::kException, work_dir, error.what());
+  }
+
+  const auto process =
+      run_ngspice_batch(executable, work_dir, kNgspiceRcAcNetlist, log_path, timeout);
+  if (process.timed_out) {
+    return su::TaskResult::failure(su::TaskStatus::kTimeout, work_dir, process.error_message);
+  }
+  if (process.exit_code == 126 || process.exit_code == 127) {
+    return su::TaskResult::failure(su::TaskStatus::kStartupFailed, work_dir,
+                                   "failed to execute ngspice; log=" + read_file_excerpt(log_path),
+                                   process.exit_code);
+  }
+  if (process.exit_code != 0) {
+    return su::TaskResult::failure(
+        su::TaskStatus::kSimulationFailed, work_dir,
+        "ngspice exited with non-zero status; log=" + read_file_excerpt(log_path),
+        process.exit_code);
+  }
+
+  const auto response = su::read_ngspice_wrdata_ac_response(output_path, "v(out)");
+  if (!response.ok()) {
+    return su::TaskResult::failure(su::TaskStatus::kSimulationFailed, work_dir,
+                                   response.error_message);
+  }
+
+  std::ostringstream detail;
+  detail << "ngspice_ac_output=" << output_path << ";samples=" << response.value.size();
+  return su::TaskResult::success(work_dir, detail.str());
+}
+
+su::TaskResult run_rc_tran_task(const std::string& executable, const std::string& work_dir,
+                                const su::ParameterState& state, std::chrono::seconds timeout) {
+  const auto config = su::ngspice_rc_tran_config_from_state(state);
+  const auto netlist_path = join_path_local(work_dir, kNgspiceRcTranNetlist);
+  const auto output_path = join_path_local(work_dir, kNgspiceRcTranOutput);
+  const auto log_path = join_path_local(work_dir, kDefaultNgspiceLog);
+
+  try {
+    const auto netlist = su::render_ngspice_rc_tran_netlist(config, kNgspiceRcTranOutput);
+    if (!write_text_file(netlist_path, netlist)) {
+      return su::TaskResult::failure(su::TaskStatus::kTransportFailure, work_dir,
+                                     "failed to write Ngspice netlist: " + netlist_path);
+    }
+  } catch (const std::exception& error) {
+    return su::TaskResult::failure(su::TaskStatus::kException, work_dir, error.what());
+  }
+
+  const auto process =
+      run_ngspice_batch(executable, work_dir, kNgspiceRcTranNetlist, log_path, timeout);
+  if (process.timed_out) {
+    return su::TaskResult::failure(su::TaskStatus::kTimeout, work_dir, process.error_message);
+  }
+  if (process.exit_code == 126 || process.exit_code == 127) {
+    return su::TaskResult::failure(su::TaskStatus::kStartupFailed, work_dir,
+                                   "failed to execute ngspice; log=" + read_file_excerpt(log_path),
+                                   process.exit_code);
+  }
+  if (process.exit_code != 0) {
+    return su::TaskResult::failure(
+        su::TaskStatus::kSimulationFailed, work_dir,
+        "ngspice exited with non-zero status; log=" + read_file_excerpt(log_path),
+        process.exit_code);
+  }
+
+  const auto waveform = su::read_ngspice_wrdata_tran_waveform(output_path, "v(out)");
+  if (!waveform.ok()) {
+    return su::TaskResult::failure(su::TaskStatus::kSimulationFailed, work_dir,
+                                   waveform.error_message);
+  }
+
+  std::ostringstream detail;
+  detail << "ngspice_tran_output=" << output_path << ";samples=" << waveform.value.size();
+  return su::TaskResult::success(work_dir, detail.str());
+}
+
 }  // namespace
 
 namespace su {
@@ -217,18 +317,28 @@ NgspiceRcAcConfig ngspice_rc_ac_config_from_state(const ParameterState& state) {
   return config;
 }
 
+NgspiceRcTranConfig ngspice_rc_tran_config_from_state(const ParameterState& state) {
+  NgspiceRcTranConfig config;
+  config.resistance_ohm = state_value_or(state, "resistance_ohm", config.resistance_ohm);
+  config.capacitance_f = state_value_or(state, "capacitance_f", config.capacitance_f);
+  config.input_voltage_v = state_value_or(state, "input_voltage_v", config.input_voltage_v);
+  config.step_s = state_value_or(state, "tran_step_s", config.step_s);
+  config.stop_s = state_value_or(state, "tran_stop_s", config.stop_s);
+  return config;
+}
+
 std::string render_ngspice_rc_ac_netlist(const NgspiceRcAcConfig& config,
                                          const std::string& output_filename) {
-  if (config.resistance_ohm <= 0.0) {
+  if (!is_positive_finite(config.resistance_ohm)) {
     throw std::invalid_argument("resistance_ohm must be positive");
   }
-  if (config.capacitance_f <= 0.0) {
+  if (!is_positive_finite(config.capacitance_f)) {
     throw std::invalid_argument("capacitance_f must be positive");
   }
-  if (config.start_hz <= 0.0) {
+  if (!is_positive_finite(config.start_hz)) {
     throw std::invalid_argument("ac_start_hz must be positive");
   }
-  if (config.stop_hz <= config.start_hz) {
+  if (!is_positive_finite(config.stop_hz) || config.stop_hz <= config.start_hz) {
     throw std::invalid_argument("ac_stop_hz must be greater than ac_start_hz");
   }
   if (config.points_per_decade <= 0) {
@@ -247,6 +357,43 @@ std::string render_ngspice_rc_ac_netlist(const NgspiceRcAcConfig& config,
           << "set filetype=ascii\n"
           << "ac dec " << config.points_per_decade << " " << format_spice_double(config.start_hz)
           << " " << format_spice_double(config.stop_hz) << "\n"
+          << "wrdata " << output_filename << " v(out)\n"
+          << "quit\n"
+          << ".endc\n"
+          << ".end\n";
+  return netlist.str();
+}
+
+std::string render_ngspice_rc_tran_netlist(const NgspiceRcTranConfig& config,
+                                           const std::string& output_filename) {
+  if (!is_positive_finite(config.resistance_ohm)) {
+    throw std::invalid_argument("resistance_ohm must be positive");
+  }
+  if (!is_positive_finite(config.capacitance_f)) {
+    throw std::invalid_argument("capacitance_f must be positive");
+  }
+  if (!is_finite(config.input_voltage_v)) {
+    throw std::invalid_argument("input_voltage_v must be finite");
+  }
+  if (!is_positive_finite(config.step_s)) {
+    throw std::invalid_argument("tran_step_s must be positive");
+  }
+  if (!is_positive_finite(config.stop_s) || config.stop_s <= config.step_s) {
+    throw std::invalid_argument("tran_stop_s must be greater than tran_step_s");
+  }
+  if (output_filename.empty()) {
+    throw std::invalid_argument("output_filename must not be empty");
+  }
+
+  std::ostringstream netlist;
+  netlist << "* SPICEUnion Ngspice RC charging transient fixture\n"
+          << "Vin in 0 dc " << format_spice_double(config.input_voltage_v) << "\n"
+          << "R1 in out " << format_spice_double(config.resistance_ohm) << "\n"
+          << "C1 out 0 " << format_spice_double(config.capacitance_f) << " ic=0\n"
+          << ".control\n"
+          << "set filetype=ascii\n"
+          << "tran " << format_spice_double(config.step_s) << " "
+          << format_spice_double(config.stop_s) << " uic\n"
           << "wrdata " << output_filename << " v(out)\n"
           << "quit\n"
           << ".endc\n"
@@ -309,9 +456,65 @@ ReadResult<AcResponse> read_ngspice_wrdata_ac_response(const std::string& data_p
   return ReadResult<AcResponse>::success(std::move(response));
 }
 
+ReadResult<TranWaveform> read_ngspice_wrdata_tran_waveform(const std::string& data_path,
+                                                           const std::string& signal_name) {
+  if (data_path.empty()) {
+    return ReadResult<TranWaveform>::failure(ResultStatus::kInvalidInput,
+                                             "data_path must not be empty");
+  }
+  if (signal_name.empty()) {
+    return ReadResult<TranWaveform>::failure(ResultStatus::kInvalidInput,
+                                             "signal_name must not be empty");
+  }
+
+  std::ifstream input(data_path);
+  if (!input) {
+    return ReadResult<TranWaveform>::failure(ResultStatus::kFileNotFound,
+                                             "ngspice wrdata file was not found: " + data_path);
+  }
+
+  TranWaveform waveform;
+  waveform.signal = signal_name;
+
+  std::string line;
+  std::size_t line_number = 0;
+  while (std::getline(input, line)) {
+    ++line_number;
+    if (line.empty()) {
+      continue;
+    }
+
+    std::istringstream parser(line);
+    double time = 0.0;
+    double value = 0.0;
+    std::string extra;
+    if (!(parser >> time >> value) || (parser >> extra)) {
+      return ReadResult<TranWaveform>::failure(
+          ResultStatus::kParseError,
+          "failed to parse ngspice wrdata TRAN line " + std::to_string(line_number));
+    }
+
+    waveform.time_s.push_back(time);
+    waveform.value.push_back(value);
+  }
+
+  if (waveform.time_s.empty()) {
+    return ReadResult<TranWaveform>::failure(
+        ResultStatus::kParseError, "ngspice wrdata TRAN file has no samples: " + data_path);
+  }
+  if (!waveform.shape_consistent()) {
+    return ReadResult<TranWaveform>::failure(ResultStatus::kParseError,
+                                             "ngspice TRAN vectors have inconsistent lengths");
+  }
+  return ReadResult<TranWaveform>::success(std::move(waveform));
+}
+
 NgspiceSession::NgspiceSession(std::size_t worker_id, EvaluatorOptions options,
-                               std::string work_dir)
-    : worker_id_(worker_id), options_(std::move(options)), work_dir_(std::move(work_dir)) {}
+                               std::string work_dir, NgspiceBuiltinTask task)
+    : worker_id_(worker_id),
+      options_(std::move(options)),
+      work_dir_(std::move(work_dir)),
+      task_(task) {}
 
 NgspiceSession::~NgspiceSession() {
   stop(true);
@@ -338,46 +541,14 @@ TaskResult NgspiceSession::run(const ParameterState& state, std::chrono::seconds
     start();
   }
 
-  const auto config = ngspice_rc_ac_config_from_state(state);
-  const auto netlist_path = join_path_local(work_dir_, kDefaultNgspiceNetlist);
-  const auto output_path = join_path_local(work_dir_, kDefaultNgspiceOutput);
-  const auto log_path = join_path_local(work_dir_, kDefaultNgspiceLog);
-
-  try {
-    const auto netlist = render_ngspice_rc_ac_netlist(config, kDefaultNgspiceOutput);
-    if (!write_text_file(netlist_path, netlist)) {
-      return TaskResult::failure(TaskStatus::kTransportFailure, work_dir_,
-                                 "failed to write Ngspice netlist: " + netlist_path);
-    }
-  } catch (const std::exception& error) {
-    return TaskResult::failure(TaskStatus::kException, work_dir_, error.what());
+  switch (task_) {
+    case NgspiceBuiltinTask::kRcAc:
+      return run_rc_ac_task(ngspice_executable_, work_dir_, state, timeout);
+    case NgspiceBuiltinTask::kRcTran:
+      return run_rc_tran_task(ngspice_executable_, work_dir_, state, timeout);
   }
 
-  const auto process =
-      run_ngspice_batch(ngspice_executable_, work_dir_, kDefaultNgspiceNetlist, log_path, timeout);
-  if (process.timed_out) {
-    return TaskResult::failure(TaskStatus::kTimeout, work_dir_, process.error_message);
-  }
-  if (process.exit_code == 126 || process.exit_code == 127) {
-    return TaskResult::failure(TaskStatus::kStartupFailed, work_dir_,
-                               "failed to execute ngspice; log=" + read_file_excerpt(log_path),
-                               process.exit_code);
-  }
-  if (process.exit_code != 0) {
-    return TaskResult::failure(
-        TaskStatus::kSimulationFailed, work_dir_,
-        "ngspice exited with non-zero status; log=" + read_file_excerpt(log_path),
-        process.exit_code);
-  }
-
-  const auto response = read_ngspice_wrdata_ac_response(output_path, "v(out)");
-  if (!response.ok()) {
-    return TaskResult::failure(TaskStatus::kSimulationFailed, work_dir_, response.error_message);
-  }
-
-  std::ostringstream detail;
-  detail << "ngspice_ac_output=" << output_path << ";samples=" << response.value.size();
-  return TaskResult::success(work_dir_, detail.str());
+  return TaskResult::failure(TaskStatus::kException, work_dir_, "unknown Ngspice builtin task");
 }
 
 void NgspiceSession::stop(bool graceful) noexcept {

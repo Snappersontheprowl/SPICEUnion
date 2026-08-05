@@ -12,6 +12,8 @@
   当前剩余边界；同时记录 license 风险、backend 边界与 native parser 决策口径。
 - `M3-Ngspice最小接入记录.md`：M3.0 Ngspice 最小 batch adapter、RC AC 示例、
   输出解析、测试状态与当前边界。
+- `M3.1-Ngspice瞬态与跨后端AC语义对照.md`：M3.1 Ngspice RC charging TRAN
+  接入、内置任务选择、TRAN 输出解析、AC/TRAN 语义检查与当前边界。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

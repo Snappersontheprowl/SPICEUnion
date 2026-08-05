@@ -1,14 +1,17 @@
-# M3 Ngspice 最小接入记录
+# M3.0 Ngspice 最小接入记录
 
 时间：2026-08-05
 
 本文记录 M3.0 中第二个真实仿真器 Ngspice 的最小接入状态。
 
+后续 M3.1 已在此基础上增加 RC charging TRAN，并记录于
+`M3.1-Ngspice瞬态与跨后端AC语义对照.md`。本文只保留 M3.0 的历史事实。
+
 ## 当前结论
 
 Ngspice 已作为第二个真实 simulator backend 接入 SPICEUnion。
 
-当前接入范围很窄：
+M3.0 接入范围很窄：
 
 - 只实现 batch adapter，不实现 interactive Ngspice session。
 - 只支持内置 RC low-pass AC 示例。
@@ -106,7 +109,7 @@ frequency real(v(out)) imag(v(out))
 1.12201845e+06  9.99950302e-01 -7.04949950e-03
 ```
 
-当前 parser：
+M3.0 parser：
 
 ```cpp
 ReadResult<AcResponse> read_ngspice_wrdata_ac_response(data_path, signal_name);
@@ -174,10 +177,10 @@ cmake --build --preset default
 ctest --preset default --output-on-failure
 ```
 
-当前结果：
+M3.0 当时结果：
 
 ```text
-100% tests passed, 0 tests failed out of 46
+100% tests passed, 0 tests failed out of 47
 ```
 
 外部测试：
@@ -188,15 +191,15 @@ cmake --build --preset external
 ctest --preset external --output-on-failure
 ```
 
-当前结果：
+M3.0 当时结果：
 
 ```text
-100% tests passed, 0 tests failed out of 46
+100% tests passed, 0 tests failed out of 47
 ```
 
 ## 当前边界
 
-当前不做：
+M3.0 不做：
 
 - 完整 netlist IR。
 - Ngspice binary raw parser。
@@ -216,7 +219,6 @@ SPICEUnion 已经不是 Spectre-only 执行框架；
 
 后续若继续推进 M3，应优先从真实消费者出发，而不是提前扩展全量抽象：
 
-- 增加 Ngspice `.tran` RC charging 示例，映射到 `TranWaveform`。
 - 增加 Ngspice `.dc` 简单 sweep 示例，评估是否需要新的 ResultIR。
 - 比较 Spectre 与 Ngspice 在同类 AC/TRAN 输出上的 IR 复用情况。
 - 只有两个真实 backend 共同需要时，再扩展 `EvaluatorOptions` 或引入 netlist 模板接口。

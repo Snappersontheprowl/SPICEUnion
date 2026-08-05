@@ -18,8 +18,8 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3，并已完成
-M3.0 的 Ngspice 最小 batch adapter：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0，并已完成
+M3.1 的 Ngspice TRAN 最小接入：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -42,9 +42,14 @@ M3.0 的 Ngspice 最小 batch adapter：
   RC low-pass AC batch 示例，调用 `ngspice -b` 生成三列 `wrdata v(out)` 文本输出，
   并映射到 M2 `AcResponse`。默认测试不依赖 Ngspice，外部测试显式启用后会真实运行
   Ngspice 并验证 -3 dB 频率。
+- M3.1：`NgspiceSession` 增加 `NgspiceBuiltinTask`，当前可选择内置 RC low-pass
+  AC 或 RC charging TRAN。TRAN 路径调用 `ngspice -b` 生成两列
+  `wrdata v(out)` 文本输出，并映射到 M2 `TranWaveform`；external 测试会验证
+  RC 充电曲线在 `τ = RC`、`5τ` 与终点处符合理论预期。
 
-下一阶段若继续 M3，应优先增加第二个 Ngspice 示例或比较 Spectre / Ngspice 同类 IR
-复用情况；legacy sensitivity 与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
+下一阶段若继续 M3，应优先比较 Spectre / Ngspice 在同类 AC 或 TRAN 任务上的 IR 复用
+情况，或在真实消费者出现后评估 `.dc` sweep 是否需要新的 ResultIR；legacy sensitivity
+与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 
@@ -100,6 +105,8 @@ SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价�
   fixture、测试结果、license 风险与 native parser 决策口径。
 - `doc/develop_doc/M3-Ngspice最小接入记录.md`：Ngspice 最小 batch adapter、
   RC AC 示例、输出解析、测试状态与当前边界。
+- `doc/develop_doc/M3.1-Ngspice瞬态与跨后端AC语义对照.md`：Ngspice RC
+  charging TRAN 接入、`NgspiceBuiltinTask`、TRAN 输出解析与 AC/TRAN 语义检查。
 - `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
   commit 边界。
 - `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。
@@ -159,9 +166,11 @@ ctest --preset external
 - `spectre` 位于 `PATH` 中；
 - `/dev/shm/pdk_cache/toplevel.scs`;
 - `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs`.
+- `ngspice_con` 或 `ngspice` 位于 `PATH` 中；也可通过 `SPICEUNION_NGSPICE`
+  指向可执行文件。
 
 外部测试当前覆盖 Spectre handshake、single-task run 与 multi-worker evaluator
-batch execution。
+batch execution，也覆盖 Ngspice RC AC / RC TRAN session 与 evaluator batch。
 
 ## 备注
 
