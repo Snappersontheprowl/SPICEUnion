@@ -134,6 +134,7 @@ tests/
 | M3.5.1 | SPICEUnion 内部领域无关 `OrderedConcurrentPool` 核心已实现 |
 | M3.5.2 | `SimulatorPool` 已改为 `OrderedConcurrentPool` adapter |
 | M3.5.3 | default / external / libpsf 验证与边界检查已完成 |
+| M3.5.4 | 独立 `OrderedConcurrentPool` 项目已创建并通过独立验证 |
 
 详细事实状态见：
 
@@ -195,11 +196,11 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - `SimulatorPool` adapter；
 - default / external / libpsf 验证；
 - `OrderedConcurrentPool` 头文件边界检查。
+- 独立 `OrderedConcurrentPool` 项目；
+- 独立 CMake package；
 
 未完成：
 
-- 独立 `OrderedConcurrentPool` 项目；
-- 独立 CMake package；
 - SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配。
 
 详细阶段路线见：
@@ -232,5 +233,5 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- `OrderedConcurrentPool` 独立仓库、独立 CMake package 与 SPICEUnion 外部装配；
+- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配；
 - Xyce / Hspice backend。

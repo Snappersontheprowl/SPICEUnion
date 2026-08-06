@@ -71,7 +71,7 @@ ParameterState batch
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- `OrderedConcurrentPool` 独立仓库、独立 CMake package 与外部装配；
+- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配；
 - Xyce / Hspice backend。
 
 ## 仓库结构

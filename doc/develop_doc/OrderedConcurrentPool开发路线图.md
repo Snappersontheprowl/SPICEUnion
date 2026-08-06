@@ -9,8 +9,8 @@
 - M3.5.0-M3.5.3 已完成；
 - SPICEUnion 内部已有领域无关 `OrderedConcurrentPool` 核心；
 - `SimulatorPool` 已改为 adapter；
-- 尚未创建独立 `OrderedConcurrentPool` 项目；
-- 下一步是 M3.5.4：建立独立项目并迁移通用池核心。
+- 独立 `OrderedConcurrentPool` 项目已创建；
+- 下一步是 M3.5.5：让 SPICEUnion 装配外部项目，移除内部通用池副本。
 
 ## 1. 目标
 
@@ -56,13 +56,10 @@ SPICEUnion Evaluator
 - startup 失败时调用 `shutdown_all()` 清理；
 - 析构时调用 `shutdown_all()`。
 
-尚未满足独立项目条件：
+尚未完成的装配条件：
 
-- 通用池核心仍位于 SPICEUnion 仓库内部；
-- worker work directory 仍是 SPICEUnion 业务语义；
-- 当前没有独立 CMake package；
-- 当前没有独立 README、示例、安装方式；
-- 还没有在 SPICEUnion 之外验证可复用性。
+- SPICEUnion 仍使用内部通用池副本；
+- 尚未通过 CMake 装配外部 `OrderedConcurrentPool` 项目。
 
 ## 3. 职责边界
 
@@ -383,6 +380,8 @@ rg -n "namespace su|su::|TaskResult|ParameterState|EvaluatorOptions|SimulatorSes
 
 ### M3.5.4 创建独立项目
 
+状态：已完成。
+
 目标：
 
 - 在 SPICEUnion 之外建立完整独立项目。
@@ -443,6 +442,47 @@ README 应说明：
 - 独立 README 中文为主；
 - 示例可编译；
 - SPICEUnion 不再是运行独立测试的前提。
+
+已完成事实：
+
+- 项目路径：`~/my_lab/projects/OrderedConcurrentPool`；
+- 头文件：`include/ocp/ordered_concurrent_pool.hpp`；
+- 测试：`tests/ordered_concurrent_pool_test.cpp`；
+- 示例：`examples/basic_batch.cpp`；
+- CMake target：`ocp::ordered_concurrent_pool`；
+- 安装导出：`OrderedConcurrentPoolConfig.cmake` 与 `OrderedConcurrentPoolTargets.cmake`；
+- license 状态：尚未指定开源许可证。
+
+已记录验证：
+
+```bash
+cmake -S . -B build-clean -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build-clean
+ctest --test-dir build-clean --output-on-failure
+```
+
+```text
+100% tests passed, 0 tests failed out of 8
+```
+
+示例程序：
+
+```bash
+./build/ordered_concurrent_pool_basic_batch
+```
+
+安装验证：
+
+```bash
+cmake --install build-clean --prefix /tmp/ocp_install_...
+```
+
+安装产物只包含：
+
+- `include/ocp/ordered_concurrent_pool.hpp`；
+- `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolConfig.cmake`；
+- `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolConfigVersion.cmake`；
+- `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolTargets.cmake`。
 
 ### M3.5.5 SPICEUnion 装配独立项目
 
@@ -572,18 +612,16 @@ SPICEUnion 侧建议变化：
 如果继续执行 M3.5，下一步应做：
 
 ```text
-M3.5.4：创建独立 OrderedConcurrentPool 项目，并迁移通用池核心与独立测试。
+M3.5.5：让 SPICEUnion 装配外部 OrderedConcurrentPool 项目，移除内部通用池副本。
 ```
 
 理由：
 
-- SPICEUnion 内部通用池核心已经不依赖 `su::*`；
-- `SimulatorPool` adapter 已通过 default / external / libpsf 验证；
-- 已有独立池测试可迁移到新项目；
-- 下一步需要验证 SPICEUnion 仓库之外的独立构建与消费方式。
+- 独立项目已经可以独立构建、测试和安装；
+- SPICEUnion 仍保留内部 `src/pool/ordered_concurrent_pool.hpp` 副本；
+- 若不进入 M3.5.5，会形成双份通用池代码漂移风险。
 
 当前不建议立刻做：
 
-- 在没有独立 CMake target 前声称已完成独立项目；
 - 直接把 `TaskResult` 泛化成复杂 result wrapper；
 - 提前设计动态扩缩容、取消、重试、优先级。
