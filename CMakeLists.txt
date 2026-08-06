@@ -146,6 +146,39 @@ if(SPICEUNION_BUILD_TESTS)
 
   gtest_discover_tests(spiceunion_evaluator_contract_test)
 
+  add_executable(spiceunion_ordered_concurrent_pool_test
+    tests/ordered_concurrent_pool_test.cpp
+  )
+
+  target_include_directories(spiceunion_ordered_concurrent_pool_test
+    PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
+  target_link_libraries(spiceunion_ordered_concurrent_pool_test
+    PRIVATE
+      GTest::gtest_main
+  )
+
+  gtest_discover_tests(spiceunion_ordered_concurrent_pool_test)
+
+  add_executable(spiceunion_simulator_pool_contract_test
+    tests/simulator_pool_contract_test.cpp
+  )
+
+  target_include_directories(spiceunion_simulator_pool_contract_test
+    PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
+  target_link_libraries(spiceunion_simulator_pool_contract_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  gtest_discover_tests(spiceunion_simulator_pool_contract_test)
+
   add_executable(spiceunion_result_test
     tests/result_test.cpp
   )

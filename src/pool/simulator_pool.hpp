@@ -5,13 +5,15 @@
 #include "su/session.hpp"
 #include "su/task_result.hpp"
 
-#include <condition_variable>
 #include <cstddef>
 #include <memory>
-#include <mutex>
-#include <queue>
 #include <string>
 #include <vector>
+
+namespace ocp {
+template <class Job, class Result>
+class OrderedConcurrentPool;
+}
 
 namespace su {
 
@@ -29,23 +31,10 @@ class SimulatorPool {
   std::vector<std::string> worker_work_dirs() const;
 
  private:
-  struct Worker {
-    std::size_t id = 0;
-    std::string work_dir;
-    SimulatorSessionPtr session;
-  };
-
-  std::size_t acquire_worker();
-  void release_worker(std::size_t index);
-  TaskResult run_one(std::size_t worker_index, const ParameterState& state) noexcept;
-
   EvaluatorOptions options_;
   std::string workspace_root_;
-  std::vector<Worker> workers_;
-  mutable std::mutex mutex_;
-  std::condition_variable available_;
-  std::queue<std::size_t> free_workers_;
-  bool started_ = false;
+  std::vector<std::string> worker_work_dirs_;
+  std::unique_ptr<ocp::OrderedConcurrentPool<ParameterState, TaskResult>> pool_;
 };
 
 }  // namespace su

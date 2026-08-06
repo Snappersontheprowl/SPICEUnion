@@ -89,7 +89,7 @@ include/su/
 
 src/
   core/                 evaluator 实现
-  pool/                 ordered worker pool
+  pool/                 OrderedConcurrentPool 通用池核心与 SimulatorPool adapter
   session/              Spectre / Ngspice backend 实现
   parse/                Result helper 与可选 libpsf backend
 
@@ -130,6 +130,10 @@ tests/
 | M3.2 | Spectre / Ngspice 同类 AC 语义对照已完成 |
 | M3.3 | Spectre / Ngspice 同类 TRAN 语义对照已完成 |
 | M3.4 | Ngspice 电阻分压 DC sweep 与 `DcSweep` 已实现 |
+| M3.5.0 | `SimulatorPool` 行为契约测试已补齐 |
+| M3.5.1 | SPICEUnion 内部领域无关 `OrderedConcurrentPool` 核心已实现 |
+| M3.5.2 | `SimulatorPool` 已改为 `OrderedConcurrentPool` adapter |
+| M3.5.3 | default / external / libpsf 验证与边界检查已完成 |
 
 详细事实状态见：
 
@@ -170,9 +174,9 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 
 | 配置 | 结果 |
 |---|---|
-| default | `100% tests passed, 0 tests failed out of 64` |
-| external | `100% tests passed, 0 tests failed out of 64` |
-| libpsf full | `100% tests passed, 0 tests failed out of 74` |
+| default | `100% tests passed, 0 tests failed out of 80` |
+| external | `100% tests passed, 0 tests failed out of 80` |
+| libpsf full | `100% tests passed, 0 tests failed out of 90` |
 
 ## 8. 后续开发目标
 
@@ -184,12 +188,19 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 
 ### 8.2 M3.5 OrderedConcurrentPool 提取
 
-提取条件：
+已完成：
 
-- SPICEUnion 内部池语义稳定；
-- API 经 Spectre 与 Ngspice 两个 backend 使用验证；
-- 保序、生命周期、故障隔离语义稳定；
-- 有独立测试价值。
+- `SimulatorPool` 行为契约测试；
+- SPICEUnion 内部领域无关 `OrderedConcurrentPool` 核心；
+- `SimulatorPool` adapter；
+- default / external / libpsf 验证；
+- `OrderedConcurrentPool` 头文件边界检查。
+
+未完成：
+
+- 独立 `OrderedConcurrentPool` 项目；
+- 独立 CMake package；
+- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配。
 
 详细阶段路线见：
 
@@ -221,4 +232,5 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
+- `OrderedConcurrentPool` 独立仓库、独立 CMake package 与 SPICEUnion 外部装配；
 - Xyce / Hspice backend。

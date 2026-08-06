@@ -26,6 +26,8 @@ ParameterState batch
 - per-task failure isolation；
 - Spectre interactive backend；
 - Ngspice batch backend；
+- 内部 `OrderedConcurrentPool` 通用池核心；
+- `SimulatorPool` adapter；
 - 最小 ResultIR；
 - 可选 libpsf backend；
 - Spectre PSF fixture 读取；
@@ -69,6 +71,7 @@ ParameterState batch
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
+- `OrderedConcurrentPool` 独立仓库、独立 CMake package 与外部装配；
 - Xyce / Hspice backend。
 
 ## 仓库结构
@@ -76,7 +79,7 @@ ParameterState batch
 ```text
 include/su/      公开 C++ API
 src/core/        evaluator 与通用执行逻辑
-src/pool/        ordered worker pool
+src/pool/        OrderedConcurrentPool 通用池核心与 SimulatorPool adapter
 src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
 tests/           GoogleTest 测试与 fixture

@@ -6,10 +6,11 @@
 
 当前结论：
 
-- 现在还不应直接把 `src/pool/SimulatorPool` 整体搬出去；
-- 应先在 SPICEUnion 内抽出通用并发池契约；
-- 再让 SPICEUnion 通过 adapter 使用该通用池；
-- 最后再建立独立项目，并用 SPICEUnion 作为真实集成验证方。
+- M3.5.0-M3.5.3 已完成；
+- SPICEUnion 内部已有领域无关 `OrderedConcurrentPool` 核心；
+- `SimulatorPool` 已改为 adapter；
+- 尚未创建独立 `OrderedConcurrentPool` 项目；
+- 下一步是 M3.5.4：建立独立项目并迁移通用池核心。
 
 ## 1. 目标
 
@@ -37,14 +38,18 @@ SPICEUnion Evaluator
 
 当前 SPICEUnion 已有内部实现：
 
+- `src/pool/ordered_concurrent_pool.hpp`
 - `src/pool/simulator_pool.hpp`
 - `src/pool/simulator_pool.cpp`
 
 已具备的池行为：
 
+- `OrderedConcurrentPool` 位于 `ocp` 命名空间；
+- `OrderedConcurrentPool` 只依赖 C++ 标准库；
+- `OrderedConcurrentPool` 不包含 `su::*` 业务类型；
 - 构造固定数量 worker；
 - `start_all()` 并行启动所有 worker；
-- `evaluate_batch()` 并发执行输入任务；
+- `run_batch()` / `evaluate_batch()` 并发执行输入任务；
 - 通过 `results[index]` 保证输出与输入同序；
 - 通过 idle worker queue 分派可用 worker；
 - 单任务异常被转换为 `TaskResult::failure(...)`；
@@ -53,12 +58,8 @@ SPICEUnion Evaluator
 
 尚未满足独立项目条件：
 
-- `SimulatorPool` 直接依赖 `su::EvaluatorOptions`；
-- 直接依赖 `su::ParameterState`；
-- 直接依赖 `su::TaskResult`；
-- 直接依赖 `su::SimulatorSession`；
+- 通用池核心仍位于 SPICEUnion 仓库内部；
 - worker work directory 仍是 SPICEUnion 业务语义；
-- 当前没有独立 pool contract tests；
 - 当前没有独立 CMake package；
 - 当前没有独立 README、示例、安装方式；
 - 还没有在 SPICEUnion 之外验证可复用性。
@@ -202,13 +203,15 @@ failure_handler(...) -> TaskResult::failure(...)
 
 ### M3.5.0 固化现有池行为契约
 
+状态：已完成。
+
 目标：
 
 - 在不改变现有生产代码的前提下，为当前 `SimulatorPool` 行为补齐直接测试。
 
 建议产出：
 
-- `tests/pool_contract_test.cpp`
+- `tests/simulator_pool_contract_test.cpp`
 - fake worker / fake session 测试夹具；
 - `src/pool/README.md` 更新；
 - `doc/develop_doc/当前事实状态.md` 更新。
@@ -217,7 +220,6 @@ failure_handler(...) -> TaskResult::failure(...)
 
 - worker 数量必须大于 0；
 - factory 不可为空；
-- factory 返回空 worker 时失败；
 - `start_all()` 启动全部 worker；
 - startup 失败后调用已构造 worker 的 stop；
 - 未 start 时执行 batch 抛出错误；
@@ -237,6 +239,8 @@ failure_handler(...) -> TaskResult::failure(...)
 
 ### M3.5.1 在 SPICEUnion 内抽出通用池核心
 
+状态：已完成。
+
 目标：
 
 - 在 SPICEUnion 仓库内先建立领域无关的 `OrderedConcurrentPool` 实现；
@@ -247,10 +251,9 @@ failure_handler(...) -> TaskResult::failure(...)
 
 ```text
 src/pool/ordered_concurrent_pool.hpp
-src/pool/ordered_concurrent_pool.cpp
 ```
 
-若实现为 header-only，则只保留：
+当前实现为 header-only：
 
 ```text
 src/pool/ordered_concurrent_pool.hpp
@@ -279,6 +282,8 @@ src/pool/ordered_concurrent_pool.hpp
 - 默认测试通过。
 
 ### M3.5.2 用 adapter 替换 SimulatorPool 内部调度
+
+状态：已完成。
 
 目标：
 
@@ -312,6 +317,8 @@ SimulatorPool
 - default / external / libpsf 测试矩阵通过。
 
 ### M3.5.3 稳定化与边界检查
+
+状态：已完成。
 
 目标：
 
@@ -357,6 +364,22 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - 独立池测试覆盖核心语义；
 - 没有未解释的线程竞态；
 - 没有未实测的性能数字进入文档。
+
+已记录验证：
+
+| 配置 | 结果 |
+|---|---|
+| default | `100% tests passed, 0 tests failed out of 80` |
+| external | `100% tests passed, 0 tests failed out of 80` |
+| libpsf | `100% tests passed, 0 tests failed out of 90` |
+
+已执行边界检查：
+
+```bash
+rg -n "namespace su|su::|TaskResult|ParameterState|EvaluatorOptions|SimulatorSession|Spectre|Ngspice|PSF|raw|work_dir" src/pool/ordered_concurrent_pool.hpp
+```
+
+结果：无匹配。
 
 ### M3.5.4 创建独立项目
 
@@ -549,19 +572,18 @@ SPICEUnion 侧建议变化：
 如果继续执行 M3.5，下一步应做：
 
 ```text
-M3.5.0：补齐 SimulatorPool / ordered pool 现有行为契约测试。
+M3.5.4：创建独立 OrderedConcurrentPool 项目，并迁移通用池核心与独立测试。
 ```
 
 理由：
 
-- 当前已有实现可作为行为基线；
-- 直接抽离会缺少防回归保护；
-- 先用测试钉住“保序、生命周期、失败隔离”，后续拆分会更稳。
+- SPICEUnion 内部通用池核心已经不依赖 `su::*`；
+- `SimulatorPool` adapter 已通过 default / external / libpsf 验证；
+- 已有独立池测试可迁移到新项目；
+- 下一步需要验证 SPICEUnion 仓库之外的独立构建与消费方式。
 
 当前不建议立刻做：
 
-- 直接创建独立仓库并搬代码；
-- 直接把 `SimulatorPool` 改名为 `OrderedConcurrentPool`；
+- 在没有独立 CMake target 前声称已完成独立项目；
 - 直接把 `TaskResult` 泛化成复杂 result wrapper；
 - 提前设计动态扩缩容、取消、重试、优先级。
-

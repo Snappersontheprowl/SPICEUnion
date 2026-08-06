@@ -19,7 +19,7 @@
 - [ ] evaluator C ABI 所有权草案。
 - [ ] libpsf backend 产品化分发与 license notice。
 - [ ] Xyce / Hspice 多仿真器扩展。
-- [ ] `OrderedConcurrentPool` 独立仓库提取（路线图已整理，实施前先补池契约测试）。
+- [ ] `OrderedConcurrentPool` 独立仓库提取（M3.5.0-M3.5.3 已完成，下一步创建独立项目并迁移通用池核心）。
 
 ## 监控项
 
