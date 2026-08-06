@@ -19,9 +19,9 @@
   waveform 读取。
 - Spectre fixture 源 netlist 位于 `tests/fixtures/spectre/`；固化后的普通 PSF 结果位于
   `tests/fixtures/psf/`。
-- Ngspice session tests 默认验证 RC AC / RC TRAN 配置、netlist 渲染，以及三列 AC /
-  两列 TRAN `wrdata` 输出解析；启用外部测试后，会真实调用 `ngspice -b` 并通过
-  evaluator / pool 跑 AC 与 TRAN batch。
+- Ngspice session tests 默认验证 RC AC / RC TRAN / 电阻分压 DC 配置、netlist
+  渲染，以及三列 AC / 两列 TRAN / 两列 DC sweep `wrdata` 输出解析；启用外部测试后，
+  会真实调用 `ngspice -b` 并通过 evaluator / pool 跑 AC、TRAN 与 DC batch。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
 
@@ -73,5 +73,7 @@ charging TRAN fixture 读出的 `TranWaveform` 满足与 Ngspice RC TRAN 相同�
 - 默认 Spectre evaluator multi-worker batch。
 - Ngspice RC low-pass AC batch session；
 - Ngspice RC charging TRAN batch session；
+- Ngspice resistor-divider DC sweep batch session；
 - 默认 Ngspice evaluator multi-worker batch；
-- Ngspice TRAN evaluator multi-worker batch。
+- Ngspice TRAN evaluator multi-worker batch；
+- Ngspice DC evaluator multi-worker batch。

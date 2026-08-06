@@ -59,6 +59,20 @@ TEST(ResultIrTest, AcResponseReportsShapeConsistency) {
   EXPECT_FALSE(response.shape_consistent());
 }
 
+TEST(ResultIrTest, DcSweepReportsShapeConsistency) {
+  su::DcSweep sweep;
+  sweep.sweep_name = "Vin";
+  sweep.signal = "vout";
+  sweep.sweep_values = {0.0, 0.5, 1.0};
+  sweep.values = {0.0, 0.25, 0.5};
+
+  EXPECT_EQ(sweep.size(), 3U);
+  EXPECT_TRUE(sweep.shape_consistent());
+
+  sweep.values.pop_back();
+  EXPECT_FALSE(sweep.shape_consistent());
+}
+
 TEST(ResultIrTest, AcDerivedViewReportsShapeConsistency) {
   su::AcDerivedView view;
   view.frequency_hz = {1.0, 10.0};

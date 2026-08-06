@@ -9,10 +9,11 @@ SKILL stdin/stdout 处理，或 Ngspice batch-mode 子进程调用。
 
 - `spectre_session.cpp`：`spectre +interactive` backend，负责 SKILL handshake、
   参数写入、`(sclRun "all")`、completion 判断和进程停止。
-- `ngspice_session.cpp`：Ngspice batch backend，当前支持两个内置任务：RC low-pass
-  AC 与 RC charging TRAN。它按任务生成 `rc_ac.cir` 或 `rc_tran.cir`，调用
-  `ngspice -b`，读取 `wrdata v(out)` 文本输出，并分别映射到 `AcResponse` 或
-  `TranWaveform`。
+- `ngspice_session.cpp`：Ngspice batch backend，当前支持三个内置任务：RC low-pass
+  AC、RC charging TRAN 与电阻分压 DC sweep。它按任务生成 `rc_ac.cir`、
+  `rc_tran.cir` 或 `resistor_divider_dc.cir`，调用 `ngspice -b`，读取
+  `wrdata v(out)` 文本输出，并分别映射到 `AcResponse`、`TranWaveform` 或
+  `DcSweep`。
 
 命名规则：
 

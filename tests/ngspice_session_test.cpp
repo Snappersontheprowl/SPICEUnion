@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include <unistd.h>
+#include <cstddef>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -88,6 +89,30 @@ TEST(NgspiceRcTranConfigTest, UsesDefaultsAndStateOverrides) {
   EXPECT_DOUBLE_EQ(config.stop_s, 2.0e-8);
 }
 
+TEST(NgspiceResistorDividerDcConfigTest, UsesDefaultsAndStateOverrides) {
+  const auto defaults = su::ngspice_resistor_divider_dc_config_from_state({});
+  EXPECT_DOUBLE_EQ(defaults.top_resistance_ohm, 1000.0);
+  EXPECT_DOUBLE_EQ(defaults.bottom_resistance_ohm, 1000.0);
+  EXPECT_DOUBLE_EQ(defaults.sweep_start_v, 0.0);
+  EXPECT_DOUBLE_EQ(defaults.sweep_stop_v, 1.0);
+  EXPECT_DOUBLE_EQ(defaults.sweep_step_v, 0.1);
+
+  const su::ParameterState state{
+      {"top_resistance_ohm", 3000.0},
+      {"bottom_resistance_ohm", 1000.0},
+      {"dc_start_v", -1.0},
+      {"dc_stop_v", 1.0},
+      {"dc_step_v", 0.25},
+  };
+
+  const auto config = su::ngspice_resistor_divider_dc_config_from_state(state);
+  EXPECT_DOUBLE_EQ(config.top_resistance_ohm, 3000.0);
+  EXPECT_DOUBLE_EQ(config.bottom_resistance_ohm, 1000.0);
+  EXPECT_DOUBLE_EQ(config.sweep_start_v, -1.0);
+  EXPECT_DOUBLE_EQ(config.sweep_stop_v, 1.0);
+  EXPECT_DOUBLE_EQ(config.sweep_step_v, 0.25);
+}
+
 TEST(NgspiceRcAcNetlistTest, RendersBatchModeLowPassAcNetlist) {
   su::NgspiceRcAcConfig config;
   config.resistance_ohm = 1000.0;
@@ -122,6 +147,25 @@ TEST(NgspiceRcTranNetlistTest, RendersBatchModeChargingNetlist) {
   EXPECT_NE(netlist.find("tran "), std::string::npos);
   EXPECT_NE(netlist.find(" uic"), std::string::npos);
   EXPECT_NE(netlist.find("wrdata rc_tran.out v(out)"), std::string::npos);
+}
+
+TEST(NgspiceResistorDividerDcNetlistTest, RendersBatchModeDcSweepNetlist) {
+  su::NgspiceResistorDividerDcConfig config;
+  config.top_resistance_ohm = 3000.0;
+  config.bottom_resistance_ohm = 1000.0;
+  config.sweep_start_v = -1.0;
+  config.sweep_stop_v = 1.0;
+  config.sweep_step_v = 0.25;
+
+  const auto netlist = su::render_ngspice_resistor_divider_dc_netlist(config, "dc.out");
+
+  EXPECT_NE(netlist.find("Vin in 0 dc 0"), std::string::npos);
+  EXPECT_NE(netlist.find("Rtop in out 3.00000000000000000e+03"), std::string::npos);
+  EXPECT_NE(netlist.find("Rbottom out 0 1.00000000000000000e+03"), std::string::npos);
+  EXPECT_NE(netlist.find("dc Vin -1.00000000000000000e+00 1.00000000000000000e+00 "
+                         "2.50000000000000000e-01"),
+            std::string::npos);
+  EXPECT_NE(netlist.find("wrdata dc.out v(out)"), std::string::npos);
 }
 
 TEST(NgspiceWrdataParserTest, ParsesThreeColumnComplexAcOutput) {
@@ -168,6 +212,29 @@ TEST(NgspiceWrdataParserTest, ParsesTwoColumnTranOutput) {
   std::filesystem::remove_all(root);
 }
 
+TEST(NgspiceWrdataParserTest, ParsesTwoColumnDcSweepOutput) {
+  const auto root = test_root("dc_parser");
+  std::filesystem::remove_all(root);
+  std::filesystem::create_directories(root);
+  const auto data = root / "resistor_divider_dc.out";
+  write_text(data,
+             "0.00000000e+00  0.00000000e+00\n"
+             "5.00000000e-01  2.50000000e-01\n"
+             "1.00000000e+00  5.00000000e-01\n");
+
+  const auto result = su::read_ngspice_wrdata_dc_sweep(data.string(), "Vin", "v(out)");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.sweep_name, "Vin");
+  EXPECT_EQ(result.value.signal, "v(out)");
+  ASSERT_EQ(result.value.size(), 3U);
+  EXPECT_TRUE(result.value.shape_consistent());
+  EXPECT_DOUBLE_EQ(result.value.sweep_values[1], 0.5);
+  EXPECT_DOUBLE_EQ(result.value.values[1], 0.25);
+
+  std::filesystem::remove_all(root);
+}
+
 TEST(NgspiceWrdataParserTest, ReportsMalformedAcOutput) {
   const auto root = test_root("malformed_parser");
   std::filesystem::remove_all(root);
@@ -198,6 +265,21 @@ TEST(NgspiceWrdataParserTest, ReportsMalformedTranOutput) {
   std::filesystem::remove_all(root);
 }
 
+TEST(NgspiceWrdataParserTest, ReportsMalformedDcOutput) {
+  const auto root = test_root("malformed_dc_parser");
+  std::filesystem::remove_all(root);
+  std::filesystem::create_directories(root);
+  const auto data = root / "resistor_divider_dc.out";
+  write_text(data, "0.0\n");
+
+  const auto result = su::read_ngspice_wrdata_dc_sweep(data.string(), "Vin", "v(out)");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kParseError);
+
+  std::filesystem::remove_all(root);
+}
+
 TEST(NgspiceWrdataParserTest, RejectsUnexpectedExtraColumns) {
   const auto root = test_root("extra_columns_parser");
   std::filesystem::remove_all(root);
@@ -221,6 +303,21 @@ TEST(NgspiceWrdataParserTest, RejectsUnexpectedTranExtraColumns) {
   write_text(data, "1.0 1.0 0.0\n");
 
   const auto result = su::read_ngspice_wrdata_tran_waveform(data.string(), "v(out)");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kParseError);
+
+  std::filesystem::remove_all(root);
+}
+
+TEST(NgspiceWrdataParserTest, RejectsUnexpectedDcExtraColumns) {
+  const auto root = test_root("extra_columns_dc_parser");
+  std::filesystem::remove_all(root);
+  std::filesystem::create_directories(root);
+  const auto data = root / "resistor_divider_dc.out";
+  write_text(data, "1.0 0.5 0.25\n");
+
+  const auto result = su::read_ngspice_wrdata_dc_sweep(data.string(), "Vin", "v(out)");
 
   EXPECT_FALSE(result.ok());
   EXPECT_EQ(result.status, su::ResultStatus::kParseError);
@@ -296,6 +393,51 @@ TEST(NgspiceSessionExternalTest, RunsRcChargingTranWhenExternalNgspiceIsEnabled)
   std::filesystem::remove_all(root);
 }
 
+TEST(NgspiceSessionExternalTest, RunsResistorDividerDcWhenExternalNgspiceIsEnabled) {
+  skip_unless_external_ngspice_is_ready();
+
+  const auto root = test_root("external_dc_session");
+  std::filesystem::remove_all(root);
+
+  su::EvaluatorOptions options;
+  options.num_workers = 1;
+  options.work_dir_base = root.string();
+  options.workspace_namespace = "dc_single_worker";
+  options.timeout_seconds = 20;
+
+  su::NgspiceSession session(0, options, (root / "dc_single_worker" / "worker_0").string(),
+                             su::NgspiceBuiltinTask::kResistorDividerDc);
+  ASSERT_NO_THROW(session.start());
+  EXPECT_EQ(session.task(), su::NgspiceBuiltinTask::kResistorDividerDc);
+
+  const auto result = session.run({{"top_resistance_ohm", 3000.0},
+                                   {"bottom_resistance_ohm", 1000.0},
+                                   {"dc_start_v", 0.0},
+                                   {"dc_stop_v", 1.0},
+                                   {"dc_step_v", 0.1}},
+                                  std::chrono::seconds(20));
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_NE(result.detail.find("ngspice_dc_output="), std::string::npos);
+  EXPECT_NE(result.detail.find("samples="), std::string::npos);
+
+  const auto sweep = su::read_ngspice_wrdata_dc_sweep(
+      (root / "dc_single_worker" / "worker_0" / "resistor_divider_dc.out").string(), "Vin",
+      "v(out)");
+  ASSERT_TRUE(sweep.ok()) << sweep.error_message;
+  ASSERT_GT(sweep.value.size(), 5U);
+  ASSERT_TRUE(sweep.value.shape_consistent());
+
+  const double divider_ratio = 1000.0 / (3000.0 + 1000.0);
+  for (std::size_t index = 0; index < sweep.value.size(); ++index) {
+    EXPECT_NEAR(sweep.value.values[index], sweep.value.sweep_values[index] * divider_ratio,
+                1.0e-10);
+  }
+
+  session.stop(true);
+  std::filesystem::remove_all(root);
+}
+
 TEST(NgspiceEvaluatorExternalTest, RunsBatchThroughEvaluatorWhenExternalNgspiceIsEnabled) {
   skip_unless_external_ngspice_is_ready();
 
@@ -318,6 +460,37 @@ TEST(NgspiceEvaluatorExternalTest, RunsBatchThroughEvaluatorWhenExternalNgspiceI
   EXPECT_TRUE(results[0].ok()) << results[0].error_message;
   EXPECT_TRUE(results[1].ok()) << results[1].error_message;
   EXPECT_NE(results[0].work_dir, results[1].work_dir);
+
+  evaluator.cleanup();
+  std::filesystem::remove_all(root);
+}
+
+TEST(NgspiceEvaluatorExternalTest, RunsDcBatchThroughEvaluatorWhenExternalNgspiceIsEnabled) {
+  skip_unless_external_ngspice_is_ready();
+
+  const auto root = test_root("external_dc_evaluator");
+  std::filesystem::remove_all(root);
+
+  su::EvaluatorOptions options;
+  options.num_workers = 2;
+  options.work_dir_base = root.string();
+  options.workspace_namespace = "dc_batch";
+  options.timeout_seconds = 20;
+
+  auto evaluator = su::make_ngspice_evaluator(options, su::NgspiceBuiltinTask::kResistorDividerDc);
+  const auto results = evaluator.run({
+      su::ParameterState{
+          {"top_resistance_ohm", 1000.0}, {"bottom_resistance_ohm", 1000.0}, {"dc_step_v", 0.2}},
+      su::ParameterState{
+          {"top_resistance_ohm", 3000.0}, {"bottom_resistance_ohm", 1000.0}, {"dc_step_v", 0.1}},
+  });
+
+  ASSERT_EQ(results.size(), 2U);
+  EXPECT_TRUE(results[0].ok()) << results[0].error_message;
+  EXPECT_TRUE(results[1].ok()) << results[1].error_message;
+  EXPECT_NE(results[0].work_dir, results[1].work_dir);
+  EXPECT_NE(results[0].detail.find("ngspice_dc_output="), std::string::npos);
+  EXPECT_NE(results[1].detail.find("ngspice_dc_output="), std::string::npos);
 
   evaluator.cleanup();
   std::filesystem::remove_all(root);

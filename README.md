@@ -18,8 +18,8 @@ states
 
 ## 当前状态
 
-当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0、M3.1、M3.2，
-并已完成 M3.3 的 Spectre / Ngspice 同类 TRAN 语义对照：
+当前仓库已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0、M3.1、M3.2、
+M3.3，并已完成 M3.4 的 Ngspice `.dc` 简单 sweep 最小接入：
 
 - M0：CMake / GoogleTest 项目骨架已可用。
 - M1.0：核心 evaluator 契约已有 fake-session 测试覆盖。
@@ -54,9 +54,14 @@ states
   libpsf backend 读取的普通 transient PSF fixture
   `spectre_rc_charging_tran.raw/tran.tran.tran`。Spectre PSF 读取结果和 Ngspice
   external TRAN 结果复用同一套 RC charging `TranWaveform` 语义检查。
+- M3.4：新增最小 `DcSweep` ResultIR，并为 `NgspiceSession` 增加电阻分压
+  `kResistorDividerDc` 内置任务。该任务每次 run 调用一次 `ngspice -b`，执行
+  `.dc Vin start stop step`，生成两列 `wrdata v(out)` 文本输出，并映射为
+  `DcSweep`。当前选择纯电阻分压，避免把 MOS 模型依赖混入 `.dc` 基础能力验证。
 
-下一阶段若继续 M3，应优先评估 `.dc` sweep 是否有真实消费者，以及是否需要新的 ResultIR；
-legacy sensitivity 与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
+下一阶段若继续 M3，应优先判断是否需要 Spectre 侧同类 DC sweep fixture，或是否等到
+MOS I-V / gm/Id 这类真实消费者出现后再扩展更复杂的 DC 结果形态；legacy sensitivity
+与 Spectre 23.1 PSFXL transient 仍保留为边界事项。
 Python `task_library.py` 作为历史参考和 fixture 来源，但 C++ API 不为强行兼容 Python
 返回习惯而牺牲类型安全。
 
@@ -116,6 +121,11 @@ SPICEUnion 应保留 `GenericEvaluator.run(states, parse_func)` 中真正有价�
   charging TRAN 接入、`NgspiceBuiltinTask`、TRAN 输出解析与 AC/TRAN 语义检查。
 - `doc/develop_doc/M3.2-Spectre与Ngspice同类AC语义对照.md`：Spectre RC
   low-pass AC 源 fixture、固化 PSF 结果、公共 RC AC 语义测试 helper 与当前结论。
+- `doc/develop_doc/M3.3-Spectre与Ngspice同类TRAN语义对照.md`：Spectre RC
+  charging TRAN 源 fixture、普通 transient PSF 读取、公共 RC TRAN 语义测试 helper
+  与当前结论。
+- `doc/develop_doc/M3.4-Ngspice直流扫描最小接入记录.md`：Ngspice `.dc`
+  电阻分压 sweep、`DcSweep` ResultIR、两列 `wrdata` 解析与当前边界。
 - `doc/develop_doc/开发路线图.md`：分阶段实现任务、文件产出、测试产出、完成定义与
   commit 边界。
 - `doc/develop_doc/简历亮点解析.md`：面向面试的项目叙事与简历定位。
@@ -179,7 +189,8 @@ ctest --preset external
   指向可执行文件。
 
 外部测试当前覆盖 Spectre handshake、single-task run 与 multi-worker evaluator
-batch execution，也覆盖 Ngspice RC AC / RC TRAN session 与 evaluator batch。
+batch execution，也覆盖 Ngspice RC AC / RC TRAN / resistor-divider DC session 与
+evaluator batch。
 
 ## 备注
 

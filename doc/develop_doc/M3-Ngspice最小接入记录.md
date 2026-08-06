@@ -217,8 +217,12 @@ SPICEUnion 已经不是 Spectre-only 执行框架；
 
 ## 后续候选方向
 
-后续若继续推进 M3，应优先从真实消费者出发，而不是提前扩展全量抽象：
+后续推进状态：
 
-- 增加 Ngspice `.dc` 简单 sweep 示例，评估是否需要新的 ResultIR。
-- 比较 Spectre 与 Ngspice 在同类 AC/TRAN 输出上的 IR 复用情况。
+- M3.1 已增加 Ngspice RC charging TRAN 示例。
+- M3.2 / M3.3 已比较 Spectre 与 Ngspice 在同类 AC / TRAN 输出上的 IR 复用情况。
+- M3.4 已增加 Ngspice `.dc` 电阻分压简单 sweep 示例与最小 `DcSweep` ResultIR。
+
+仍需继续遵守的原则：
+
 - 只有两个真实 backend 共同需要时，再扩展 `EvaluatorOptions` 或引入 netlist 模板接口。

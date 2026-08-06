@@ -2,8 +2,8 @@
 
 ## 当前阶段
 
-SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0、M3.1、M3.2，
-并已完成 M3.3 的 Spectre / Ngspice 同类 TRAN 语义对照。
+SPICEUnion 已完成 M0、M1.0、M1.1、M1.2、M1.3、M2.1、M2.2、M2.3、M3.0、M3.1、M3.2、
+M3.3，并已完成 M3.4 的 Ngspice `.dc` 简单 sweep 最小接入。
 
 M3.0 已用公开可运行的 RC low-pass AC 示例验证现有 `SimulatorSession` / evaluator /
 ResultIR 抽象可以承载第二个真实仿真器。M3.1 已用 RC charging TRAN 示例验证 Ngspice
@@ -11,6 +11,8 @@ ResultIR 抽象可以承载第二个真实仿真器。M3.1 已用 RC charging TR
 固化 PSF fixture 验证 Spectre PSF 与 Ngspice `wrdata` 两条真实路径可以复用同一套
 `AcResponse` 语义检查。M3.3 已用 Spectre RC charging TRAN 固化 PSF fixture 验证
 Spectre PSF 与 Ngspice `wrdata` 两条真实路径可以复用同一套 `TranWaveform` 语义检查。
+M3.4 已用电阻分压 `.dc` 示例验证 Ngspice 两列 DC sweep 输出可以映射到最小
+`DcSweep` ResultIR，并通过真实 Ngspice external session / evaluator 测试。
 
 Python `task_library.py` 只作为历史参考和 fixture 来源；C++ API 不为强行兼容
 Python 返回习惯而牺牲类型安全。
@@ -19,8 +21,8 @@ Python 返回习惯而牺牲类型安全。
 
 ### M3 后续收敛
 
-- [ ] 评估是否增加 Ngspice `.dc` 简单 sweep 示例；只有存在真实消费者时才扩展
-      ResultIR。
+- [ ] 评估是否需要 Spectre 侧同类电阻分压 DC sweep fixture。
+- [ ] 若进入 MOS I-V / gm/Id 场景，再评估 `DcSweep` 是否需要扩展为多曲线结构。
 - [ ] 只有两个真实 backend 共同需要时，再扩展 `EvaluatorOptions` 或引入 netlist
       模板接口。
 

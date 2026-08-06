@@ -18,6 +18,8 @@
   fixture、公共 RC 语义测试 helper、Spectre/Ngspice 同类 AC ResultIR 复用结论。
 - `M3.3-Spectre与Ngspice同类TRAN语义对照.md`：M3.3 Spectre RC charging
   TRAN fixture、普通 transient PSF 读取、Spectre/Ngspice 同类 TRAN ResultIR 复用结论。
+- `M3.4-Ngspice直流扫描最小接入记录.md`：M3.4 Ngspice 电阻分压 `.dc`
+  sweep、`DcSweep` ResultIR、两列 `wrdata` 解析与当前边界。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

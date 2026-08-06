@@ -13,6 +13,7 @@ namespace su {
 enum class NgspiceBuiltinTask {
   kRcAc,
   kRcTran,
+  kResistorDividerDc,
 };
 
 struct NgspiceRcAcConfig {
@@ -31,18 +32,34 @@ struct NgspiceRcTranConfig {
   double stop_s = 1.0e-8;
 };
 
+struct NgspiceResistorDividerDcConfig {
+  double top_resistance_ohm = 1000.0;
+  double bottom_resistance_ohm = 1000.0;
+  double sweep_start_v = 0.0;
+  double sweep_stop_v = 1.0;
+  double sweep_step_v = 0.1;
+};
+
 NgspiceRcAcConfig ngspice_rc_ac_config_from_state(const ParameterState& state);
 NgspiceRcTranConfig ngspice_rc_tran_config_from_state(const ParameterState& state);
+NgspiceResistorDividerDcConfig ngspice_resistor_divider_dc_config_from_state(
+    const ParameterState& state);
 
 std::string render_ngspice_rc_ac_netlist(const NgspiceRcAcConfig& config,
                                          const std::string& output_filename = "rc_ac.out");
 std::string render_ngspice_rc_tran_netlist(const NgspiceRcTranConfig& config,
                                            const std::string& output_filename = "rc_tran.out");
+std::string render_ngspice_resistor_divider_dc_netlist(
+    const NgspiceResistorDividerDcConfig& config,
+    const std::string& output_filename = "resistor_divider_dc.out");
 
 ReadResult<AcResponse> read_ngspice_wrdata_ac_response(const std::string& data_path,
                                                        const std::string& signal_name);
 ReadResult<TranWaveform> read_ngspice_wrdata_tran_waveform(const std::string& data_path,
                                                            const std::string& signal_name);
+ReadResult<DcSweep> read_ngspice_wrdata_dc_sweep(const std::string& data_path,
+                                                 const std::string& sweep_name,
+                                                 const std::string& signal_name);
 
 class NgspiceSession final : public SimulatorSession {
  public:

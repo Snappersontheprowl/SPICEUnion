@@ -67,6 +67,21 @@ struct ScalarResult {
   double value = 0.0;
 };
 
+struct DcSweep {
+  std::string sweep_name;
+  std::string signal;
+  std::vector<double> sweep_values;
+  std::vector<double> values;
+
+  std::size_t size() const noexcept {
+    return sweep_values.size();
+  }
+
+  bool shape_consistent() const noexcept {
+    return sweep_values.size() == values.size();
+  }
+};
+
 struct AcResponse {
   std::string signal;
   std::vector<double> frequency_hz;

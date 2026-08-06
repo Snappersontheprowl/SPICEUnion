@@ -52,6 +52,7 @@ optimizer decisions。
 - `ReadResult<T>`：带显式状态的读取结果容器，用于区分真实 `0.0` 与读取失败。
 - `ResultDirectory`：`.raw` 结果目录定位结果。
 - `ScalarResult`：单 signal 标量结果。
+- `DcSweep`：单 sweep axis、单 signal 的实数 DC sweep 响应。
 - `AcResponse`：AC 原始复数响应，保留 frequency、real、imag。
 - `AcDerivedView`：AC 派生视图，包含 magnitude_db 与 phase_deg。
 - `UgbwPhaseMarginResult`：UGBW / phase margin 通用数学结果。
@@ -172,36 +173,47 @@ Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，�
 
 该头文件当前定义：
 
-- `NgspiceBuiltinTask`：Ngspice 内置任务选择枚举，当前支持 `kRcAc` 与 `kRcTran`。
+- `NgspiceBuiltinTask`：Ngspice 内置任务选择枚举，当前支持 `kRcAc`、`kRcTran`
+  与 `kResistorDividerDc`。
 - `NgspiceRcAcConfig`：内置 RC low-pass AC 示例配置。
 - `NgspiceRcTranConfig`：内置 RC charging TRAN 示例配置。
+- `NgspiceResistorDividerDcConfig`：内置电阻分压 DC sweep 示例配置。
 - `ngspice_rc_ac_config_from_state(state)`：从 `ParameterState` 读取
   `resistance_ohm`、`capacitance_f`、`ac_start_hz`、`ac_stop_hz` 与
   `points_per_decade`。
 - `ngspice_rc_tran_config_from_state(state)`：从 `ParameterState` 读取
   `resistance_ohm`、`capacitance_f`、`input_voltage_v`、`tran_step_s` 与
   `tran_stop_s`。
+- `ngspice_resistor_divider_dc_config_from_state(state)`：从 `ParameterState`
+  读取 `top_resistance_ohm`、`bottom_resistance_ohm`、`dc_start_v`、`dc_stop_v`
+  与 `dc_step_v`。
 - `render_ngspice_rc_ac_netlist(config, output_filename)`：生成内置 RC AC netlist。
 - `render_ngspice_rc_tran_netlist(config, output_filename)`：生成内置 RC charging TRAN
   netlist。
+- `render_ngspice_resistor_divider_dc_netlist(config, output_filename)`：生成内置
+  电阻分压 `.dc Vin start stop step` netlist。
 - `read_ngspice_wrdata_ac_response(data_path, signal_name)`：读取 Ngspice
   `wrdata v(out)` 三列文本，映射为 `AcResponse`。
 - `read_ngspice_wrdata_tran_waveform(data_path, signal_name)`：读取 Ngspice
   `wrdata v(out)` 两列 transient 文本，映射为 `TranWaveform`。
+- `read_ngspice_wrdata_dc_sweep(data_path, sweep_name, signal_name)`：读取 Ngspice
+  `wrdata v(out)` 两列 DC sweep 文本，映射为 `DcSweep`。
 - `NgspiceSession`：基于 `ngspice -b` 的 `SimulatorSession` 实现。
 
 当前职责包括：
 
 - 准备 worker directory；
 - 查找 `SPICEUNION_NGSPICE`、`ngspice_con` 或 `ngspice`；
-- 按 `NgspiceBuiltinTask` 为每次 run 生成 `rc_ac.cir` 或 `rc_tran.cir`；
+- 按 `NgspiceBuiltinTask` 为每次 run 生成 `rc_ac.cir`、`rc_tran.cir` 或
+  `resistor_divider_dc.cir`；
 - 调用 `ngspice -b`；
-- 生成 `rc_ac.out` / `rc_tran.out` 与 `ngspice.log`；
+- 生成 `rc_ac.out` / `rc_tran.out` / `resistor_divider_dc.out` 与 `ngspice.log`；
 - 将三列 AC 输出验证为 M2 `AcResponse`；
 - 将两列 TRAN 输出验证为 M2 `TranWaveform`；
+- 将两列 DC sweep 输出验证为 `DcSweep`；
 - 按 timeout、启动失败、仿真失败和 parse failure 返回 `TaskResult`。
 
-该模块是 M3 的第二仿真器 backend，当前只支持两个内置教学级 batch 任务，不表示完整
+该模块是 M3 的第二仿真器 backend，当前只支持三个内置教学级 batch 任务，不表示完整
 Ngspice 支持。不要在这里提前引入完整 netlist IR、binary raw parser 或业务指标。
 
 ### `version.hpp`

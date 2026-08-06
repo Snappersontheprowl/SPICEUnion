@@ -27,6 +27,8 @@ constexpr const char* kNgspiceRcAcOutput = "rc_ac.out";
 constexpr const char* kNgspiceRcAcNetlist = "rc_ac.cir";
 constexpr const char* kNgspiceRcTranOutput = "rc_tran.out";
 constexpr const char* kNgspiceRcTranNetlist = "rc_tran.cir";
+constexpr const char* kNgspiceResistorDividerDcOutput = "resistor_divider_dc.out";
+constexpr const char* kNgspiceResistorDividerDcNetlist = "resistor_divider_dc.cir";
 constexpr const char* kDefaultNgspiceLog = "ngspice.log";
 
 bool make_directories(const std::string& path) {
@@ -302,6 +304,54 @@ su::TaskResult run_rc_tran_task(const std::string& executable, const std::string
   return su::TaskResult::success(work_dir, detail.str());
 }
 
+su::TaskResult run_resistor_divider_dc_task(const std::string& executable,
+                                            const std::string& work_dir,
+                                            const su::ParameterState& state,
+                                            std::chrono::seconds timeout) {
+  const auto config = su::ngspice_resistor_divider_dc_config_from_state(state);
+  const auto netlist_path = join_path_local(work_dir, kNgspiceResistorDividerDcNetlist);
+  const auto output_path = join_path_local(work_dir, kNgspiceResistorDividerDcOutput);
+  const auto log_path = join_path_local(work_dir, kDefaultNgspiceLog);
+
+  try {
+    const auto netlist =
+        su::render_ngspice_resistor_divider_dc_netlist(config, kNgspiceResistorDividerDcOutput);
+    if (!write_text_file(netlist_path, netlist)) {
+      return su::TaskResult::failure(su::TaskStatus::kTransportFailure, work_dir,
+                                     "failed to write Ngspice netlist: " + netlist_path);
+    }
+  } catch (const std::exception& error) {
+    return su::TaskResult::failure(su::TaskStatus::kException, work_dir, error.what());
+  }
+
+  const auto process =
+      run_ngspice_batch(executable, work_dir, kNgspiceResistorDividerDcNetlist, log_path, timeout);
+  if (process.timed_out) {
+    return su::TaskResult::failure(su::TaskStatus::kTimeout, work_dir, process.error_message);
+  }
+  if (process.exit_code == 126 || process.exit_code == 127) {
+    return su::TaskResult::failure(su::TaskStatus::kStartupFailed, work_dir,
+                                   "failed to execute ngspice; log=" + read_file_excerpt(log_path),
+                                   process.exit_code);
+  }
+  if (process.exit_code != 0) {
+    return su::TaskResult::failure(
+        su::TaskStatus::kSimulationFailed, work_dir,
+        "ngspice exited with non-zero status; log=" + read_file_excerpt(log_path),
+        process.exit_code);
+  }
+
+  const auto sweep = su::read_ngspice_wrdata_dc_sweep(output_path, "Vin", "v(out)");
+  if (!sweep.ok()) {
+    return su::TaskResult::failure(su::TaskStatus::kSimulationFailed, work_dir,
+                                   sweep.error_message);
+  }
+
+  std::ostringstream detail;
+  detail << "ngspice_dc_output=" << output_path << ";samples=" << sweep.value.size();
+  return su::TaskResult::success(work_dir, detail.str());
+}
+
 }  // namespace
 
 namespace su {
@@ -324,6 +374,19 @@ NgspiceRcTranConfig ngspice_rc_tran_config_from_state(const ParameterState& stat
   config.input_voltage_v = state_value_or(state, "input_voltage_v", config.input_voltage_v);
   config.step_s = state_value_or(state, "tran_step_s", config.step_s);
   config.stop_s = state_value_or(state, "tran_stop_s", config.stop_s);
+  return config;
+}
+
+NgspiceResistorDividerDcConfig ngspice_resistor_divider_dc_config_from_state(
+    const ParameterState& state) {
+  NgspiceResistorDividerDcConfig config;
+  config.top_resistance_ohm =
+      state_value_or(state, "top_resistance_ohm", config.top_resistance_ohm);
+  config.bottom_resistance_ohm =
+      state_value_or(state, "bottom_resistance_ohm", config.bottom_resistance_ohm);
+  config.sweep_start_v = state_value_or(state, "dc_start_v", config.sweep_start_v);
+  config.sweep_stop_v = state_value_or(state, "dc_stop_v", config.sweep_stop_v);
+  config.sweep_step_v = state_value_or(state, "dc_step_v", config.sweep_step_v);
   return config;
 }
 
@@ -394,6 +457,47 @@ std::string render_ngspice_rc_tran_netlist(const NgspiceRcTranConfig& config,
           << "set filetype=ascii\n"
           << "tran " << format_spice_double(config.step_s) << " "
           << format_spice_double(config.stop_s) << " uic\n"
+          << "wrdata " << output_filename << " v(out)\n"
+          << "quit\n"
+          << ".endc\n"
+          << ".end\n";
+  return netlist.str();
+}
+
+std::string render_ngspice_resistor_divider_dc_netlist(const NgspiceResistorDividerDcConfig& config,
+                                                       const std::string& output_filename) {
+  if (!is_positive_finite(config.top_resistance_ohm)) {
+    throw std::invalid_argument("top_resistance_ohm must be positive");
+  }
+  if (!is_positive_finite(config.bottom_resistance_ohm)) {
+    throw std::invalid_argument("bottom_resistance_ohm must be positive");
+  }
+  if (!is_finite(config.sweep_start_v)) {
+    throw std::invalid_argument("dc_start_v must be finite");
+  }
+  if (!is_finite(config.sweep_stop_v)) {
+    throw std::invalid_argument("dc_stop_v must be finite");
+  }
+  if (!is_positive_finite(config.sweep_step_v)) {
+    throw std::invalid_argument("dc_step_v must be positive");
+  }
+  if (config.sweep_stop_v <= config.sweep_start_v) {
+    throw std::invalid_argument("dc_stop_v must be greater than dc_start_v");
+  }
+  if (output_filename.empty()) {
+    throw std::invalid_argument("output_filename must not be empty");
+  }
+
+  std::ostringstream netlist;
+  netlist << "* SPICEUnion Ngspice resistor divider DC sweep fixture\n"
+          << "Vin in 0 dc 0\n"
+          << "Rtop in out " << format_spice_double(config.top_resistance_ohm) << "\n"
+          << "Rbottom out 0 " << format_spice_double(config.bottom_resistance_ohm) << "\n"
+          << ".control\n"
+          << "set filetype=ascii\n"
+          << "dc Vin " << format_spice_double(config.sweep_start_v) << " "
+          << format_spice_double(config.sweep_stop_v) << " "
+          << format_spice_double(config.sweep_step_v) << "\n"
           << "wrdata " << output_filename << " v(out)\n"
           << "quit\n"
           << ".endc\n"
@@ -509,6 +613,64 @@ ReadResult<TranWaveform> read_ngspice_wrdata_tran_waveform(const std::string& da
   return ReadResult<TranWaveform>::success(std::move(waveform));
 }
 
+ReadResult<DcSweep> read_ngspice_wrdata_dc_sweep(const std::string& data_path,
+                                                 const std::string& sweep_name,
+                                                 const std::string& signal_name) {
+  if (data_path.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput, "data_path must not be empty");
+  }
+  if (sweep_name.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "sweep_name must not be empty");
+  }
+  if (signal_name.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "signal_name must not be empty");
+  }
+
+  std::ifstream input(data_path);
+  if (!input) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kFileNotFound,
+                                        "ngspice wrdata file was not found: " + data_path);
+  }
+
+  DcSweep sweep;
+  sweep.sweep_name = sweep_name;
+  sweep.signal = signal_name;
+
+  std::string line;
+  std::size_t line_number = 0;
+  while (std::getline(input, line)) {
+    ++line_number;
+    if (line.empty()) {
+      continue;
+    }
+
+    std::istringstream parser(line);
+    double sweep_value = 0.0;
+    double value = 0.0;
+    std::string extra;
+    if (!(parser >> sweep_value >> value) || (parser >> extra)) {
+      return ReadResult<DcSweep>::failure(
+          ResultStatus::kParseError,
+          "failed to parse ngspice wrdata DC line " + std::to_string(line_number));
+    }
+
+    sweep.sweep_values.push_back(sweep_value);
+    sweep.values.push_back(value);
+  }
+
+  if (sweep.sweep_values.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kParseError,
+                                        "ngspice wrdata DC file has no samples: " + data_path);
+  }
+  if (!sweep.shape_consistent()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kParseError,
+                                        "ngspice DC vectors have inconsistent lengths");
+  }
+  return ReadResult<DcSweep>::success(std::move(sweep));
+}
+
 NgspiceSession::NgspiceSession(std::size_t worker_id, EvaluatorOptions options,
                                std::string work_dir, NgspiceBuiltinTask task)
     : worker_id_(worker_id),
@@ -546,6 +708,8 @@ TaskResult NgspiceSession::run(const ParameterState& state, std::chrono::seconds
       return run_rc_ac_task(ngspice_executable_, work_dir_, state, timeout);
     case NgspiceBuiltinTask::kRcTran:
       return run_rc_tran_task(ngspice_executable_, work_dir_, state, timeout);
+    case NgspiceBuiltinTask::kResistorDividerDc:
+      return run_resistor_divider_dc_task(ngspice_executable_, work_dir_, state, timeout);
   }
 
   return TaskResult::failure(TaskStatus::kException, work_dir_, "unknown Ngspice builtin task");
