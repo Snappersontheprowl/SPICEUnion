@@ -125,9 +125,10 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 ~/my_lab/projects/OrderedConcurrentPool
 ```
 
-当前装配的 `OrderedConcurrentPool` 是本机 sibling 独立项目，已具备 MIT license、
-`CHANGELOG.md`、最小 benchmark、CMake install/export package 与本地 `v0.1.0`
-tag。SPICEUnion 默认仍通过 source tree 装配，不复制维护池源码。
+当前装配的 `OrderedConcurrentPool` 是 sibling 独立项目，已具备 MIT license、
+`CHANGELOG.md`、最小 benchmark、CMake install/export package，并已将 `main`
+与 `v0.1.0` tag 发布到 `origin`。SPICEUnion 默认仍通过 source tree 装配，
+不复制维护池源码。
 
 可通过 CMake cache 变量覆盖：
 

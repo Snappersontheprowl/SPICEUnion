@@ -12,8 +12,8 @@
 - 独立 `OrderedConcurrentPool` 项目已创建；
 - SPICEUnion 内部通用池副本已删除；
 - `OrderedConcurrentPool` 已具备 MIT license、`CHANGELOG.md`、最小 benchmark、
-  CMake install/export package 与本地 `v0.1.0` tag；
-- 当前没有配置远程仓库，因此本次“发布”收口为本地 release-ready，不包含远程 push。
+  CMake install/export package；
+- `OrderedConcurrentPool` 的 `main` 与 `v0.1.0` tag 已发布到 `origin`。
 
 ## 1. 目标
 
@@ -66,7 +66,7 @@ SPICEUnion Evaluator
 - license 已明确为 MIT；
 - 已补 `CHANGELOG.md`；
 - 已补最小 benchmark target；
-- 已形成本地 `v0.1.0` release 口径；
+- 已形成 `v0.1.0` release 口径；
 - 已验证 build / test / benchmark / install。
 
 ## 3. 职责边界
@@ -580,7 +580,7 @@ SPICEUnion 侧建议变化：
 - README 使用限制；
 - minimal benchmark：`benchmarks/ordered_pool_benchmark.cpp`；
 - benchmark CMake 开关：`ORDERED_CONCURRENT_POOL_BUILD_BENCHMARKS`；
-- 本地 git tag：`v0.1.0`。
+- git tag：`v0.1.0`，已发布到 `origin`。
 
 完成定义：
 
@@ -688,12 +688,11 @@ M3.5 已收口。
 - `OrderedConcurrentPool` 已从 SPICEUnion 内部实现演进为 sibling 独立项目；
 - SPICEUnion 默认通过 source tree 装配该独立项目；
 - 独立项目已有 MIT license、README、CHANGELOG、示例、测试、benchmark、install/export
-  package 与本地 `v0.1.0` tag；
-- 当前没有配置远程仓库，因此没有执行远程发布或 push。
+  package；
+- 独立项目的 `main` 与 `v0.1.0` tag 已发布到 `origin`。
 
 后续若继续推进，需要新的明确目标：
 
-- 如果要对外发布：先配置远程仓库，再 push `main` 与 `v0.1.0` tag；
 - 如果要进入工程化发布：增加 CI sanitizer / package consumer smoke test；
 - 如果回到 SPICEUnion 主线：继续评估 M3 收敛任务或进入 M4 C ABI / Python binding。
 
