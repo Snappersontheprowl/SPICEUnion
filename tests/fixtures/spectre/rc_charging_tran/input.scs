@@ -1,0 +1,10 @@
+simulator lang=spectre
+
+parameters r=1k c=1p vin=1 stop=10n maxstep=10p
+
+Vin (in 0) vsource dc=vin
+R1 (in out) resistor r=r
+C1 (out 0) capacitor c=c ic=0
+
+tran tran stop=stop maxstep=maxstep skipdc=yes
+save out

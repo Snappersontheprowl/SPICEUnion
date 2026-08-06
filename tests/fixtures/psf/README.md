@@ -15,6 +15,7 @@ interactive session、PDK、license 或 netlist 生成流程。
 | `spectre_rc_lowpass_ac.raw/` | `ac.ac` | `tests/fixtures/spectre/rc_lowpass_ac/input.scs`，由本机 Spectre 23.1 batch 生成 | M3.2 Spectre / Ngspice 同类 RC AC 语义对照 | `out` 为一阶 RC low-pass 响应，`R=1kΩ`，`C=1pF`，`fc≈159.154943MHz` |
 | `spectre_materials_stb_loop_gain.raw/` | `stb.stb` | `spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/stb.stb` | STB / 频域 swept complex response 读取 | `freq[0] = 1`，`freq[1]≈1.12202`，`loopGain[0]≈(-287890, 26932.1)`，共 201 点 |
 | `tran_time_sweep.raw/` | `tran.tran` | `henjo/libpsf` 上游 `examples/data/timeSweep` | 普通 time-sweep transient waveform 读取 | `INN` 共 323 点，`time[0] = 0`，`INN[0] = 0.6` |
+| `spectre_rc_charging_tran.raw/` | `tran.tran.tran` | `tests/fixtures/spectre/rc_charging_tran/input.scs`，由本机 Spectre 23.1 batch 生成 | M3.3 Spectre / Ngspice 同类 RC TRAN 语义对照 | `out` 为一阶 RC charging 响应，`R=1kΩ`，`C=1pF`，`τ=1ns`，`v(τ)≈0.632V` |
 | `spectre_materials_psfxl_tran.raw/` | `tran.tran.tran` + `.psfxl` + `.sig` | `spectre_materials/local/runtime/amp_tran_input_20260804_1435/input.raw` | Spectre 23.1 PSFXL transient 边界样本 | 当前 `henjo/libpsf` backend 明确返回 `kUnsupportedFormat` |
 
 ## 当前缺口

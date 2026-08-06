@@ -16,6 +16,8 @@
   接入、内置任务选择、TRAN 输出解析、AC/TRAN 语义检查与当前边界。
 - `M3.2-Spectre与Ngspice同类AC语义对照.md`：M3.2 Spectre RC low-pass AC
   fixture、公共 RC 语义测试 helper、Spectre/Ngspice 同类 AC ResultIR 复用结论。
+- `M3.3-Spectre与Ngspice同类TRAN语义对照.md`：M3.3 Spectre RC charging
+  TRAN fixture、普通 transient PSF 读取、Spectre/Ngspice 同类 TRAN ResultIR 复用结论。
 - `开发路线图.md`：实现路线图，包含阶段任务、预期文件产出、测试产出、完成定义、
   非目标与建议 commit 边界。
 - `简历亮点解析.md`：基于开发计划整理的面试叙事与简历定位。

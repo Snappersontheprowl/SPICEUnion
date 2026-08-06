@@ -62,7 +62,9 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 该测试默认尝试使用 `local/external/libpsf/install` 中的 `henjo/libpsf`，并读取
 `tests/fixtures/psf/` 中已提交的小型 PSF fixture。启用 libpsf 后还会运行
 `spiceunion_simulation_semantics_test`，验证 Spectre RC low-pass AC fixture 读出的
-`AcResponse` 满足与 Ngspice RC AC 相同的 -3 dB 频率语义。libpsf 本身仍不属于默认 CI 契约。
+`AcResponse` 满足与 Ngspice RC AC 相同的 -3 dB 频率语义，并验证 Spectre RC
+charging TRAN fixture 读出的 `TranWaveform` 满足与 Ngspice RC TRAN 相同的 `τ` / `5τ`
+充电曲线语义。libpsf 本身仍不属于默认 CI 契约。
 
 外部测试当前覆盖：
 

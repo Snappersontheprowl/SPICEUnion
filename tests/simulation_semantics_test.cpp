@@ -25,3 +25,23 @@ TEST(RcAcSemanticContractTest, SpectreRcLowpassAcFixtureUsesCommonAcResponseSema
   EXPECT_EQ(result.status, su::ResultStatus::kUnsupportedFormat);
 #endif
 }
+
+TEST(RcTranSemanticContractTest, SpectreRcChargingTranFixtureUsesCommonTranWaveformSemantics) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_rc_charging_tran.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "tran.tran.tran")) << fixture;
+
+#if SPICEUNION_ENABLE_LIBPSF_READER
+  const auto result = su::read_tran_waveform(fixture.string(), "out", "tran.tran.tran");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.signal, "out");
+  spiceunion_test::expect_rc_charging_tran_semantics(result.value, 1000.0, 1.0e-12, 1.0);
+#else
+  const auto result = su::read_tran_waveform(fixture.string(), "out", "tran.tran.tran");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kUnsupportedFormat);
+#endif
+}
