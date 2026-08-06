@@ -71,7 +71,6 @@ ParameterState batch
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备；
 - Xyce / Hspice backend。
 
 ## 仓库结构
@@ -125,6 +124,10 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 ```text
 ~/my_lab/projects/OrderedConcurrentPool
 ```
+
+当前装配的 `OrderedConcurrentPool` 是本机 sibling 独立项目，已具备 MIT license、
+`CHANGELOG.md`、最小 benchmark、CMake install/export package 与本地 `v0.1.0`
+tag。SPICEUnion 默认仍通过 source tree 装配，不复制维护池源码。
 
 可通过 CMake cache 变量覆盖：
 

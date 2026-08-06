@@ -136,6 +136,7 @@ tests/
 | M3.5.3 | default / external / libpsf 验证与边界检查已完成 |
 | M3.5.4 | 独立 `OrderedConcurrentPool` 项目已创建并通过独立验证 |
 | M3.5.5 | SPICEUnion 已装配外部 `OrderedConcurrentPool` 项目并移除内部副本 |
+| M3.5.6 | `OrderedConcurrentPool` MIT license、CHANGELOG、benchmark、本地 `v0.1.0` tag 已完成 |
 
 详细事实状态见：
 
@@ -199,11 +200,11 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - `OrderedConcurrentPool` 头文件边界检查；
 - 独立 `OrderedConcurrentPool` 项目；
 - 独立 CMake package；
-- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配。
-
-未完成：
-
-- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备。
+- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配；
+- MIT license；
+- `CHANGELOG.md`；
+- 最小 benchmark target；
+- 本地 `v0.1.0` release tag。
 
 详细阶段路线见：
 
@@ -235,5 +236,4 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备；
 - Xyce / Hspice backend。

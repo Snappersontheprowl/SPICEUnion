@@ -6,12 +6,14 @@
 
 当前结论：
 
-- M3.5.0-M3.5.5 已完成；
+- M3.5.0-M3.5.6 已完成；
 - SPICEUnion 已装配外部 `OrderedConcurrentPool` 项目；
 - `SimulatorPool` 已改为 adapter；
 - 独立 `OrderedConcurrentPool` 项目已创建；
 - SPICEUnion 内部通用池副本已删除；
-- 下一步是 M3.5.6：明确许可证、benchmark 与发布准备。
+- `OrderedConcurrentPool` 已具备 MIT license、`CHANGELOG.md`、最小 benchmark、
+  CMake install/export package 与本地 `v0.1.0` tag；
+- 当前没有配置远程仓库，因此本次“发布”收口为本地 release-ready，不包含远程 push。
 
 ## 1. 目标
 
@@ -59,11 +61,13 @@ SPICEUnion Evaluator
 - startup 失败时调用 `shutdown_all()` 清理；
 - 析构时调用 `shutdown_all()`。
 
-尚未完成的发布条件：
+已完成的发布条件：
 
-- `OrderedConcurrentPool` 尚未明确开源许可证；
-- 尚未补 benchmark；
-- 尚未形成发布口径。
+- license 已明确为 MIT；
+- 已补 `CHANGELOG.md`；
+- 已补最小 benchmark target；
+- 已形成本地 `v0.1.0` release 口径；
+- 已验证 build / test / benchmark / install。
 
 ## 3. 职责边界
 
@@ -461,7 +465,7 @@ README 应说明：
 - 示例：`examples/basic_batch.cpp`；
 - CMake target：`ocp::ordered_concurrent_pool`；
 - 安装导出：`OrderedConcurrentPoolConfig.cmake` 与 `OrderedConcurrentPoolTargets.cmake`；
-- license 状态：尚未指定开源许可证。
+- license：MIT。
 
 已记录验证：
 
@@ -487,12 +491,15 @@ ctest --test-dir build-clean --output-on-failure
 cmake --install build-clean --prefix /tmp/ocp_install_...
 ```
 
-安装产物只包含：
+安装产物包含：
 
 - `include/ocp/ordered_concurrent_pool.hpp`；
 - `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolConfig.cmake`；
 - `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolConfigVersion.cmake`；
-- `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolTargets.cmake`。
+- `lib64/cmake/OrderedConcurrentPool/OrderedConcurrentPoolTargets.cmake`；
+- `share/doc/OrderedConcurrentPool/LICENSE`；
+- `share/doc/OrderedConcurrentPool/README.md`；
+- `share/doc/OrderedConcurrentPool/CHANGELOG.md`。
 
 ### M3.5.5 SPICEUnion 装配独立项目
 
@@ -557,26 +564,62 @@ SPICEUnion 侧建议变化：
 
 ### M3.5.6 发布准备
 
+状态：已完成。
+
 目标：
 
 - 让 OrderedConcurrentPool 具备长期维护形态。
 
-建议产出：
+已完成产出：
 
-- 版本号；
-- changelog；
+- 版本号：`v0.1.0`；
+- license：MIT；
+- `CHANGELOG.md`；
 - install/export CMake；
-- license 明确；
-- API stability note；
-- minimal benchmark；
-- sanitizer CI；
-- README 使用限制。
+- install docs：`LICENSE`、`README.md`、`CHANGELOG.md`；
+- README 使用限制；
+- minimal benchmark：`benchmarks/ordered_pool_benchmark.cpp`；
+- benchmark CMake 开关：`ORDERED_CONCURRENT_POOL_BUILD_BENCHMARKS`；
+- 本地 git tag：`v0.1.0`。
 
 完成定义：
 
 - 可被第三方 CMake 项目消费；
 - SPICEUnion 可作为真实使用案例；
 - 文档不包含未验证性能结论。
+
+已记录验证：
+
+```bash
+cd ~/my_lab/projects/OrderedConcurrentPool
+cmake -S . -B build-release-check -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build-release-check
+ctest --test-dir build-release-check --output-on-failure
+```
+
+```text
+100% tests passed, 0 tests failed out of 8
+```
+
+benchmark 验证：
+
+```bash
+cmake -S . -B build-benchmark \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DORDERED_CONCURRENT_POOL_BUILD_TESTS=OFF \
+  -DORDERED_CONCURRENT_POOL_BUILD_EXAMPLES=OFF \
+  -DORDERED_CONCURRENT_POOL_BUILD_BENCHMARKS=ON
+cmake --build build-benchmark
+./build-benchmark/ordered_concurrent_pool_benchmark
+```
+
+benchmark 输出为 CSV，只用于本机回归观察，不作为跨机器性能承诺。
+
+install 验证：
+
+```bash
+cmake --install build-release-check --prefix /tmp/ocp_release_install_...
+```
 
 ## 7. 建议提交边界
 
@@ -636,24 +679,26 @@ SPICEUnion 侧建议变化：
 | 独立仓库后双份代码漂移 | SPICEUnion 只装配独立项目，不复制维护 |
 | 构建配置复杂化 | 先用 source dir option，稳定后再做 package install |
 
-## 10. 当前最推荐的下一步
+## 10. 当前状态与后续边界
 
-如果继续执行 M3.5，下一步应做：
+M3.5 已收口。
 
-```text
-M3.5.6：明确 OrderedConcurrentPool 许可证、benchmark 与发布准备。
-```
+当前事实：
 
-理由：
+- `OrderedConcurrentPool` 已从 SPICEUnion 内部实现演进为 sibling 独立项目；
+- SPICEUnion 默认通过 source tree 装配该独立项目；
+- 独立项目已有 MIT license、README、CHANGELOG、示例、测试、benchmark、install/export
+  package 与本地 `v0.1.0` tag；
+- 当前没有配置远程仓库，因此没有执行远程发布或 push。
 
-- 独立项目已经可以独立构建、测试和安装；
-- SPICEUnion 已经通过外部 target 装配；
-- 内部通用池副本已删除；
-- 当前还不能对外宣称已完成开源发布或性能基准。
+后续若继续推进，需要新的明确目标：
 
-当前不建议立刻做：
+- 如果要对外发布：先配置远程仓库，再 push `main` 与 `v0.1.0` tag；
+- 如果要进入工程化发布：增加 CI sanitizer / package consumer smoke test；
+- 如果回到 SPICEUnion 主线：继续评估 M3 收敛任务或进入 M4 C ABI / Python binding。
 
-- 在许可证未明确前公开分发；
-- 在 benchmark 未实测前写性能数字；
+当前仍不建议提前做：
+
 - 直接把 `TaskResult` 泛化成复杂 result wrapper；
-- 提前设计动态扩缩容、取消、重试、优先级。
+- 提前设计动态扩缩容、取消、重试、优先级；
+- 在没有跨机器、跨负载实测前，把 benchmark 数字写成性能承诺。
