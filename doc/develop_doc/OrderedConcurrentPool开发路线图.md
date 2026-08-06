@@ -12,7 +12,7 @@
 - 独立 `OrderedConcurrentPool` 项目已创建；
 - SPICEUnion 内部通用池副本已删除；
 - `OrderedConcurrentPool` 已具备 MIT license、`CHANGELOG.md`、最小 benchmark、
-  CMake install/export package；
+  CMake install/export package 与 GitHub Actions CI；
 - `OrderedConcurrentPool` 的 `main` 与 `v0.1.0` tag 已发布到 `origin`。
 
 ## 1. 目标
@@ -67,7 +67,8 @@ SPICEUnion Evaluator
 - 已补 `CHANGELOG.md`；
 - 已补最小 benchmark target；
 - 已形成 `v0.1.0` release 口径；
-- 已验证 build / test / benchmark / install。
+- 已验证 build / test / benchmark / install；
+- 已增加 GitHub Actions CI，首轮运行通过。
 
 ## 3. 职责边界
 
@@ -580,6 +581,7 @@ SPICEUnion 侧建议变化：
 - README 使用限制；
 - minimal benchmark：`benchmarks/ordered_pool_benchmark.cpp`；
 - benchmark CMake 开关：`ORDERED_CONCURRENT_POOL_BUILD_BENCHMARKS`；
+- GitHub Actions CI：Release build/test、install consumer、ASan、TSan；
 - git tag：`v0.1.0`，已发布到 `origin`。
 
 完成定义：
@@ -620,6 +622,12 @@ install 验证：
 ```bash
 cmake --install build-release-check --prefix /tmp/ocp_release_install_...
 ```
+
+GitHub Actions 首轮验证：
+
+| Run | Commit | 结果 |
+|---|---|---|
+| `31111814593` | `0524272` | Release build/test、install consumer、ASan、TSan 均通过 |
 
 ## 7. 建议提交边界
 
@@ -688,12 +696,13 @@ M3.5 已收口。
 - `OrderedConcurrentPool` 已从 SPICEUnion 内部实现演进为 sibling 独立项目；
 - SPICEUnion 默认通过 source tree 装配该独立项目；
 - 独立项目已有 MIT license、README、CHANGELOG、示例、测试、benchmark、install/export
-  package；
+  package 与 GitHub Actions CI；
 - 独立项目的 `main` 与 `v0.1.0` tag 已发布到 `origin`。
 
 后续若继续推进，需要新的明确目标：
 
-- 如果要进入工程化发布：增加 CI sanitizer / package consumer smoke test；
+- 如果要进入更完整工程化发布：增加多编译器矩阵、package consumer release smoke test
+  和可选 release artifact；
 - 如果回到 SPICEUnion 主线：继续评估 M3 收敛任务或进入 M4 C ABI / Python binding。
 
 当前仍不建议提前做：

@@ -136,7 +136,7 @@ tests/
 | M3.5.3 | default / external / libpsf 验证与边界检查已完成 |
 | M3.5.4 | 独立 `OrderedConcurrentPool` 项目已创建并通过独立验证 |
 | M3.5.5 | SPICEUnion 已装配外部 `OrderedConcurrentPool` 项目并移除内部副本 |
-| M3.5.6 | `OrderedConcurrentPool` MIT license、CHANGELOG、benchmark、`v0.1.0` 发布已完成 |
+| M3.5.6 | `OrderedConcurrentPool` MIT license、CHANGELOG、benchmark、CI、`v0.1.0` 发布已完成 |
 
 详细事实状态见：
 
@@ -204,6 +204,7 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - MIT license；
 - `CHANGELOG.md`；
 - 最小 benchmark target；
+- GitHub Actions CI；
 - `v0.1.0` release tag 已发布到 `origin`。
 
 详细阶段路线见：
