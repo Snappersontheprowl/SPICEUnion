@@ -54,6 +54,7 @@ ParameterState batch
 - `doc/develop_doc/当前事实状态.md`
 - `doc/develop_doc/CPP版本开发计划书.md`
 - `doc/develop_doc/开发路线图.md`
+- `doc/develop_doc/简历亮点解析.md`
 
 ## 当前边界
 
