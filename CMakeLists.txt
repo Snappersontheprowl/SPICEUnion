@@ -13,6 +13,27 @@ option(SPICEUNION_ENABLE_LIBPSF_READER "Enable optional henjo/libpsf PSF result 
 
 set(SPICEUNION_LIBPSF_INCLUDE_DIR "" CACHE PATH "Directory that contains henjo/libpsf psf.h")
 set(SPICEUNION_LIBPSF_LIBRARY "" CACHE FILEPATH "Path to henjo/libpsf library")
+set(SPICEUNION_ORDERED_POOL_SOURCE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../OrderedConcurrentPool"
+    CACHE PATH
+    "Path to the standalone OrderedConcurrentPool project"
+)
+
+if(NOT EXISTS "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}/CMakeLists.txt")
+  message(FATAL_ERROR
+    "SPICEUNION_ORDERED_POOL_SOURCE_DIR must point to the standalone "
+    "OrderedConcurrentPool project. Current value: ${SPICEUNION_ORDERED_POOL_SOURCE_DIR}"
+  )
+endif()
+
+set(ORDERED_CONCURRENT_POOL_BUILD_TESTS OFF CACHE BOOL
+    "Build OrderedConcurrentPool tests when embedded by SPICEUnion" FORCE)
+set(ORDERED_CONCURRENT_POOL_BUILD_EXAMPLES OFF CACHE BOOL
+    "Build OrderedConcurrentPool examples when embedded by SPICEUnion" FORCE)
+add_subdirectory(
+  "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}"
+  "${CMAKE_BINARY_DIR}/_deps/ordered_concurrent_pool"
+)
 
 if(SPICEUNION_ENABLE_LIBPSF_READER)
   if(SPICEUNION_LIBPSF_INCLUDE_DIR)
@@ -85,6 +106,11 @@ target_compile_options(spiceunion_core PRIVATE
   $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
 )
 
+target_link_libraries(spiceunion_core
+  PRIVATE
+    ocp::ordered_concurrent_pool
+)
+
 if(SPICEUNION_ENABLE_LIBPSF_READER)
   target_compile_definitions(spiceunion_core
     PRIVATE
@@ -150,13 +176,9 @@ if(SPICEUNION_BUILD_TESTS)
     tests/ordered_concurrent_pool_test.cpp
   )
 
-  target_include_directories(spiceunion_ordered_concurrent_pool_test
-    PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-
   target_link_libraries(spiceunion_ordered_concurrent_pool_test
     PRIVATE
+      ocp::ordered_concurrent_pool
       GTest::gtest_main
   )
 

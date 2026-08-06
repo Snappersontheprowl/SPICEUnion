@@ -19,7 +19,7 @@
 - [ ] evaluator C ABI 所有权草案。
 - [ ] libpsf backend 产品化分发与 license notice。
 - [ ] Xyce / Hspice 多仿真器扩展。
-- [ ] SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配，移除内部通用池副本。
+- [ ] `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备。
 
 ## 监控项
 

@@ -1,18 +1,22 @@
 # src/pool
 
-本目录存放有序 worker 调度核心与 SPICEUnion simulator pool adapter。
+本目录存放 SPICEUnion simulator pool adapter。
 
 ## 文件
 
-- `ordered_concurrent_pool.hpp`：领域无关的 C++17 有序并发池核心，位于 `ocp`
-  命名空间，只依赖 C++ 标准库。
 - `simulator_pool.hpp` / `simulator_pool.cpp`：SPICEUnion adapter，负责把
   `EvaluatorOptions`、`SessionFactory`、`ParameterState`、`TaskResult` 和
-  `SimulatorSession` 映射到 `OrderedConcurrentPool`。
+  `SimulatorSession` 映射到外部 `OrderedConcurrentPool`。
+
+`OrderedConcurrentPool` 源码位于：
+
+```text
+~/my_lab/projects/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp
+```
 
 ## 边界
 
-`OrderedConcurrentPool` 负责：
+外部 `OrderedConcurrentPool` 负责：
 
 - 固定数量 worker 生命周期；
 - idle-worker dispatch；

@@ -89,7 +89,7 @@ include/su/
 
 src/
   core/                 evaluator 实现
-  pool/                 OrderedConcurrentPool 通用池核心与 SimulatorPool adapter
+  pool/                 SimulatorPool adapter
   session/              Spectre / Ngspice backend 实现
   parse/                Result helper 与可选 libpsf backend
 
@@ -135,6 +135,7 @@ tests/
 | M3.5.2 | `SimulatorPool` 已改为 `OrderedConcurrentPool` adapter |
 | M3.5.3 | default / external / libpsf 验证与边界检查已完成 |
 | M3.5.4 | 独立 `OrderedConcurrentPool` 项目已创建并通过独立验证 |
+| M3.5.5 | SPICEUnion 已装配外部 `OrderedConcurrentPool` 项目并移除内部副本 |
 
 详细事实状态见：
 
@@ -192,16 +193,17 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 已完成：
 
 - `SimulatorPool` 行为契约测试；
-- SPICEUnion 内部领域无关 `OrderedConcurrentPool` 核心；
+- 领域无关 `OrderedConcurrentPool` 核心抽出；
 - `SimulatorPool` adapter；
 - default / external / libpsf 验证；
-- `OrderedConcurrentPool` 头文件边界检查。
+- `OrderedConcurrentPool` 头文件边界检查；
 - 独立 `OrderedConcurrentPool` 项目；
 - 独立 CMake package；
+- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配。
 
 未完成：
 
-- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配。
+- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备。
 
 详细阶段路线见：
 
@@ -233,5 +235,5 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配；
+- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备；
 - Xyce / Hspice backend。

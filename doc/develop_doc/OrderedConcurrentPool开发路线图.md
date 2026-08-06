@@ -6,11 +6,12 @@
 
 当前结论：
 
-- M3.5.0-M3.5.3 已完成；
-- SPICEUnion 内部已有领域无关 `OrderedConcurrentPool` 核心；
+- M3.5.0-M3.5.5 已完成；
+- SPICEUnion 已装配外部 `OrderedConcurrentPool` 项目；
 - `SimulatorPool` 已改为 adapter；
 - 独立 `OrderedConcurrentPool` 项目已创建；
-- 下一步是 M3.5.5：让 SPICEUnion 装配外部项目，移除内部通用池副本。
+- SPICEUnion 内部通用池副本已删除；
+- 下一步是 M3.5.6：明确许可证、benchmark 与发布准备。
 
 ## 1. 目标
 
@@ -36,11 +37,13 @@ SPICEUnion Evaluator
 
 ## 2. 当前事实基础
 
-当前 SPICEUnion 已有内部实现：
+当前 SPICEUnion 装配方式：
 
-- `src/pool/ordered_concurrent_pool.hpp`
-- `src/pool/simulator_pool.hpp`
-- `src/pool/simulator_pool.cpp`
+- 外部项目路径：`~/my_lab/projects/OrderedConcurrentPool`；
+- 外部头文件：`include/ocp/ordered_concurrent_pool.hpp`；
+- CMake cache 变量：`SPICEUNION_ORDERED_POOL_SOURCE_DIR`；
+- CMake target：`ocp::ordered_concurrent_pool`；
+- SPICEUnion adapter：`src/pool/simulator_pool.hpp` / `src/pool/simulator_pool.cpp`。
 
 已具备的池行为：
 
@@ -56,10 +59,11 @@ SPICEUnion Evaluator
 - startup 失败时调用 `shutdown_all()` 清理；
 - 析构时调用 `shutdown_all()`。
 
-尚未完成的装配条件：
+尚未完成的发布条件：
 
-- SPICEUnion 仍使用内部通用池副本；
-- 尚未通过 CMake 装配外部 `OrderedConcurrentPool` 项目。
+- `OrderedConcurrentPool` 尚未明确开源许可证；
+- 尚未补 benchmark；
+- 尚未形成发布口径。
 
 ## 3. 职责边界
 
@@ -244,16 +248,22 @@ failure_handler(...) -> TaskResult::failure(...)
 - 暂不创建独立仓库；
 - 暂不改变 `Evaluator` 的公开行为。
 
-建议位置：
+阶段内建议位置：
 
 ```text
 src/pool/ordered_concurrent_pool.hpp
 ```
 
-当前实现为 header-only：
+M3.5.1 当时实现为 header-only：
 
 ```text
 src/pool/ordered_concurrent_pool.hpp
+```
+
+M3.5.5 后该内部副本已删除，当前源码位于：
+
+```text
+~/my_lab/projects/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp
 ```
 
 建议要求：
@@ -373,7 +383,7 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 已执行边界检查：
 
 ```bash
-rg -n "namespace su|su::|TaskResult|ParameterState|EvaluatorOptions|SimulatorSession|Spectre|Ngspice|PSF|raw|work_dir" src/pool/ordered_concurrent_pool.hpp
+rg -n "namespace su|su::|TaskResult|ParameterState|EvaluatorOptions|SimulatorSession|Spectre|Ngspice|PSF|raw|work_dir" ~/my_lab/projects/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp
 ```
 
 结果：无匹配。
@@ -486,6 +496,8 @@ cmake --install build-clean --prefix /tmp/ocp_install_...
 
 ### M3.5.5 SPICEUnion 装配独立项目
 
+状态：已完成。
+
 目标：
 
 - 让 SPICEUnion 使用独立项目，而不是维护自己的通用池副本。
@@ -525,6 +537,23 @@ SPICEUnion 侧建议变化：
 - 没有重复维护两套 pool core；
 - SPICEUnion 测试矩阵通过；
 - OrderedConcurrentPool 独立测试也通过。
+
+已完成事实：
+
+- SPICEUnion 通过 `SPICEUNION_ORDERED_POOL_SOURCE_DIR` 指向外部项目；
+- 默认路径为 `${CMAKE_CURRENT_SOURCE_DIR}/../OrderedConcurrentPool`；
+- `spiceunion_core` 链接 `ocp::ordered_concurrent_pool`；
+- `tests/ordered_concurrent_pool_test.cpp` 通过外部 target 验证池契约；
+- `src/pool/ordered_concurrent_pool.hpp` 内部副本已删除；
+- `SimulatorPool` include `ocp/ordered_concurrent_pool.hpp`。
+
+已记录验证：
+
+| 配置 | 结果 |
+|---|---|
+| default | `100% tests passed, 0 tests failed out of 80` |
+| external | `100% tests passed, 0 tests failed out of 80` |
+| libpsf | `100% tests passed, 0 tests failed out of 90` |
 
 ### M3.5.6 发布准备
 
@@ -612,16 +641,19 @@ SPICEUnion 侧建议变化：
 如果继续执行 M3.5，下一步应做：
 
 ```text
-M3.5.5：让 SPICEUnion 装配外部 OrderedConcurrentPool 项目，移除内部通用池副本。
+M3.5.6：明确 OrderedConcurrentPool 许可证、benchmark 与发布准备。
 ```
 
 理由：
 
 - 独立项目已经可以独立构建、测试和安装；
-- SPICEUnion 仍保留内部 `src/pool/ordered_concurrent_pool.hpp` 副本；
-- 若不进入 M3.5.5，会形成双份通用池代码漂移风险。
+- SPICEUnion 已经通过外部 target 装配；
+- 内部通用池副本已删除；
+- 当前还不能对外宣称已完成开源发布或性能基准。
 
 当前不建议立刻做：
 
+- 在许可证未明确前公开分发；
+- 在 benchmark 未实测前写性能数字；
 - 直接把 `TaskResult` 泛化成复杂 result wrapper；
 - 提前设计动态扩缩容、取消、重试、优先级。

@@ -26,7 +26,7 @@ ParameterState batch
 - per-task failure isolation；
 - Spectre interactive backend；
 - Ngspice batch backend；
-- 内部 `OrderedConcurrentPool` 通用池核心；
+- 外部 `OrderedConcurrentPool` 项目装配；
 - `SimulatorPool` adapter；
 - 最小 ResultIR；
 - 可选 libpsf backend；
@@ -71,7 +71,7 @@ ParameterState batch
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- SPICEUnion 通过外部 `OrderedConcurrentPool` 项目装配；
+- `OrderedConcurrentPool` 明确开源许可证、benchmark 与发布准备；
 - Xyce / Hspice backend。
 
 ## 仓库结构
@@ -79,7 +79,7 @@ ParameterState batch
 ```text
 include/su/      公开 C++ API
 src/core/        evaluator 与通用执行逻辑
-src/pool/        OrderedConcurrentPool 通用池核心与 SimulatorPool adapter
+src/pool/        SimulatorPool adapter
 src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
 tests/           GoogleTest 测试与 fixture
@@ -119,6 +119,18 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 ```
 
 ## 外部依赖
+
+默认构建需要 sibling source tree：
+
+```text
+~/my_lab/projects/OrderedConcurrentPool
+```
+
+可通过 CMake cache 变量覆盖：
+
+```text
+SPICEUNION_ORDERED_POOL_SOURCE_DIR
+```
 
 外部测试可能需要：
 

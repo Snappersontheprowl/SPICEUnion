@@ -6,8 +6,9 @@
 
 - Smoke tests 验证构建与链接路径。
 - Contract tests 使用 fake 或 scripted session 验证执行层行为。
-- Ordered pool tests 验证 `OrderedConcurrentPool` 的领域无关池语义，包括构造校验、
-  启动清理、保序返回、单任务异常转换、重复 shutdown 与 stress batch。
+- Ordered pool tests 通过外部 `ocp::ordered_concurrent_pool` target 验证
+  `OrderedConcurrentPool` 的领域无关池语义，包括构造校验、启动清理、保序返回、
+  单任务异常转换、重复 shutdown 与 stress batch。
 - Simulator pool contract tests 验证 `SimulatorPool` 作为 SPICEUnion adapter 后仍保持
   worker work directory、`TaskResult` 映射、保序与失败隔离语义。
 - Result tests 验证 M2 ResultIR、读取状态和公开 result_reader API 骨架。
