@@ -191,6 +191,10 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 - 保序、生命周期、故障隔离语义稳定；
 - 有独立测试价值。
 
+详细阶段路线见：
+
+- `doc/develop_doc/OrderedConcurrentPool开发路线图.md`
+
 ### 8.3 M4 C ABI / Python binding
 
 进入条件：
