@@ -49,9 +49,11 @@ ParameterState batch
 | Spectre | interactive handshake、参数写入、`(sclRun "all")`、completion 判断、PSF DC/AC/TRAN fixture 读取 |
 | Ngspice | batch-mode RC AC、RC TRAN、电阻分压 DC sweep |
 
-完整事实状态见：
+开发文档入口：
 
 - `doc/develop_doc/当前事实状态.md`
+- `doc/develop_doc/CPP版本开发计划书.md`
+- `doc/develop_doc/开发路线图.md`
 
 ## 当前边界
 
