@@ -6,7 +6,7 @@
 
 - 本目录下的程序默认不进入 `ctest`。
 - 允许依赖外部库、真实 Spectre 输出、PDK 或本机环境。
-- 验证结果用于开发决策和 spike 记录，不作为默认 CI 契约。
+- 验证结果用于开发决策，不作为默认 CI 契约。
 - 若某个人工验证工具成熟到可以稳定自动化，再移动到正式 `tests/` 并接入 CMake。
 
 ## 当前工具
@@ -16,7 +16,7 @@
 
 ## libpsf probe 本机示例
 
-若已按 M2 spike 记录在 `local/external/libpsf/` 中构建并安装 `henjo/libpsf`，可用：
+若本机已在 `local/external/libpsf/` 中构建并安装 `henjo/libpsf`，可用：
 
 ```bash
 g++ -std=c++17 tests/manual/libpsf_probe.cpp \
