@@ -53,11 +53,12 @@ ParameterState batch
 
 开发文档入口：
 
-- `doc/develop_doc/当前事实状态.md`
-- `doc/develop_doc/CPP版本开发计划书.md`
-- `doc/develop_doc/开发路线图.md`
-- `doc/develop_doc/OrderedConcurrentPool开发路线图.md`
-- `doc/develop_doc/简历亮点解析.md`
+- `doc/develop_doc/README.md`：开发文档索引与维护规则；
+- `doc/develop_doc/当前事实状态.md`：当前事实唯一总账；
+- `doc/develop_doc/CPP版本开发计划书.md`：项目章程；
+- `doc/develop_doc/开发路线图.md`：后续施工路线；
+- `doc/develop_doc/OrderedConcurrentPool开发路线图.md`：OCP 专项；
+- `doc/develop_doc/简历亮点解析.md`：对外表达材料。
 
 ## 当前边界
 
@@ -82,7 +83,7 @@ src/pool/        SimulatorPool adapter
 src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
 tests/           GoogleTest 测试与 fixture
-doc/develop_doc/ 当前开发事实状态
+doc/develop_doc/ 开发文档：事实、章程、路线、专题、表达
 doc/study_notes/ 可复用学习笔记
 ```
 
