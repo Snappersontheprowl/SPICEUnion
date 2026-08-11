@@ -10,23 +10,22 @@ SPICEUnion 是 C++17 仿真器执行与结果读取基础设施库，来源于
 `~/my_lab/projects/spectre_materials/src/spectre_interactive/` 中已有 Python 执行路径的
 C++ 化沉淀。
 
-主线收敛链路：
+核心链路：
 
 ```text
-netlist
-  -> simulator selection
-  -> simulator execution
-  -> result directory
-  -> result reader
-  -> typed result
+ParameterState batch
+  -> Evaluator
+  -> ordered worker pool
+  -> SimulatorSession
+  -> worker work directory
+  -> caller-owned result reading
+  -> ordered TaskResult list
 ```
 
 ## 2. 范围边界
 
 ### 范围内
 
-- 外部 netlist 执行入口；
-- 仿真器选择；
 - batch 参数状态执行；
 - worker 工作目录隔离；
 - 输入顺序保序返回；
@@ -46,11 +45,9 @@ netlist
 - GUI；
 - 分布式调度；
 - 完整 netlist IR；
-- SPICE 方言转换；
-- analysis / probe DSL；
-- MOS I-V / gm/Id 设计方法；
-- C ABI / Python / MATLAB binding；
-- Xyce / Hspice backend；
+- MATLAB binding。
+
+Hspice / Xyce backend 当前不在已完成范围内，是否进入后续阶段以真实需求为准。
 
 ## 3. 行为基线
 
@@ -76,7 +73,6 @@ netlist
 - 不用 `0.0`、空数组或 `None` 表达读取失败；
 - 不把任意 Python parser 回调塞进 C++ core；
 - 不把业务指标、目标函数或优化逻辑写进 SPICEUnion。
-- 不为假想场景提前设计完整输入 IR。
 
 ## 4. 架构边界
 
@@ -129,14 +125,17 @@ ResultIR 只表达仿真结果的最小公共结构，不承载业务指标、�
 | M2 | 已完成 | ResultIR、结果读取 helper、可选 libpsf backend |
 | M3 | 已完成基础闭环 | Ngspice AC / TRAN / DC sweep 与 Spectre / Ngspice AC、TRAN 对照 |
 | M3.5 | 已完成 | OrderedConcurrentPool 抽离、独立化、MIT 发布、CI |
-| 主线收敛 | 待评估 | 最小外部 netlist 执行入口、必要结果读取 fixture |
+| M4 | 暂缓 | C ABI / Python binding |
+| M5 | 暂缓 | 性能基准与发布形态 |
 
 当前阶段事实见 `当前事实状态.md`。下一步施工路线见 `开发路线图.md`。
 
 ## 7. 后续方向
 
-近期只保留一条方向：
+近期只保留三个方向：
 
-1. 主线收敛：支持最小外部 netlist 执行入口，并按真实输出补充必要结果读取 fixture。
+1. M3 收敛：评估 Spectre 侧 DC sweep 对照、MOS I-V / gm/Id 是否需要扩展 ResultIR。
+2. M4：在 C++ API 继续稳定后，设计 C ABI ownership，并做 Python binding 薄封装。
+3. M5：在有稳定 baseline 后建立可复现 benchmark，不把未实测性能数字写成完成事实。
 
-当前不推进完整 netlist IR、SPICE 方言转换、analysis / probe DSL、MOS I-V / gm/Id、optimizer、C ABI / Python binding、Xyce / Hspice backend 或 native PSF parser。
+不建议在没有真实消费者前扩展完整 netlist IR、动态调度框架、Xyce / Hspice backend 或 native PSF parser。

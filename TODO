@@ -2,10 +2,23 @@
 
 ## 当前活跃待办
 
-### 主线收敛
+### M3 后续收敛
 
-- [ ] 评估最小外部 netlist 执行入口：给定 netlist、选择仿真器、执行仿真、返回状态与结果目录。
-- [ ] 按真实 netlist 输出补充必要的结果读取 fixture；不为假想场景扩展 ResultIR。
+- [ ] 评估是否需要 Spectre 侧同类电阻分压 DC sweep fixture。
+- [ ] 若进入 MOS I-V / gm/Id 场景，再评估 `DcSweep` 是否需要扩展为多曲线结构。
+- [ ] 只有两个真实 backend 共同需要时，再扩展 `EvaluatorOptions` 或引入 netlist
+      模板接口。
+
+## 暂缓池
+
+- [ ] legacy sensitivity fixture、可信参考值与读取实现。
+- [ ] Spectre 23.1 PSFXL transient 的解析或转换路径评估。
+- [ ] C++ helper 与 Python helper 在失败语义上的有意差异集中记录。
+- [ ] 原生 PSF parser。
+- [ ] C ABI 稳定化与 pybind11 绑定。
+- [ ] evaluator C ABI 所有权草案。
+- [ ] libpsf backend 产品化分发与 license notice。
+- [ ] Xyce / Hspice 多仿真器扩展。
 
 ## 监控项
 
