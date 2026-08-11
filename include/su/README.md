@@ -77,8 +77,9 @@ optimizer decisions。
 - `calculate_ugbw_and_phase_margin(response)`：计算 UGBW / phase margin。
 - `calculate_settling_time(waveform, target_value, error_band)`：计算 settling time。
 
-M2.2 已实现 `.raw` 目录定位、AC 派生视图、UGBW / phase margin 和 settling time。
-dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文件不得暴露 libpsf 类型。
+当前 `.raw` 目录定位、AC 派生视图、UGBW / phase margin、settling time，以及基础
+DC / AC / TRAN 读取入口已实现。legacy sensitivity 当前保持 unsupported。该头文件不得暴露
+libpsf 类型。
 
 ### `session.hpp`
 
@@ -124,8 +125,8 @@ dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文�
 `Evaluator::run(states)` 返回与输入 states 等长且同序的结果向量。内部任务完成顺序可以不同，
 但结果放置顺序必须按提交 index 排列。
 
-C++ evaluator 返回 `TaskResult` 对象，而不是任意业务值。未来 Python binding 这类语言绑定层
-可以在收到成功的 `TaskResult` 后，再调用语言层 `parse_func(work_dir)`。
+C++ evaluator 返回 `TaskResult` 对象，而不是任意业务值。调用方在收到成功的
+`TaskResult` 后，可按 `work_dir` 自行读取需要的结果。
 
 ### `spectre_protocol.hpp`
 
@@ -214,7 +215,8 @@ Spectre interactive SKILL protocol 的格式化与完成状态分类 helper，�
 - 按 timeout、启动失败、仿真失败和 parse failure 返回 `TaskResult`。
 
 该模块是 M3 的第二仿真器 backend，当前只支持三个内置教学级 batch 任务，不表示完整
-Ngspice 支持。不要在这里提前引入完整 netlist IR、binary raw parser 或业务指标。
+Ngspice 支持。不要在这里提前引入完整 netlist IR、SPICE 方言转换、analysis/probe DSL、
+binary raw parser 或业务指标。
 
 ### `version.hpp`
 

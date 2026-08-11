@@ -70,8 +70,8 @@ ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
 #else
   (void)result_dir;
   (void)signal_name;
-  return ReadResult<ScalarResult>::failure(ResultStatus::kUnsupportedFormat,
-                                           "dcOp.dc reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+  return ReadResult<ScalarResult>::failure(
+      ResultStatus::kUnsupportedFormat, "dcOp.dc reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
 }
 
@@ -84,8 +84,8 @@ ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
   (void)result_dir;
   (void)signal_name;
   (void)filename;
-  return ReadResult<AcResponse>::failure(ResultStatus::kUnsupportedFormat,
-                                         "AC file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+  return ReadResult<AcResponse>::failure(
+      ResultStatus::kUnsupportedFormat, "AC file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
 }
 
@@ -98,15 +98,17 @@ ReadResult<TranWaveform> read_tran_waveform(const std::string& result_dir,
   (void)result_dir;
   (void)signal_name;
   (void)filename;
-  return ReadResult<TranWaveform>::failure(ResultStatus::kUnsupportedFormat,
-                                           "tran file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+  return ReadResult<TranWaveform>::failure(
+      ResultStatus::kUnsupportedFormat,
+      "tran file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
 }
 
 ReadResult<std::vector<SensitivityEntry>> read_sensitivity_legacy(const std::string& work_dir) {
   (void)work_dir;
   return ReadResult<std::vector<SensitivityEntry>>::failure(
-      ResultStatus::kUnsupportedFormat, "legacy sensitivity reading is scheduled for M2.3");
+      ResultStatus::kUnsupportedFormat,
+      "legacy sensitivity reading is not on the current mainline");
 }
 
 ReadResult<AcDerivedView> derive_ac_view(const AcResponse& response) {

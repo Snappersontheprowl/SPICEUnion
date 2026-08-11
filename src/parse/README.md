@@ -30,7 +30,7 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
   读取 swept complex PSF 数据，并将 sweep values 映射为 `frequency_hz`，将
   complex vector 拆分为 `real` / `imag`。当前已用标准 `ac.ac` fixture 与
   `stb.stb` fixture 验证。
-- `read_sensitivity_legacy()`：当前保持 `kUnsupportedFormat` stub，等待 legacy
-  sensitivity fixture 与可信参考值。
+- `read_sensitivity_legacy()`：当前保持 `kUnsupportedFormat` stub，不作为当前主线。
 
-完整 netlist IR、业务 parser、objective、penalty、pass/fail 规则不属于本目录职责。
+完整 netlist IR、SPICE 方言转换、analysis/probe DSL、业务 parser、objective、penalty、
+pass/fail 规则不属于本目录职责。

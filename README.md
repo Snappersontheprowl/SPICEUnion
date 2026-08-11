@@ -4,16 +4,15 @@ SPICEUnion 是一个 C++17 仿真器执行与结果读取基础设施库，来�
 `~/my_lab/projects/spectre_materials/src/spectre_interactive/` 中已有 Python 执行路径的
 C++ 化沉淀。
 
-核心链路：
+主线收敛链路：
 
 ```text
-ParameterState batch
-  -> Evaluator
-  -> ordered worker pool
-  -> SimulatorSession
-  -> worker work directory
-  -> caller-owned result reading
-  -> ordered TaskResult list
+netlist
+  -> simulator selection
+  -> simulator execution
+  -> result directory
+  -> result reader
+  -> typed result
 ```
 
 ## 当前事实
@@ -60,19 +59,27 @@ ParameterState batch
 - `doc/develop_doc/OrderedConcurrentPool开发路线图.md`：OCP 专项；
 - `doc/develop_doc/简历亮点解析.md`：对外表达材料。
 
-## 当前边界
+## 当前主线边界
 
-尚未实现：
+当前只围绕“给定 netlist、选择仿真器、执行仿真、读取结果”收敛。
+
+已知结果读取边界：
 
 - legacy sensitivity 读取；
 - Spectre 23.1 PSFXL transient 解析或转换；
-- 原生 PSF parser；
-- C ABI 稳定化；
-- Python / pybind11 binding；
 - Ngspice `.op` operating point；
-- MOS I-V / gm/Id 多曲线 DC 结果；
 - Spectre 与 Ngspice 同类 DC sweep 语义对照；
-- Xyce / Hspice backend。
+
+当前不作为主线目标：
+
+- 完整 netlist IR；
+- SPICE 方言转换；
+- analysis / probe DSL；
+- MOS I-V / gm/Id 设计方法；
+- optimizer；
+- C ABI / Python / MATLAB binding；
+- Xyce / Hspice backend；
+- 为假想场景提前扩展 ResultIR 或 `EvaluatorOptions`。
 
 ## 仓库结构
 
