@@ -15,7 +15,8 @@
 - [ ] Spectre 23.1 PSFXL transient 的解析或转换路径评估。
 - [ ] C++ helper 与 Python helper 在失败语义上的有意差异集中记录。
 - [ ] 原生 PSF parser。
-- [ ] C ABI / pybind11 正式实现（先收口 `doc/develop_doc/M4.md` 待确认问题）。
+- [ ] M4.1 pybind11 最小结果读取绑定（按 `doc/develop_doc/M4.md` 基线，待启动）。
+- [ ] C ABI 正式实现（M4 第一版暂缓，仅保留 ownership 草案）。
 - [ ] libpsf backend 产品化分发与 license notice。
 - [ ] Xyce / Hspice 多仿真器扩展。
 
