@@ -2,7 +2,7 @@
 
 ## 当前活跃待办
 
-### M3 后续收敛
+### M3 后续收敛（见 `doc/develop_doc/M3.md`）
 
 - [ ] 评估是否需要 Spectre 侧同类电阻分压 DC sweep fixture。
 - [ ] 若进入 MOS I-V / gm/Id 场景，再评估 `DcSweep` 是否需要扩展为多曲线结构。
