@@ -14,3 +14,9 @@
 
 - 每个 fixture 使用稳定业务语义目录名，例如 `rc_lowpass_ac/`。
 - 不使用 `new`、`tmp`、`final`、`v2` 等阶段性名称。
+
+当前源 fixture：
+
+- `rc_lowpass_ac/`：Spectre RC low-pass AC。
+- `rc_charging_tran/`：Spectre RC charging TRAN。
+- `resistor_divider_dc/`：Spectre resistor-divider DC sweep。

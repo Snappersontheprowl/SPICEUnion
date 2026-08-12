@@ -89,4 +89,20 @@ inline void expect_rc_charging_tran_semantics(const su::TranWaveform& waveform,
   EXPECT_NEAR(waveform.value.back(), input_voltage_v, std::abs(input_voltage_v) * 0.02);
 }
 
+inline void expect_resistor_divider_dc_semantics(const su::DcSweep& sweep,
+                                                 double top_resistance_ohm,
+                                                 double bottom_resistance_ohm) {
+  ASSERT_TRUE(sweep.shape_consistent());
+  ASSERT_GT(sweep.size(), 5U);
+
+  for (std::size_t index = 1; index < sweep.sweep_values.size(); ++index) {
+    EXPECT_GT(sweep.sweep_values[index], sweep.sweep_values[index - 1]);
+  }
+
+  const double divider_ratio = bottom_resistance_ohm / (top_resistance_ohm + bottom_resistance_ohm);
+  for (std::size_t index = 0; index < sweep.size(); ++index) {
+    EXPECT_NEAR(sweep.values[index], sweep.sweep_values[index] * divider_ratio, 1.0e-10);
+  }
+}
+
 }  // namespace spiceunion_test

@@ -1,0 +1,10 @@
+simulator lang=spectre
+
+parameters rtop=3k rbottom=1k vin_dc=0
+
+Vin (in 0) vsource dc=vin_dc
+Rtop (in out) resistor r=rtop
+Rbottom (out 0) resistor r=rbottom
+
+dc dc param=vin_dc start=0 stop=1 step=0.1
+save out

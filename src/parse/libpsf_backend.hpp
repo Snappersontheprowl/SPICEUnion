@@ -9,6 +9,11 @@ namespace su::parse {
 ReadResult<ScalarResult> read_dc_value_with_libpsf(const std::string& result_dir,
                                                    const std::string& signal_name);
 
+ReadResult<DcSweep> read_dc_sweep_with_libpsf(const std::string& result_dir,
+                                              const std::string& sweep_name,
+                                              const std::string& signal_name,
+                                              const std::string& filename);
+
 ReadResult<AcResponse> read_ac_response_with_libpsf(const std::string& result_dir,
                                                     const std::string& signal_name,
                                                     const std::string& filename);

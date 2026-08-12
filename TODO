@@ -2,9 +2,7 @@
 
 ## 当前活跃待办
 
-### M3 最小收口（见 `doc/develop_doc/M3.md`）
-
-- [ ] 补 Spectre 侧 resistor divider DC sweep fixture 与跨 backend `DcSweep` 语义对照。
+暂无。
 
 ## 暂缓池
 

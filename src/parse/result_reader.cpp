@@ -75,6 +75,22 @@ ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
 #endif
 }
 
+ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
+                                  const std::string& sweep_name,
+                                  const std::string& signal_name,
+                                  const std::string& filename) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+  return parse::read_dc_sweep_with_libpsf(result_dir, sweep_name, signal_name, filename);
+#else
+  (void)result_dir;
+  (void)sweep_name;
+  (void)signal_name;
+  (void)filename;
+  return ReadResult<DcSweep>::failure(ResultStatus::kUnsupportedFormat,
+                                      "DC sweep file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
+}
+
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
                                         const std::string& filename) {

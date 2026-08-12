@@ -12,6 +12,11 @@ ReadResult<ResultDirectory> find_result_directory(const std::string& work_dir);
 ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
                                        const std::string& signal_name);
 
+ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
+                                  const std::string& sweep_name,
+                                  const std::string& signal_name,
+                                  const std::string& filename = "dc.dc");
+
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
                                         const std::string& filename = "ac.ac");

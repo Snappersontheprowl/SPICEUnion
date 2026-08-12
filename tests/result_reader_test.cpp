@@ -208,12 +208,16 @@ TEST(TranMathTest, RejectsInvalidWaveformShape) {
 TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
 #if SPICEUNION_ENABLE_LIBPSF_READER
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_dc_sweep("result.raw", "Vin", "vout").status,
+            su::ResultStatus::kFileNotFound);
   EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
             su::ResultStatus::kFileNotFound);
   EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
             su::ResultStatus::kFileNotFound);
 #else
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kUnsupportedFormat);
+  EXPECT_EQ(su::read_dc_sweep("result.raw", "Vin", "vout").status,
+            su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
             su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
@@ -260,6 +264,51 @@ TEST(LibpsfDcReaderTest, ReadsSpectreClProjectFixtureDcOpScalar) {
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(result.value.signal, "net6");
   EXPECT_DOUBLE_EQ(result.value.value, 0.8);
+}
+
+TEST(LibpsfDcSweepReaderTest, ReadsSpectreResistorDividerDcFixture) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
+      "spectre_resistor_divider_dc.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
+
+  const auto result = su::read_dc_sweep(fixture.string(), "vin_dc", "out");
+
+  ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.value.sweep_name, "vin_dc");
+  EXPECT_EQ(result.value.signal, "out");
+  ASSERT_EQ(result.value.size(), 11U);
+  EXPECT_TRUE(result.value.shape_consistent());
+  EXPECT_DOUBLE_EQ(result.value.sweep_values[0], 0.0);
+  EXPECT_NEAR(result.value.sweep_values[1], 0.1, 1.0e-15);
+  EXPECT_NEAR(result.value.values[1], 0.025, 1.0e-15);
+}
+
+TEST(LibpsfDcSweepReaderTest, ReportsMissingSweep) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
+      "spectre_resistor_divider_dc.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
+
+  const auto result = su::read_dc_sweep(fixture.string(), "missing_sweep", "out");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
+}
+
+TEST(LibpsfDcSweepReaderTest, ReportsMissingSignal) {
+  const std::filesystem::path fixture =
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
+      "spectre_resistor_divider_dc.raw";
+
+  ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
+
+  const auto result = su::read_dc_sweep(fixture.string(), "vin_dc", "missing_signal");
+
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.status, su::ResultStatus::kSignalNotFound);
 }
 
 TEST(LibpsfTranReaderTest, ReadsProjectFixtureTranWaveform) {

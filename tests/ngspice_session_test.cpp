@@ -427,12 +427,7 @@ TEST(NgspiceSessionExternalTest, RunsResistorDividerDcWhenExternalNgspiceIsEnabl
   ASSERT_TRUE(sweep.ok()) << sweep.error_message;
   ASSERT_GT(sweep.value.size(), 5U);
   ASSERT_TRUE(sweep.value.shape_consistent());
-
-  const double divider_ratio = 1000.0 / (3000.0 + 1000.0);
-  for (std::size_t index = 0; index < sweep.value.size(); ++index) {
-    EXPECT_NEAR(sweep.value.values[index], sweep.value.sweep_values[index] * divider_ratio,
-                1.0e-10);
-  }
+  spiceunion_test::expect_resistor_divider_dc_semantics(sweep.value, 3000.0, 1000.0);
 
   session.stop(true);
   std::filesystem::remove_all(root);

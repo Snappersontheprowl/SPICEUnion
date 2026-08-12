@@ -1,5 +1,6 @@
 #include "src/parse/libpsf_backend.hpp"
 
+#include <algorithm>
 #include <complex>
 #include <filesystem>
 #include <memory>
@@ -44,6 +45,13 @@ ReadResult<AcResponse> make_psf_ac_exception_failure(const std::filesystem::path
   return ReadResult<AcResponse>::failure(
       ResultStatus::kParseError,
       "failed to read complex response '" + signal_name + "' from PSF file: " + psf_file.string());
+}
+
+ReadResult<DcSweep> make_psf_dc_sweep_exception_failure(const std::filesystem::path& psf_file,
+                                                        const std::string& signal_name) {
+  return ReadResult<DcSweep>::failure(
+      ResultStatus::kParseError,
+      "failed to read DC sweep signal '" + signal_name + "' from PSF file: " + psf_file.string());
 }
 
 template <typename T>
@@ -101,6 +109,104 @@ ReadResult<ScalarResult> read_dc_value_with_libpsf(const std::string& result_dir
         "std exception while reading PSF file '" + psf_file.string() + "': " + error.what());
   } catch (...) {
     return make_psf_exception_failure(psf_file, signal_name);
+  }
+}
+
+ReadResult<DcSweep> read_dc_sweep_with_libpsf(const std::string& result_dir,
+                                              const std::string& sweep_name,
+                                              const std::string& signal_name,
+                                              const std::string& filename) {
+  if (result_dir.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "result_dir must not be empty");
+  }
+  if (sweep_name.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "sweep_name must not be empty");
+  }
+  if (signal_name.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "signal_name must not be empty");
+  }
+  if (filename.empty()) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kInvalidInput,
+                                        "filename must not be empty");
+  }
+
+  const std::filesystem::path psf_file = result_file_path(result_dir, filename);
+  std::error_code error;
+  if (!std::filesystem::exists(psf_file, error) ||
+      !std::filesystem::is_regular_file(psf_file, error)) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kFileNotFound,
+                                        "DC sweep PSF file was not found: " + psf_file.string());
+  }
+
+  try {
+    PSFDataSet dataset(psf_file.string());
+    if (!dataset.is_swept() || dataset.get_nsweeps() != 1) {
+      return ReadResult<DcSweep>::failure(
+          ResultStatus::kUnsupportedFormat,
+          "DC sweep PSF file must contain exactly one sweep axis: " + psf_file.string());
+    }
+
+    const auto sweep_names = dataset.get_sweep_param_names();
+    if (std::find(sweep_names.begin(), sweep_names.end(), sweep_name) == sweep_names.end()) {
+      return ReadResult<DcSweep>::failure(ResultStatus::kSignalNotFound,
+                                          "sweep was not found in DC sweep PSF: " + sweep_name);
+    }
+
+    std::unique_ptr<PSFVector> sweep_values(dataset.get_sweep_values());
+    auto* sweep_vector = dynamic_cast<PSFDoubleVector*>(sweep_values.get());
+    if (sweep_vector == nullptr) {
+      return ReadResult<DcSweep>::failure(
+          ResultStatus::kUnsupportedFormat,
+          "DC sweep values are not a double vector: " + psf_file.string());
+    }
+
+    std::unique_ptr<PSFBase> signal(dataset.get_signal(signal_name));
+    auto* values = dynamic_cast<PSFDoubleVector*>(signal.get());
+    if (values == nullptr) {
+      return ReadResult<DcSweep>::failure(
+          ResultStatus::kUnsupportedFormat,
+          "DC sweep signal is not a real double vector: " + signal_name);
+    }
+
+    DcSweep sweep;
+    sweep.sweep_name = sweep_name;
+    sweep.signal = signal_name;
+    sweep.sweep_values = copy_vector(*sweep_vector);
+    sweep.values = copy_vector(*values);
+
+    if (!sweep.shape_consistent()) {
+      return ReadResult<DcSweep>::failure(
+          ResultStatus::kParseError,
+          "DC sweep axis and signal vector lengths differ: " + signal_name);
+    }
+    if (sweep.sweep_values.empty()) {
+      return ReadResult<DcSweep>::failure(ResultStatus::kParseError,
+                                          "DC sweep must not be empty: " + psf_file.string());
+    }
+
+    return ReadResult<DcSweep>::success(std::move(sweep));
+  } catch (const FileOpenError&) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kFileNotFound,
+                                        "failed to open DC sweep PSF file: " +
+                                            psf_file.string());
+  } catch (const NotFound&) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kSignalNotFound,
+                                        "signal was not found in DC sweep PSF: " + signal_name);
+  } catch (const InvalidFileError&) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kParseError,
+                                        "invalid DC sweep PSF file: " + psf_file.string());
+  } catch (const DataSetNotOpen&) {
+    return make_psf_dc_sweep_exception_failure(psf_file, signal_name);
+  } catch (const std::exception& error) {
+    return ReadResult<DcSweep>::failure(
+        ResultStatus::kParseError,
+        "std exception while reading DC sweep PSF file '" + psf_file.string() + "': " +
+            error.what());
+  } catch (...) {
+    return make_psf_dc_sweep_exception_failure(psf_file, signal_name);
   }
 }
 

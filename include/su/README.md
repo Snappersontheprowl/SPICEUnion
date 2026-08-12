@@ -70,6 +70,8 @@ optimizer decisions。
 
 - `find_result_directory(work_dir)`：定位 worker 目录下的 `.raw` 结果目录。
 - `read_dc_value(result_dir, signal_name)`：读取 `dcOp.dc` 单 signal 标量。
+- `read_dc_sweep(result_dir, sweep_name, signal_name, filename)`：读取单 sweep axis、
+  单 signal 实数 DC sweep，映射为 `DcSweep`。
 - `read_ac_response(result_dir, signal_name, filename)`：读取 AC frequency 与复数响应。
 - `read_tran_waveform(result_dir, signal_name, filename)`：读取 tran time/value 波形。
 - `read_sensitivity_legacy(work_dir)`：读取 legacy sensitivity 条目。
@@ -77,8 +79,9 @@ optimizer decisions。
 - `calculate_ugbw_and_phase_margin(response)`：计算 UGBW / phase margin。
 - `calculate_settling_time(waveform, target_value, error_band)`：计算 settling time。
 
-M2.2 已实现 `.raw` 目录定位、AC 派生视图、UGBW / phase margin 和 settling time。
-dc/ac/tran/sens 文件读取在 M2.3 前返回 `kUnsupportedFormat`。该头文件不得暴露 libpsf 类型。
+当前已实现 `.raw` 目录定位、AC 派生视图、UGBW / phase margin、settling time，以及
+可选 libpsf backend 下的 DC scalar、DC sweep、AC 与 TRAN 文件读取。默认未启用 libpsf
+时，真实 PSF 文件读取返回 `kUnsupportedFormat`。该头文件不得暴露 libpsf 类型。
 
 ### `session.hpp`
 

@@ -31,6 +31,7 @@ ParameterState batch
 - 最小 ResultIR；
 - 可选 libpsf backend；
 - Spectre PSF fixture 读取；
+- Spectre / Ngspice 同类 AC、TRAN 与 DC sweep 语义对照；
 - Ngspice `wrdata` AC / TRAN / DC sweep 读取。
 
 当前 ResultIR：
@@ -73,7 +74,6 @@ ParameterState batch
 - Python / pybind11 binding；
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
-- Spectre 与 Ngspice 同类 DC sweep 语义对照；
 - Xyce / Hspice backend。
 
 ## 仓库结构

@@ -16,13 +16,16 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
   waveform settling time，以及公开 result reader 入口。
 - `libpsf_backend.cpp`：可选内部 backend。仅在
   `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时编译，用 `henjo/libpsf` 读取 `dcOp.dc`
-  单信号 scalar、swept complex response 和普通 time-sweep transient；默认构建不编译
-  该文件。
+  单信号 scalar、单 axis DC sweep、swept complex response 和普通 time-sweep transient；
+  默认构建不编译该文件。
 
 当前文件读取状态：
 
 - `read_dc_value()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
   `dcOp.dc`。
+- `read_dc_sweep()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
+  单 sweep axis、单 signal 实数 PSF 文件，并映射为 `DcSweep`。当前已用 Spectre
+  resistor divider DC sweep fixture 验证。
 - `read_tran_waveform()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
   读取普通 time-sweep `tran.tran`。Spectre 23.1 PSFXL transient 当前明确返回
   `kUnsupportedFormat`。
