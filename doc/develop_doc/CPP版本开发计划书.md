@@ -125,7 +125,7 @@ ResultIR 只表达仿真结果的最小公共结构，不承载业务指标、�
 | M2 | 已完成 | ResultIR、结果读取 helper、可选 libpsf backend |
 | M3 | 已完成基础闭环 | Ngspice AC / TRAN / DC sweep 与 Spectre / Ngspice AC、TRAN 对照 |
 | M3.5 | 已完成 | OrderedConcurrentPool 抽离、独立化、MIT 发布、CI |
-| M4 | 暂缓 | C ABI / Python binding |
+| M4 | 草案阶段 | C ABI / pybind11 接入设计，责任文档为 `M4.md` |
 | M5 | 暂缓 | 性能基准与发布形态 |
 
 当前阶段事实见 `当前事实状态.md`。下一步施工路线见 `开发路线图.md`。
@@ -135,7 +135,7 @@ ResultIR 只表达仿真结果的最小公共结构，不承载业务指标、�
 近期只保留三个方向：
 
 1. M3 收敛：评估 Spectre 侧 DC sweep 对照、MOS I-V / gm/Id 是否需要扩展 ResultIR。
-2. M4：在 C++ API 继续稳定后，设计 C ABI ownership，并做 Python binding 薄封装。
+2. M4：先在 `M4.md` 中确认 C ABI / pybind11 的接入范围、顺序、所有权规则和测试策略。
 3. M5：在有稳定 baseline 后建立可复现 benchmark，不把未实测性能数字写成完成事实。
 
 不建议在没有真实消费者前扩展完整 netlist IR、动态调度框架、Xyce / Hspice backend 或 native PSF parser。
