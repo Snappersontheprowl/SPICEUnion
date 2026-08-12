@@ -10,6 +10,8 @@ project(
 option(SPICEUNION_BUILD_TESTS "Build SPICEUnion tests" ON)
 option(SPICEUNION_ENABLE_EXTERNAL_TESTS "Enable tests that require external EDA tools" OFF)
 option(SPICEUNION_ENABLE_LIBPSF_READER "Enable optional henjo/libpsf PSF result reader backend" OFF)
+option(SPICEUNION_BUILD_PYTHON_BINDINGS "Build optional pybind11 Python bindings" OFF)
+option(SPICEUNION_BUILD_C_API "Build optional C ABI facade" OFF)
 
 set(SPICEUNION_LIBPSF_INCLUDE_DIR "" CACHE PATH "Directory that contains henjo/libpsf psf.h")
 set(SPICEUNION_LIBPSF_LIBRARY "" CACHE FILEPATH "Path to henjo/libpsf library")
@@ -43,6 +45,7 @@ if(SPICEUNION_ENABLE_LIBPSF_READER)
     find_path(_spiceunion_libpsf_include_dir
       NAMES psf.h
       HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install-pic/include"
         "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/include"
     )
   endif()
@@ -54,6 +57,8 @@ if(SPICEUNION_ENABLE_LIBPSF_READER)
     find_library(_spiceunion_libpsf_library
       NAMES psf libpsf.a
       HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install-pic/lib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install-pic/lib64"
         "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/lib"
         "${CMAKE_CURRENT_SOURCE_DIR}/local/external/libpsf/install/lib64"
     )
@@ -73,6 +78,12 @@ if(SPICEUNION_ENABLE_LIBPSF_READER)
       "Path to henjo/libpsf library" FORCE)
 endif()
 
+if(SPICEUNION_BUILD_C_API)
+  message(FATAL_ERROR
+    "SPICEUNION_BUILD_C_API is reserved for a later M4 stage and is not implemented yet."
+  )
+endif()
+
 add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
   src/core/task_result.cpp
@@ -83,6 +94,10 @@ add_library(spiceunion_core STATIC
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
   src/core/version.cpp
+)
+
+set_target_properties(spiceunion_core PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
 )
 
 if(SPICEUNION_ENABLE_LIBPSF_READER)
@@ -134,7 +149,13 @@ endif()
 
 if(SPICEUNION_BUILD_TESTS)
   enable_testing()
+endif()
 
+if(SPICEUNION_BUILD_PYTHON_BINDINGS)
+  add_subdirectory(bindings/python)
+endif()
+
+if(SPICEUNION_BUILD_TESTS)
   find_package(GTest QUIET)
   if(NOT GTest_FOUND)
     include(FetchContent)

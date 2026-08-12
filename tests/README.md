@@ -27,6 +27,8 @@
 - Ngspice session tests 默认验证 RC AC / RC TRAN / 电阻分压 DC 配置、netlist
   渲染，以及三列 AC / 两列 TRAN / 两列 DC sweep `wrdata` 输出解析；启用外部测试后，
   会真实调用 `ngspice -b` 并通过 evaluator / pool 跑 AC、TRAN 与 DC batch。
+- Python binding tests 位于 `bindings/python/tests/`，通过 CTest 调 Python，覆盖
+  `import spiceunion`、`version()`、libpsf 开关状态、fixture 读取和失败读取 case。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
 
@@ -71,6 +73,34 @@ ctest --test-dir cmake-build-libpsf --output-on-failure
 charging TRAN fixture 读出的 `TranWaveform` 满足与 Ngspice RC TRAN 相同的 `τ` / `5τ`
 充电曲线语义；Spectre resistor-divider DC sweep fixture 读出的 `DcSweep` 满足与
 Ngspice resistor-divider DC sweep 相同的分压比例语义。libpsf 本身仍不属于默认 CI 契约。
+
+Python binding 测试：
+
+```bash
+cmake -S . -B cmake-build-python \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DSPICEUNION_BUILD_TESTS=ON \
+  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
+cmake --build cmake-build-python
+ctest --test-dir cmake-build-python --output-on-failure
+```
+
+Python binding + libpsf 测试：
+
+```bash
+cmake -S . -B cmake-build-python-libpsf-pic \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DSPICEUNION_BUILD_TESTS=ON \
+  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON \
+  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
+cmake --build cmake-build-python-libpsf-pic
+ctest --test-dir cmake-build-python-libpsf-pic --output-on-failure
+```
+
+启用 Python binding 与 libpsf 时，静态 libpsf 需要可被链接进 Python shared module。
+本机已使用 `local/external/libpsf/install-pic` 完成验证；该目录不进入版本库。
 
 外部测试当前覆盖：
 

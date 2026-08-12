@@ -33,6 +33,7 @@ ParameterState batch
 - Spectre PSF fixture 读取；
 - Spectre / Ngspice 同类 AC、TRAN 与 DC sweep 语义对照；
 - Ngspice `wrdata` AC / TRAN / DC sweep 读取。
+- 可选 pybind11 Python binding，当前覆盖结果读取 helper 与结果数学 helper。
 
 当前 ResultIR：
 
@@ -71,7 +72,8 @@ ParameterState batch
 - Spectre 23.1 PSFXL transient 解析或转换；
 - 原生 PSF parser；
 - C ABI 稳定化；
-- Python / pybind11 binding；
+- Python `Evaluator` / session binding；
+- Python wheel / package 发布；
 - Ngspice `.op` operating point；
 - MOS I-V / gm/Id 多曲线 DC 结果；
 - Xyce / Hspice backend。
@@ -84,6 +86,7 @@ src/core/        evaluator 与通用执行逻辑
 src/pool/        SimulatorPool adapter
 src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
+bindings/python/ 可选 pybind11 Python binding
 tests/           GoogleTest 测试与 fixture
 doc/develop_doc/ 开发文档：事实、章程、路线、专题、表达
 doc/study_notes/ 可复用学习笔记
@@ -120,6 +123,21 @@ cmake --build cmake-build-libpsf
 ctest --test-dir cmake-build-libpsf --output-on-failure
 ```
 
+Python binding 需要显式启用：
+
+```bash
+cmake -S . -B cmake-build-python \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DSPICEUNION_BUILD_TESTS=ON \
+  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
+cmake --build cmake-build-python
+ctest --test-dir cmake-build-python --output-on-failure
+```
+
+Python binding 同时启用 libpsf 时，静态 libpsf 需要能链接进 shared module。本机验证使用
+`local/external/libpsf/install-pic`，CMake 会优先查找该路径。
+
 ## 外部依赖
 
 默认构建需要 sibling source tree：
@@ -150,6 +168,7 @@ SPICEUNION_ORDERED_POOL_SOURCE_DIR
 libpsf backend 默认查找：
 
 ```text
+local/external/libpsf/install-pic
 local/external/libpsf/install
 ```
 
