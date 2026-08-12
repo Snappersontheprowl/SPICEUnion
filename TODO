@@ -2,12 +2,9 @@
 
 ## 当前活跃待办
 
-### M3 后续收敛（见 `doc/develop_doc/M3.md`）
+### M3 最小收口（见 `doc/develop_doc/M3.md`）
 
-- [ ] 评估是否需要 Spectre 侧同类电阻分压 DC sweep fixture。
-- [ ] 若进入 MOS I-V / gm/Id 场景，再评估 `DcSweep` 是否需要扩展为多曲线结构。
-- [ ] 只有两个真实 backend 共同需要时，再扩展 `EvaluatorOptions` 或引入 netlist
-      模板接口。
+- [ ] 补 Spectre 侧 resistor divider DC sweep fixture 与跨 backend `DcSweep` 语义对照。
 
 ## 暂缓池
 
@@ -15,6 +12,9 @@
 - [ ] Spectre 23.1 PSFXL transient 的解析或转换路径评估。
 - [ ] C++ helper 与 Python helper 在失败语义上的有意差异集中记录。
 - [ ] 原生 PSF parser。
+- [ ] MOS I-V / gm/Id 多曲线 DC 结果与 `DcSweep` 扩展评估。
+- [ ] `EvaluatorOptions` 扩展或 netlist template / DSL。
+- [ ] Ngspice `.op` operating point。
 - [ ] M4.1 pybind11 最小结果读取绑定（按 `doc/develop_doc/M4.md` 基线，待启动）。
 - [ ] C ABI 正式实现（M4 第一版暂缓，仅保留 ownership 草案）。
 - [ ] libpsf backend 产品化分发与 license notice。

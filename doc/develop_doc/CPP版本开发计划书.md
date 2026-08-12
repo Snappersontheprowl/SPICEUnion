@@ -1,6 +1,6 @@
 # SPICEUnion C++ 开发计划书
 
-更新时间：2026-08-11
+更新时间：2026-08-13
 
 本文是 SPICEUnion 的项目章程，只记录项目定位、范围边界、设计原则、总体架构和阶段摘要。当前已实现细节、测试结果和 fixture 清单以 `当前事实状态.md` 为准；后续施工步骤以 `开发路线图.md` 为准。
 
@@ -123,7 +123,7 @@ ResultIR 只表达仿真结果的最小公共结构，不承载业务指标、�
 | M0 | 已完成 | CMake / GoogleTest 项目骨架 |
 | M1 | 已完成 | Spectre evaluator 生命周期、参数写入、multi-worker batch |
 | M2 | 已完成 | ResultIR、结果读取 helper、可选 libpsf backend |
-| M3 | 基础闭环已完成，收敛待用户决策 | Ngspice AC / TRAN / DC sweep 与 Spectre / Ngspice AC、TRAN 对照，责任文档为 `M3.md` |
+| M3 | 基础闭环已完成，最小收口待启动 | Ngspice AC / TRAN / DC sweep 与 Spectre / Ngspice AC、TRAN 对照；补 Spectre DC sweep 对照，责任文档为 `M3.md` |
 | M3.5 | 已完成 | OrderedConcurrentPool 抽离、独立化、MIT 发布、CI |
 | M4 | 决策已收口，M4.1 待启动 | pybind11 最小结果读取绑定；C ABI 暂缓，责任文档为 `M4.md` |
 | M5 | 暂缓 | 性能基准与发布形态 |
@@ -134,7 +134,7 @@ ResultIR 只表达仿真结果的最小公共结构，不承载业务指标、�
 
 近期只保留三个方向：
 
-1. M3 收敛：按 `M3.md` 决定是否补 Spectre 侧 DC sweep 对照，以及是否暂缓 MOS I-V / gm/Id。
+1. M3 收敛：按 `M3.md` 补 Spectre 侧 DC sweep 对照；MOS I-V / gm/Id 暂缓。
 2. M4：按 `M4.md` 基线启动 pybind11 最小结果读取绑定，C ABI 第一版暂缓。
 3. M5：在有稳定 baseline 后建立可复现 benchmark，不把未实测性能数字写成完成事实。
 
