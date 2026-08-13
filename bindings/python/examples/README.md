@@ -10,24 +10,15 @@ pybind11 binding 应该如何被普通 Python 代码调用。
 需要先构建 Python binding：
 
 ```bash
-cmake -S . -B cmake-build-python \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
-cmake --build cmake-build-python
+cmake --preset python
+cmake --build --preset python
 ```
 
 如果需要真实读取 Spectre PSF fixture，还需要启用 libpsf backend：
 
 ```bash
-cmake -S . -B cmake-build-python-libpsf-pic \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON \
-  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
-cmake --build cmake-build-python-libpsf-pic
+cmake --preset python-libpsf-pic
+cmake --build --preset python-libpsf-pic
 ```
 
 说明：Python extension 是 shared module。若链接静态 libpsf，libpsf 需要以 PIC 方式构建。
@@ -38,7 +29,7 @@ cmake --build cmake-build-python-libpsf-pic
 ### 读取 fixture 结果
 
 ```bash
-PYTHONPATH=cmake-build-python/bindings/python \
+PYTHONPATH=build/python/bindings/python \
   ~/anaconda3/bin/python3.10 \
   bindings/python/examples/read_fixture_results.py tests/fixtures
 ```
@@ -46,7 +37,7 @@ PYTHONPATH=cmake-build-python/bindings/python \
 启用 libpsf 的构建目录：
 
 ```bash
-PYTHONPATH=cmake-build-python-libpsf-pic/bindings/python \
+PYTHONPATH=build/python-libpsf-pic/bindings/python \
   ~/anaconda3/bin/python3.10 \
   bindings/python/examples/read_fixture_results.py tests/fixtures
 ```
@@ -66,7 +57,7 @@ PYTHONPATH=cmake-build-python-libpsf-pic/bindings/python \
 ### 做最小后处理
 
 ```bash
-PYTHONPATH=cmake-build-python-libpsf-pic/bindings/python \
+PYTHONPATH=build/python-libpsf-pic/bindings/python \
   ~/anaconda3/bin/python3.10 \
   bindings/python/examples/analyze_fixture_results.py tests/fixtures
 ```

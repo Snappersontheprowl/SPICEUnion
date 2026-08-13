@@ -11,13 +11,13 @@ CMake Tools
   -> 负责 configure / build / test
 
 CMakePresets.json
-  -> 固化 default / external 两套构建配置
+  -> 固化 default / external / libpsf / python / python-libpsf-pic 构建配置
 
 compile_commands.json
   -> 由 CMake preset 生成，提供真实编译命令数据库
 
 clangd
-  -> 读取 build/compile_commands.json，负责 C++ 补全、跳转和诊断
+  -> 读取 build/default/compile_commands.json，负责 C++ 补全、跳转和诊断
 
 cpptools
   -> 保留调试等辅助能力，不负责 IntelliSense 诊断
@@ -35,12 +35,15 @@ cpptools
 
 ### `CMakePresets.json`
 
-定义两套 configure preset：
+定义常用 configure preset：
 
 - `default`：普通开发配置，外部 Spectre 测试关闭。
 - `external`：打开真实 Spectre 外部测试。
+- `libpsf`：启用可选 `henjo/libpsf` PSF reader backend。
+- `python`：启用 pybind11 Python binding。
+- `python-libpsf-pic`：同时启用 Python binding 与 libpsf backend。
 
-两套 preset 都打开：
+这些 preset 都打开：
 
 ```text
 CMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -49,8 +52,11 @@ CMAKE_EXPORT_COMPILE_COMMANDS=ON
 因此 configure 后会生成：
 
 ```text
-build/compile_commands.json
-cmake-build-external/compile_commands.json
+build/default/compile_commands.json
+build/external/compile_commands.json
+build/libpsf/compile_commands.json
+build/python/compile_commands.json
+build/python-libpsf-pic/compile_commands.json
 ```
 
 ### `.vscode/settings.json`
@@ -63,7 +69,7 @@ cmake-build-external/compile_commands.json
   "cmake.configureOnOpen": true,
   "C_Cpp.intelliSenseEngine": "disabled",
   "clangd.arguments": [
-    "--compile-commands-dir=${workspaceFolder}/build",
+    "--compile-commands-dir=${workspaceFolder}/build/default",
     "--background-index",
     "--header-insertion=iwyu"
   ]
@@ -75,7 +81,7 @@ cmake-build-external/compile_commands.json
 - VSCode CMake Tools 始终使用 `CMakePresets.json`。
 - 打开工程时自动 configure。
 - 关闭 cpptools IntelliSense，避免和 clangd 重复诊断。
-- clangd 读取 `build/compile_commands.json`。
+- clangd 读取 `build/default/compile_commands.json`。
 - clangd 后台建立索引，提升跳转和查找引用体验。
 - clangd 按 include-what-you-use 风格辅助插入头文件。
 
@@ -120,7 +126,7 @@ ctest --preset external
 确认 clangd 编译数据库：
 
 ```bash
-test -f build/compile_commands.json
+test -f build/default/compile_commands.json
 ```
 
 ## VSCode 操作方式
@@ -175,7 +181,7 @@ VSCode 不维护第二套 include path
 
 ```bash
 cmake --preset default
-test -f build/compile_commands.json
+test -f build/default/compile_commands.json
 ```
 
 然后在 VSCode 中执行：
@@ -189,7 +195,7 @@ CMake: Configure
 如果仍然有问题，检查 clangd 是否读取了正确目录：
 
 ```text
---compile-commands-dir=${workspaceFolder}/build
+--compile-commands-dir=${workspaceFolder}/build/default
 ```
 
 以及当前打开的 VSCode workspace 是否就是：

@@ -3,7 +3,7 @@
   "cmake.configureOnOpen": true,
   "C_Cpp.intelliSenseEngine": "disabled",
   "clangd.arguments": [
-    "--compile-commands-dir=${workspaceFolder}/build",
+    "--compile-commands-dir=${workspaceFolder}/build/default",
     "--background-index",
     "--header-insertion=iwyu"
   ],

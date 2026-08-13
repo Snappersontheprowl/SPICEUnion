@@ -134,10 +134,11 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 时间一久，不同 build 目录、不同选项会混在一起。presets 可以把这些选择写进仓库。
 
-推荐至少有两个 configure preset：
+推荐至少有两个 configure preset；有更多可选能力时，再为它们补独立 preset：
 
 - `default`：普通开发，外部 Spectre 测试关闭。
 - `external`：显式打开真实 Spectre 测试。
+- `libpsf`、`python` 这类可选能力：只在需要对应功能时选择。
 
 核心选项：
 
@@ -148,7 +149,7 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 这个选项会在 build 目录生成：
 
 ```text
-build/compile_commands.json
+build/default/compile_commands.json
 ```
 
 这就是 VSCode/clangd 识别 include path 的关键文件。
@@ -172,7 +173,7 @@ VSCode 不应该自己维护一份手写 include path。最稳的方式是让 VS
 ```json
 {
   "clangd.arguments": [
-    "--compile-commands-dir=${workspaceFolder}/build"
+    "--compile-commands-dir=${workspaceFolder}/build/default"
   ]
 }
 ```
@@ -210,7 +211,7 @@ CMake: Run Tests
 如果 include 报错，优先检查：
 
 ```bash
-test -f build/compile_commands.json
+test -f build/default/compile_commands.json
 ```
 
 如果文件不存在，说明编辑器没有编译数据库可读。
@@ -245,8 +246,8 @@ SPICEUnion 当前已经具备：
 - GoogleTest；
 - 默认测试与 external Spectre 测试分离；
 - `.gitignore` 排除构建和 Spectre 产物。
-- `CMakePresets.json` 固化 default / external 配置；
-- `build/compile_commands.json` 可由 default preset 生成；
+- `CMakePresets.json` 固化 default / external / libpsf / python / python-libpsf-pic 配置；
+- `build/default/compile_commands.json` 可由 default preset 生成；
 - `.vscode/settings.json` 让 clangd 读取 CMake 编译数据库；
 - `.clang-format` 统一 C++ 格式化风格。
 
@@ -260,7 +261,7 @@ SPICEUnion 当前已经具备：
 
 ```text
 1. 用 cmake --preset default 重新 configure
-2. 确认 build/compile_commands.json 存在
+2. 确认 build/default/compile_commands.json 存在
 3. 重启 clangd 或 reload VSCode window
 4. 确认当前 VSCode workspace 是项目根目录
 ```

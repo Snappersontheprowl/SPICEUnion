@@ -59,14 +59,9 @@ ctest --preset external
 本机 libpsf reader 测试：
 
 ```bash
-cmake -S . -B cmake-build-libpsf \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_ENABLE_EXTERNAL_TESTS=OFF \
-  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
-cmake --build cmake-build-libpsf
-ctest --test-dir cmake-build-libpsf --output-on-failure
+cmake --preset libpsf
+cmake --build --preset libpsf
+ctest --preset libpsf --output-on-failure
 ```
 
 该测试默认尝试使用 `local/external/libpsf/install` 中的 `henjo/libpsf`，并读取
@@ -80,13 +75,9 @@ Ngspice resistor-divider DC sweep 相同的分压比例语义。libpsf 本身仍
 Python binding 测试：
 
 ```bash
-cmake -S . -B cmake-build-python \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
-cmake --build cmake-build-python
-ctest --test-dir cmake-build-python --output-on-failure
+cmake --preset python
+cmake --build --preset python
+ctest --preset python --output-on-failure
 ```
 
 当前本机结果：
@@ -98,14 +89,9 @@ ctest --test-dir cmake-build-python --output-on-failure
 Python binding + libpsf 测试：
 
 ```bash
-cmake -S . -B cmake-build-python-libpsf-pic \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON \
-  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
-cmake --build cmake-build-python-libpsf-pic
-ctest --test-dir cmake-build-python-libpsf-pic --output-on-failure
+cmake --preset python-libpsf-pic
+cmake --build --preset python-libpsf-pic
+ctest --preset python-libpsf-pic --output-on-failure
 ```
 
 当前本机结果：

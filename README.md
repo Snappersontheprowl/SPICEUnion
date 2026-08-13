@@ -116,26 +116,17 @@ ctest --preset external --output-on-failure
 libpsf backend 需要显式启用：
 
 ```bash
-cmake -S . -B cmake-build-libpsf \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_ENABLE_EXTERNAL_TESTS=OFF \
-  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
-cmake --build cmake-build-libpsf
-ctest --test-dir cmake-build-libpsf --output-on-failure
+cmake --preset libpsf
+cmake --build --preset libpsf
+ctest --preset libpsf --output-on-failure
 ```
 
 Python binding 需要显式启用：
 
 ```bash
-cmake -S . -B cmake-build-python \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
-cmake --build cmake-build-python
-ctest --test-dir cmake-build-python --output-on-failure
+cmake --preset python
+cmake --build --preset python
+ctest --preset python --output-on-failure
 ```
 
 Python binding 同时启用 libpsf 时，静态 libpsf 需要能链接进 shared module。本机验证使用
@@ -144,7 +135,7 @@ Python binding 同时启用 libpsf 时，静态 libpsf 需要能链接进 shared
 Python 示例脚本：
 
 ```bash
-PYTHONPATH=cmake-build-python/bindings/python \
+PYTHONPATH=build/python/bindings/python \
   ~/anaconda3/bin/python3.10 \
   bindings/python/examples/read_fixture_results.py tests/fixtures
 ```

@@ -19,13 +19,9 @@
 开启方式：
 
 ```bash
-cmake -S . -B cmake-build-python \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON
-cmake --build cmake-build-python
-ctest --test-dir cmake-build-python --output-on-failure
+cmake --preset python
+cmake --build --preset python
+ctest --preset python --output-on-failure
 ```
 
 若本机没有安装 pybind11，CMake 只会在
@@ -34,14 +30,9 @@ ctest --test-dir cmake-build-python --output-on-failure
 若同时需要真实读取 Spectre PSF fixture，应启用 libpsf backend：
 
 ```bash
-cmake -S . -B cmake-build-python-libpsf \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DSPICEUNION_BUILD_TESTS=ON \
-  -DSPICEUNION_BUILD_PYTHON_BINDINGS=ON \
-  -DSPICEUNION_ENABLE_LIBPSF_READER=ON
-cmake --build cmake-build-python-libpsf
-ctest --test-dir cmake-build-python-libpsf --output-on-failure
+cmake --preset python-libpsf-pic
+cmake --build --preset python-libpsf-pic
+ctest --preset python-libpsf-pic --output-on-failure
 ```
 
 注意：Python extension 是 shared module。如果链接的是静态 libpsf，libpsf 需要以

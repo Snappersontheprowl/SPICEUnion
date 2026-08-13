@@ -11,7 +11,7 @@
       "displayName": "Default Debug",
       "description": "Default local development build without external EDA-tool tests.",
       "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -24,12 +24,53 @@
       "displayName": "External Spectre Debug",
       "description": "Debug build with external Spectre tests enabled.",
       "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/cmake-build-external",
+      "binaryDir": "${sourceDir}/build/external",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "SPICEUNION_BUILD_TESTS": "ON",
         "SPICEUNION_ENABLE_EXTERNAL_TESTS": "ON"
+      }
+    },
+    {
+      "name": "libpsf",
+      "displayName": "libpsf Debug",
+      "description": "Debug build with optional henjo/libpsf PSF reader backend enabled.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/libpsf",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SPICEUNION_BUILD_TESTS": "ON",
+        "SPICEUNION_ENABLE_EXTERNAL_TESTS": "OFF",
+        "SPICEUNION_ENABLE_LIBPSF_READER": "ON"
+      }
+    },
+    {
+      "name": "python",
+      "displayName": "Python Binding Debug",
+      "description": "Debug build with pybind11 Python bindings enabled.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/python",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SPICEUNION_BUILD_TESTS": "ON",
+        "SPICEUNION_BUILD_PYTHON_BINDINGS": "ON"
+      }
+    },
+    {
+      "name": "python-libpsf-pic",
+      "displayName": "Python Binding + libpsf PIC Debug",
+      "description": "Debug build with pybind11 bindings and the PIC libpsf reader backend enabled.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/python-libpsf-pic",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SPICEUNION_BUILD_TESTS": "ON",
+        "SPICEUNION_BUILD_PYTHON_BINDINGS": "ON",
+        "SPICEUNION_ENABLE_LIBPSF_READER": "ON"
       }
     }
   ],
@@ -41,6 +82,18 @@
     {
       "name": "external",
       "configurePreset": "external"
+    },
+    {
+      "name": "libpsf",
+      "configurePreset": "libpsf"
+    },
+    {
+      "name": "python",
+      "configurePreset": "python"
+    },
+    {
+      "name": "python-libpsf-pic",
+      "configurePreset": "python-libpsf-pic"
     }
   ],
   "testPresets": [
@@ -54,6 +107,27 @@
     {
       "name": "external",
       "configurePreset": "external",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "libpsf",
+      "configurePreset": "libpsf",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "python",
+      "configurePreset": "python",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "python-libpsf-pic",
+      "configurePreset": "python-libpsf-pic",
       "output": {
         "outputOnFailure": true
       }
