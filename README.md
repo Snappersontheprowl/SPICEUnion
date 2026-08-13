@@ -59,6 +59,7 @@ ParameterState batch
 - `doc/develop_doc/当前事实状态.md`：当前事实唯一总账；
 - `doc/develop_doc/CPP版本开发计划书.md`：项目章程；
 - `doc/develop_doc/开发路线图.md`：后续施工路线；
+- `doc/develop_doc/M2.md`：M2 ResultIR 与结果读取开发文档；
 - `doc/develop_doc/M3.md`：M3 多仿真器接入与结果语义收敛文档；
 - `doc/develop_doc/M4.md`：M4 pybind11 与 C ABI 接入开发文档；
 - `doc/develop_doc/OrderedConcurrentPool开发路线图.md`：OCP 专项；
