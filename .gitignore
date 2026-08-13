@@ -1,7 +1,8 @@
 /build/*
 !/build/README.md
 cmake-build-*/
-/local/
+/local/*
+!/local/README.md
 
 *.o
 *.a
