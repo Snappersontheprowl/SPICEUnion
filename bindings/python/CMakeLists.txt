@@ -74,4 +74,16 @@ if(SPICEUNION_BUILD_TESTS)
     PROPERTIES
       ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
   )
+
+  add_test(
+    NAME python_example_analyze_fixture_results
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/examples/analyze_fixture_results.py
+            ${PROJECT_SOURCE_DIR}/tests/fixtures
+  )
+
+  set_tests_properties(python_example_analyze_fixture_results
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
 endif()

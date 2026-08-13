@@ -146,6 +146,12 @@ PYTHONPATH=cmake-build-python/bindings/python \
   bindings/python/examples/read_fixture_results.py tests/fixtures
 ```
 
+更多示例说明见：
+
+```text
+bindings/python/examples/README.md
+```
+
 ## 外部依赖
 
 默认构建需要 sibling source tree：

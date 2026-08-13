@@ -56,8 +56,8 @@ CMake 会优先查找 `install-pic`，再查找 `install`。这两个目录均�
 
 当前本机验证结果：
 
-- Python binding 默认无 libpsf：`85/85` passed；
-- Python binding + libpsf PIC：`98/98` passed。
+- Python binding 默认无 libpsf：`86/86` passed；
+- Python binding + libpsf PIC：`99/99` passed。
 
 ## 当前 Python API
 
@@ -130,7 +130,18 @@ if not result.ok():
 
 若后续 Python API 变成独立用户入口，再重新评估 pytest、package layout 和 wheel 发布。
 
-示例：
+## 示例脚本
+
+示例脚本位于 `bindings/python/examples/`：
+
+| 脚本 | 用途 |
+|---|---|
+| `read_fixture_results.py` | 演示读取 DC / AC / TRAN fixture 和失败状态 |
+| `analyze_fixture_results.py` | 演示基于 Python list 做 DC / AC / TRAN 最小后处理 |
+
+说明文档见 `bindings/python/examples/README.md`。
+
+最小用法：
 
 ```python
 import spiceunion

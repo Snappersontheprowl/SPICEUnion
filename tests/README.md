@@ -30,7 +30,8 @@
 - Python binding tests 位于 `bindings/python/tests/`，通过 CTest 调 Python，覆盖
   `import spiceunion`、`version()`、libpsf 开关状态、result 对象 API 契约、
   fixture 读取和失败读取 case。
-- Python 示例脚本位于 `bindings/python/examples/`，当前也通过 CTest 做 smoke 验证。
+- Python 示例脚本位于 `bindings/python/examples/`，当前也通过 CTest 做 smoke 验证，
+  覆盖 fixture 读取示例和最小结果后处理示例。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
 
@@ -91,7 +92,7 @@ ctest --test-dir cmake-build-python --output-on-failure
 当前本机结果：
 
 ```text
-100% tests passed, 0 tests failed out of 85
+100% tests passed, 0 tests failed out of 86
 ```
 
 Python binding + libpsf 测试：
@@ -110,7 +111,7 @@ ctest --test-dir cmake-build-python-libpsf-pic --output-on-failure
 当前本机结果：
 
 ```text
-100% tests passed, 0 tests failed out of 98
+100% tests passed, 0 tests failed out of 99
 ```
 
 启用 Python binding 与 libpsf 时，静态 libpsf 需要可被链接进 Python shared module。
