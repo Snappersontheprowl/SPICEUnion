@@ -1,4 +1,5 @@
-build/
+/build/*
+!/build/README.md
 cmake-build-*/
 /local/
 
