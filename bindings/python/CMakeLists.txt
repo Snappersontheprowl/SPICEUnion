@@ -41,6 +41,17 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   add_test(
+    NAME python_api_contract_smoke
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_api_contract.py
+  )
+
+  set_tests_properties(python_api_contract_smoke
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
+
+  add_test(
     NAME python_read_results_smoke
     COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_read_results.py
@@ -48,6 +59,18 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   set_tests_properties(python_read_results_smoke
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
+
+  add_test(
+    NAME python_example_read_fixture_results
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/examples/read_fixture_results.py
+            ${PROJECT_SOURCE_DIR}/tests/fixtures
+  )
+
+  set_tests_properties(python_example_read_fixture_results
     PROPERTIES
       ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
   )

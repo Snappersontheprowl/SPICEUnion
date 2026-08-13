@@ -28,7 +28,9 @@
   渲染，以及三列 AC / 两列 TRAN / 两列 DC sweep `wrdata` 输出解析；启用外部测试后，
   会真实调用 `ngspice -b` 并通过 evaluator / pool 跑 AC、TRAN 与 DC batch。
 - Python binding tests 位于 `bindings/python/tests/`，通过 CTest 调 Python，覆盖
-  `import spiceunion`、`version()`、libpsf 开关状态、fixture 读取和失败读取 case。
+  `import spiceunion`、`version()`、libpsf 开关状态、result 对象 API 契约、
+  fixture 读取和失败读取 case。
+- Python 示例脚本位于 `bindings/python/examples/`，当前也通过 CTest 做 smoke 验证。
 - Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
 - 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
 
@@ -86,6 +88,12 @@ cmake --build cmake-build-python
 ctest --test-dir cmake-build-python --output-on-failure
 ```
 
+当前本机结果：
+
+```text
+100% tests passed, 0 tests failed out of 85
+```
+
 Python binding + libpsf 测试：
 
 ```bash
@@ -97,6 +105,12 @@ cmake -S . -B cmake-build-python-libpsf-pic \
   -DSPICEUNION_ENABLE_LIBPSF_READER=ON
 cmake --build cmake-build-python-libpsf-pic
 ctest --test-dir cmake-build-python-libpsf-pic --output-on-failure
+```
+
+当前本机结果：
+
+```text
+100% tests passed, 0 tests failed out of 98
 ```
 
 启用 Python binding 与 libpsf 时，静态 libpsf 需要可被链接进 Python shared module。

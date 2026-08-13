@@ -13,7 +13,7 @@
 - [ ] MOS I-V / gm/Id 多曲线 DC 结果与 `DcSweep` 扩展评估。
 - [ ] `EvaluatorOptions` 扩展或 netlist template / DSL。
 - [ ] Ngspice `.op` operating point。
-- [ ] M4.2 Python API 稳定化评估。
+- [ ] M4.3 执行层 binding 评估。
 - [ ] C ABI 正式实现（M4 第一版暂缓，仅保留 ownership 草案）。
 - [ ] libpsf backend 产品化分发与 license notice。
 - [ ] Xyce / Hspice 多仿真器扩展。

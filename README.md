@@ -33,7 +33,7 @@ ParameterState batch
 - Spectre PSF fixture 读取；
 - Spectre / Ngspice 同类 AC、TRAN 与 DC sweep 语义对照；
 - Ngspice `wrdata` AC / TRAN / DC sweep 读取。
-- 可选 pybind11 Python binding，当前覆盖结果读取 helper 与结果数学 helper。
+- 可选 pybind11 Python binding，当前覆盖结果读取 helper、结果数学 helper、状态文本和 shape consistency helper。
 
 当前 ResultIR：
 
@@ -137,6 +137,14 @@ ctest --test-dir cmake-build-python --output-on-failure
 
 Python binding 同时启用 libpsf 时，静态 libpsf 需要能链接进 shared module。本机验证使用
 `local/external/libpsf/install-pic`，CMake 会优先查找该路径。
+
+Python 示例脚本：
+
+```bash
+PYTHONPATH=cmake-build-python/bindings/python \
+  ~/anaconda3/bin/python3.10 \
+  bindings/python/examples/read_fixture_results.py tests/fixtures
+```
 
 ## 外部依赖
 
