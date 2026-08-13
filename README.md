@@ -57,6 +57,7 @@ ParameterState batch
 
 - `doc/develop_doc/README.md`：开发文档索引与维护规则；
 - `doc/develop_doc/当前事实状态.md`：当前事实唯一总账；
+- `doc/develop_doc/架构总览.md`：总体分层、执行链路、结果读取链路与模块责任图；
 - `doc/develop_doc/CPP版本开发计划书.md`：项目章程；
 - `doc/develop_doc/开发路线图.md`：后续施工路线；
 - `doc/develop_doc/M1.md`：M1 Spectre 执行层开发文档；
