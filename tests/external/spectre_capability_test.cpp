@@ -29,10 +29,11 @@ const CapabilityCase kCapabilityCases[] = {
     // 已知边界：真实仿真可跑，解析命中当前 backend 限制
     {"amp_tran_psfxl", "AMP/tran", ReaderKind::kTranWaveform, "net6", "tran.tran.tran",
      su::ResultStatus::kUnsupportedFormat},
+    // 支持路径：PSFASCII（内置 parser）
     {"bgr_amp_dc_psfascii", "BGR_AMP/dc", ReaderKind::kDcValue, "V_BGR", nullptr,
-     su::ResultStatus::kParseError},
+     su::ResultStatus::kOk},
     {"bgr_amp_stb_psfascii", "BGR_AMP/stb", ReaderKind::kAcResponse, "loopGain", "stb.stb",
-     su::ResultStatus::kParseError},
+     su::ResultStatus::kOk},
 };
 
 void PrintTo(const CapabilityCase& test_case, std::ostream* os) {

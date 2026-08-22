@@ -1,0 +1,133 @@
+HEADER
+"PSFversion" "1.00"
+"simulator" "spectre"
+"version" "23.1.0.063"
+"date" "10:27:07 PM, Sat Aug 22, 2026"
+"design" "// ============================================================================="
+"analysis type" "stb"
+"analysis name" "stb"
+"analysis description" "Stability Analysis `stb': freq = (1 Hz -> 1 GHz)"
+"xVecSorted" "ascending"
+"tolerance.relative" 0.00100000
+"operating point producer" "stb"
+"probe" "I18.IPRB0"
+TYPE
+"sweep" FLOAT DOUBLE PROP(
+"key" "sweep"
+)
+"LOOPGAIN" COMPLEX DOUBLE PROP(
+"key" "gain"
+)
+SWEEP
+"freq" "sweep" PROP(
+"sweep_direction" 0
+"units" "Hz"
+"plot" 0
+"grid" 3
+)
+TRACE
+"loopGain" "LOOPGAIN"
+VALUE
+"freq" 1.00000
+"loopGain" (-23.5544 0.000283865)
+"freq" 1.51356
+"loopGain" (-23.5544 0.000429647)
+"freq" 2.29087
+"loopGain" (-23.5544 0.000650297)
+"freq" 3.46737
+"loopGain" (-23.5544 0.000984264)
+"freq" 5.24807
+"loopGain" (-23.5544 0.00148974)
+"freq" 7.94328
+"loopGain" (-23.5544 0.00225482)
+"freq" 12.0226
+"loopGain" (-23.5544 0.00341281)
+"freq" 18.1970
+"loopGain" (-23.5544 0.00516549)
+"freq" 27.5423
+"loopGain" (-23.5544 0.00781829)
+"freq" 41.6869
+"loopGain" (-23.5544 0.0118335)
+"freq" 63.0957
+"loopGain" (-23.5544 0.0179107)
+"freq" 95.4993
+"loopGain" (-23.5544 0.0271089)
+"freq" 144.544
+"loopGain" (-23.5543 0.0410309)
+"freq" 218.776
+"loopGain" (-23.5542 0.0621025)
+"freq" 331.131
+"loopGain" (-23.5540 0.0939952)
+"freq" 501.187
+"loopGain" (-23.5536 0.142265)
+"freq" 758.578
+"loopGain" (-23.5525 0.215317)
+"freq" 1148.15
+"loopGain" (-23.5501 0.325864)
+"freq" 1737.80
+"loopGain" (-23.5446 0.493105)
+"freq" 2630.27
+"loopGain" (-23.5319 0.745963)
+"freq" 3981.07
+"loopGain" (-23.5029 1.12774)
+"freq" 6025.60
+"loopGain" (-23.4367 1.70234)
+"freq" 9120.11
+"loopGain" (-23.2865 2.56089)
+"freq" 13803.8
+"loopGain" (-22.9490 3.82273)
+"freq" 20893.0
+"loopGain" (-22.2099 5.60908)
+"freq" 31622.8
+"loopGain" (-20.6756 7.93402)
+"freq" 47863.0
+"loopGain" (-17.8182 10.4422)
+"freq" 72443.6
+"loopGain" (-13.4324 12.1660)
+"freq" 109648.
+"loopGain" (-8.36241 12.0461)
+"freq" 165959.
+"loopGain" (-4.11263 10.1504)
+"freq" 251189.
+"loopGain" (-1.41253 7.57800)
+"freq" 380189.
+"loopGain" (0.00578614 5.23283)
+"freq" 575440.
+"loopGain" (0.658750 3.41092)
+"freq" 870964.
+"loopGain" (0.902139 2.07486)
+"freq" 1.31826e+06
+"loopGain" (0.908696 1.11242)
+"freq" 1.99526e+06
+"loopGain" (0.754308 0.449902)
+"freq" 3.01995e+06
+"loopGain" (0.510828 0.0609733)
+"freq" 4.57088e+06
+"loopGain" (0.276519 -0.0992504)
+"freq" 6.91831e+06
+"loopGain" (0.115814 -0.123007)
+"freq" 1.04713e+07
+"loopGain" (0.0295300 -0.0946006)
+"freq" 1.58489e+07
+"loopGain" (-0.00747736 -0.0575604)
+"freq" 2.39883e+07
+"loopGain" (-0.0170350 -0.0278356)
+"freq" 3.63078e+07
+"loopGain" (-0.0139642 -0.00977680)
+"freq" 5.49541e+07
+"loopGain" (-0.00801557 -0.00172396)
+"freq" 8.31764e+07
+"loopGain" (-0.00360587 0.000674258)
+"freq" 1.25893e+08
+"loopGain" (-0.00126459 0.000881655)
+"freq" 1.90546e+08
+"loopGain" (-0.000273885 0.000538381)
+"freq" 2.88403e+08
+"loopGain" (2.61353e-05 0.000214384)
+"freq" 4.36516e+08
+"loopGain" (5.14528e-05 4.64678e-05)
+"freq" 6.60693e+08
+"loopGain" (1.98209e-05 -2.53540e-06)
+"freq" 1.00000e+09
+"loopGain" (2.07912e-06 -4.79076e-06)
+END

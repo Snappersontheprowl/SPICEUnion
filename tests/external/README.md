@@ -38,13 +38,12 @@
 | `AMP/dc` | dcOp | BINPSF | `read_dc_value` | 支持（Vos/Idd 有校准断言） |
 | `AMP/ac` | AC | BINPSF | `read_ac_response` | 支持（`net1`，51 频点） |
 | `AMP/tran` | TRAN | PSFXL | `read_tran_waveform` | 边界：仿真可跑，解析 `unsupported_format` |
-| `BGR_AMP/dc` | dcOp + temp sweep | PSFASCII | `read_dc_value` / `read_dc_sweep` | 边界：仿真可跑，解析 `parse_error` |
-| `BGR_AMP/stb` | STB | PSFASCII | `read_ac_response` | 边界：仿真可跑，解析 `parse_error` |
+| `BGR_AMP/dc` | dcOp + temp sweep | PSFASCII | `read_dc_value` / `read_dc_sweep` | 支持（内置 PSFASCII parser） |
+| `BGR_AMP/stb` | STB | PSFASCII | `read_ac_response` | 支持（内置 PSFASCII parser） |
 
-说明：`spectre_materials` 自身 Python `psf_ascii_reader` 可读 BGR_AMP 的 PSFASCII，而
-SPICEUnion 的 libpsf backend 目前解析失败——ASCII PSF 兼容性属已知缺口
-（既有 fixture 均为 BINPSF，未覆盖 ASCII 路径）。backend 改进后对应用例会翻红，
-提示更新本矩阵。
+说明：PSFASCII 由内置 parser 解析（`src/parse/psf_ascii_backend.cpp`），BINPSF
+由可选 libpsf 解析，运行时按文件格式自动分发；`SPICEUNION_ENABLE_LIBPSF_READER`
+只控制 BINPSF 能力。
 
 ## 常用入口
 

@@ -18,4 +18,5 @@ ResultIR 语义，而不是验证完整 Spectre 环境是否可用。
 ## 当前子目录
 
 - `psf/`：Spectre PSF 结果读取相关 fixture。
+- `psf_ascii/`：Spectre 23.1 PSFASCII 真实样本，用于内置 ASCII parser 测试。
 - `spectre/`：用于复现 Spectre fixture 的源 netlist。

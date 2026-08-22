@@ -104,6 +104,7 @@ add_library(spiceunion_core STATIC
   src/core/task_result.cpp
   src/parse/result.cpp
   src/parse/result_reader.cpp
+  src/parse/psf_ascii_backend.cpp
   src/pool/simulator_pool.cpp
   src/session/ngspice_session.cpp
   src/session/spectre_protocol.cpp
@@ -276,6 +277,24 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_result_reader_test)
+
+  add_executable(spiceunion_psf_ascii_reader_test
+    tests/psf_ascii_reader_test.cpp
+  )
+
+  target_link_libraries(spiceunion_psf_ascii_reader_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_psf_ascii_reader_test
+    PRIVATE
+      SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
+      SPICEUNION_FIXTURE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures"
+  )
+
+  gtest_discover_tests(spiceunion_psf_ascii_reader_test)
 
   add_executable(spiceunion_simulation_semantics_test
     tests/simulation_semantics_test.cpp

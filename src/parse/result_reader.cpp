@@ -1,5 +1,7 @@
 #include "su/result_reader.hpp"
 
+#include "src/parse/psf_ascii_backend.hpp"
+
 #ifdef SPICEUNION_ENABLE_LIBPSF_READER
 #include "src/parse/libpsf_backend.hpp"
 #endif
@@ -23,6 +25,8 @@ bool finite(double value) {
 bool all_finite(const std::vector<double>& values) {
   return std::all_of(values.begin(), values.end(), [](double value) { return finite(value); });
 }
+
+constexpr const char* kDcOpFilename = "dcOp.dc";
 
 }  // namespace
 
@@ -65,11 +69,24 @@ ReadResult<ResultDirectory> find_result_directory(const std::string& work_dir) {
 
 ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
                                        const std::string& signal_name) {
+  if (result_dir.empty()) {
+    return ReadResult<ScalarResult>::failure(ResultStatus::kInvalidInput,
+                                             "result_dir must not be empty");
+  }
+  if (signal_name.empty()) {
+    return ReadResult<ScalarResult>::failure(ResultStatus::kInvalidInput,
+                                             "signal_name must not be empty");
+  }
+
+  const auto psf_file = std::filesystem::path(result_dir) / kDcOpFilename;
+  if (std::filesystem::is_regular_file(psf_file) &&
+      parse::is_psf_ascii_file(psf_file.string())) {
+    return parse::read_dc_value_with_ascii(result_dir, signal_name);
+  }
+
 #ifdef SPICEUNION_ENABLE_LIBPSF_READER
   return parse::read_dc_value_with_libpsf(result_dir, signal_name);
 #else
-  (void)result_dir;
-  (void)signal_name;
   return ReadResult<ScalarResult>::failure(ResultStatus::kUnsupportedFormat,
                                            "dcOp.dc reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
@@ -79,13 +96,15 @@ ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
                                   const std::string& sweep_name,
                                   const std::string& signal_name,
                                   const std::string& filename) {
+  const auto psf_file = std::filesystem::path(result_dir) / filename;
+  if (std::filesystem::is_regular_file(psf_file) &&
+      parse::is_psf_ascii_file(psf_file.string())) {
+    return parse::read_dc_sweep_with_ascii(result_dir, sweep_name, signal_name, filename);
+  }
+
 #ifdef SPICEUNION_ENABLE_LIBPSF_READER
   return parse::read_dc_sweep_with_libpsf(result_dir, sweep_name, signal_name, filename);
 #else
-  (void)result_dir;
-  (void)sweep_name;
-  (void)signal_name;
-  (void)filename;
   return ReadResult<DcSweep>::failure(ResultStatus::kUnsupportedFormat,
                                       "DC sweep file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
@@ -94,12 +113,15 @@ ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
                                         const std::string& filename) {
+  const auto psf_file = std::filesystem::path(result_dir) / filename;
+  if (std::filesystem::is_regular_file(psf_file) &&
+      parse::is_psf_ascii_file(psf_file.string())) {
+    return parse::read_ac_response_with_ascii(result_dir, signal_name, filename);
+  }
+
 #ifdef SPICEUNION_ENABLE_LIBPSF_READER
   return parse::read_ac_response_with_libpsf(result_dir, signal_name, filename);
 #else
-  (void)result_dir;
-  (void)signal_name;
-  (void)filename;
   return ReadResult<AcResponse>::failure(ResultStatus::kUnsupportedFormat,
                                          "AC file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif
@@ -108,12 +130,15 @@ ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
 ReadResult<TranWaveform> read_tran_waveform(const std::string& result_dir,
                                             const std::string& signal_name,
                                             const std::string& filename) {
+  const auto psf_file = std::filesystem::path(result_dir) / filename;
+  if (std::filesystem::is_regular_file(psf_file) &&
+      parse::is_psf_ascii_file(psf_file.string())) {
+    return parse::read_tran_waveform_with_ascii(result_dir, signal_name, filename);
+  }
+
 #ifdef SPICEUNION_ENABLE_LIBPSF_READER
   return parse::read_tran_waveform_with_libpsf(result_dir, signal_name, filename);
 #else
-  (void)result_dir;
-  (void)signal_name;
-  (void)filename;
   return ReadResult<TranWaveform>::failure(ResultStatus::kUnsupportedFormat,
                                            "tran file reading requires SPICEUNION_ENABLE_LIBPSF_READER");
 #endif

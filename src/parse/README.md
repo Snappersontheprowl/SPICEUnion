@@ -14,6 +14,8 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 - `result.cpp`：`ResultStatus` 稳定文本转换。
 - `result_reader.cpp`：`.raw` 目录定位、AC magnitude / phase、UGBW / phase margin、
   waveform settling time，以及公开 result reader 入口。
+- `psf_ascii_backend.cpp`：内置 PSFASCII parser（当前面向 Spectre 23.1
+  `rawfmt=psfascii` 输出），默认构建始终可用，不依赖外部库。
 - `libpsf_backend.cpp`：可选内部 backend。仅在
   `SPICEUNION_ENABLE_LIBPSF_READER=ON` 时编译，用 `henjo/libpsf` 读取 `dcOp.dc`
   单信号 scalar、单 axis DC sweep、swept complex response 和普通 time-sweep transient；
@@ -21,18 +23,16 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 
 当前文件读取状态：
 
-- `read_dc_value()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
-  `dcOp.dc`。
-- `read_dc_sweep()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后读取
-  单 sweep axis、单 signal 实数 PSF 文件，并映射为 `DcSweep`。当前已用 Spectre
-  resistor divider DC sweep fixture 验证。
-- `read_tran_waveform()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
-  读取普通 time-sweep `tran.tran`。Spectre 23.1 PSFXL transient 当前明确返回
-  `kUnsupportedFormat`。
-- `read_ac_response()`：默认构建返回 `kUnsupportedFormat`；启用 libpsf backend 后
-  读取 swept complex PSF 数据，并将 sweep values 映射为 `frequency_hz`，将
-  complex vector 拆分为 `real` / `imag`。当前已用标准 `ac.ac` fixture 与
-  `stb.stb` fixture 验证。
+- `read_dc_value()`：按文件格式分发——PSFASCII 走内置 parser；BINPSF 需启用
+  libpsf backend，否则返回 `kUnsupportedFormat`。
+- `read_dc_sweep()`：PSFASCII 走内置 parser（已用 BGR_AMP temp sweep 真实样本
+  验证）；BINPSF 需 libpsf，映射为 `DcSweep`（Spectre resistor divider DC sweep
+  fixture 验证）。
+- `read_tran_waveform()`：普通 PSFASCII/BINPSF time-sweep 支持；Spectre 23.1
+  PSFXL transient 当前明确返回 `kUnsupportedFormat`。
+- `read_ac_response()`：PSFASCII 走内置 parser（已用 BGR_AMP `stb.stb` 真实样本
+  验证）；BINPSF 需 libpsf，将 sweep values 映射为 `frequency_hz`，complex
+  vector 拆分为 `real` / `imag`（标准 `ac.ac` 与 `stb.stb` fixture 验证）。
 - `read_sensitivity_legacy()`：当前保持 `kUnsupportedFormat` stub，等待 legacy
   sensitivity fixture 与可信参考值。
 

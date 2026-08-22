@@ -1,0 +1,203 @@
+HEADER
+"PSFversion" "1.00"
+"simulator" "spectre"
+"version" "23.1.0.063"
+"date" "10:26:54 PM, Sat Aug 22, 2026"
+"design" "// ============================================================================="
+"analysis type" "dc"
+"analysis name" "dc"
+"analysis description" "DC Analysis `dc': temp = (-40 C -> 120 C)"
+"xVecSorted" "unsorted"
+"tolerance.relative" 0.00100000
+"reltol" 0.00100000
+"abstol(V)" 1.00000e-06
+"abstol(I)" 1.00000e-12
+"temp" -40.0000
+"tnom" 27.0000
+"tempeffects" "all"
+"gmindc" 1.00000e-12
+TYPE
+"sweep" FLOAT DOUBLE PROP(
+"key" "sweep"
+)
+"LogicV" FLOAT DOUBLE PROP(
+"key" "node"
+)
+"Real" FLOAT DOUBLE PROP(
+"units" ""
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Tau" FLOAT DOUBLE PROP(
+"units" "N*m"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Alpha" FLOAT DOUBLE PROP(
+"units" "rads/s^2"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Omega" FLOAT DOUBLE PROP(
+"units" "rads/s"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Theta" FLOAT DOUBLE PROP(
+"units" "rads"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"F" FLOAT DOUBLE PROP(
+"units" "N"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Imp" FLOAT DOUBLE PROP(
+"units" "m/s^3"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Acc" FLOAT DOUBLE PROP(
+"units" "m/s^2"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Vel" FLOAT DOUBLE PROP(
+"units" "m/s"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Pos" FLOAT DOUBLE PROP(
+"units" "m"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"Phi" FLOAT DOUBLE PROP(
+"units" "Wb"
+"key" "node"
+"tolerance" 1.00000e-09
+)
+"V" FLOAT DOUBLE PROP(
+"units" "V"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"I" FLOAT DOUBLE PROP(
+"units" "A"
+"key" "branch"
+"tolerance" 1.00000e-12
+)
+"MMF" FLOAT DOUBLE PROP(
+"units" "A*turn"
+"key" "node"
+"tolerance" 1.00000e-12
+)
+"Wb" FLOAT DOUBLE PROP(
+"units" "Wb"
+"key" "node"
+"tolerance" 1.00000e-09
+)
+"Temp" FLOAT DOUBLE PROP(
+"units" "C"
+"key" "node"
+"tolerance" 0.000100000
+)
+"Pwr" FLOAT DOUBLE PROP(
+"units" "W"
+"key" "node"
+"tolerance" 1.00000e-09
+)
+"U" FLOAT DOUBLE PROP(
+"units" ""
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"V/Sec" FLOAT DOUBLE PROP(
+"units" "V/s"
+"key" "node"
+"tolerance" 0.000100000
+)
+"I/Sec" FLOAT DOUBLE PROP(
+"units" "A/s"
+"key" "node"
+"tolerance" 1.00000e-06
+)
+"1/Sec" FLOAT DOUBLE PROP(
+"units" "1/s"
+"key" "node"
+"tolerance" 0.000100000
+)
+"HOD" FLOAT DOUBLE PROP(
+"units" ""
+"key" "node"
+"tolerance" 0.0100000
+)
+"Q" FLOAT DOUBLE PROP(
+"units" "coul"
+"key" "node"
+"tolerance" 1.00000e-14
+)
+SWEEP
+"temp" "sweep" PROP(
+"sweep_direction" 0
+"units" "C"
+"plot" 0
+"grid" 1
+)
+TRACE
+"V7:p" "I"
+"V_BGR" "V"
+VALUE
+"temp" -4.000000000000000e+01
+"V7:p" -7.561493323882306e-05
+"V_BGR" 1.179167826395816e+00
+"temp" -3.000000000000000e+01
+"V7:p" -7.590861864487115e-05
+"V_BGR" 1.179776276785496e+00
+"temp" -2.000000000000000e+01
+"V7:p" -7.621312800220741e-05
+"V_BGR" 1.180355083563562e+00
+"temp" -1.000000000000000e+01
+"V7:p" -7.652573978340225e-05
+"V_BGR" 1.180869854934430e+00
+"temp" 0.000000000000000e+00
+"V7:p" -7.684502097400244e-05
+"V_BGR" 1.181309839754724e+00
+"temp" 1.000000000000000e+01
+"V7:p" -7.716980975723523e-05
+"V_BGR" 1.181665218284268e+00
+"temp" 2.000000000000000e+01
+"V7:p" -7.749919024525852e-05
+"V_BGR" 1.181927836169204e+00
+"temp" 3.000000000000000e+01
+"V7:p" -7.783245471543459e-05
+"V_BGR" 1.182091385801933e+00
+"temp" 4.000000000000000e+01
+"V7:p" -7.816906102377397e-05
+"V_BGR" 1.182151236680488e+00
+"temp" 5.000000000000000e+01
+"V7:p" -7.850859176207381e-05
+"V_BGR" 1.182104107698748e+00
+"temp" 6.000000000000000e+01
+"V7:p" -7.885071870863782e-05
+"V_BGR" 1.181947706461931e+00
+"temp" 7.000000000000000e+01
+"V7:p" -7.919517390758579e-05
+"V_BGR" 1.181680407264076e+00
+"temp" 8.000000000000000e+01
+"V7:p" -7.954172727377803e-05
+"V_BGR" 1.181301001089709e+00
+"temp" 9.000000000000000e+01
+"V7:p" -7.989017001940224e-05
+"V_BGR" 1.180808531368600e+00
+"temp" 1.000000000000000e+02
+"V7:p" -8.024030300894719e-05
+"V_BGR" 1.180202215873262e+00
+"temp" 1.100000000000000e+02
+"V7:p" -8.059192924816316e-05
+"V_BGR" 1.179481441414324e+00
+"temp" 1.200000000000000e+02
+"V7:p" -8.094485061353401e-05
+"V_BGR" 1.178645812598910e+00
+END

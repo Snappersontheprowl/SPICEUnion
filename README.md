@@ -66,9 +66,8 @@ ParameterState batch
 - 不做 circuit metric / objective / penalty、optimizer、PDK 内容管理、GUI、
   完整 netlist IR；
 - 解析边界（经真实网表实测）：PSFXL transient 明确返回 `unsupported_format`；
-  libpsf backend 对 Spectre 23.1 的 PSFASCII 输出存在兼容缺口（既有 fixture
-  均为 BINPSF，ASCII 路径未覆盖）；legacy sensitivity 未实现；原生 PSF parser
-  未实现；
+  PSFASCII 由内置 parser 支持、BINPSF 由可选 libpsf 支持；legacy sensitivity
+  未实现；完整原生 PSF parser（内置 BINPSF）未实现；
 - Python 侧当前只能读取结果，不能发起仿真（执行层绑定暂缓）；
 - 尚未发布 wheel / package；性能数字未系统实测。
 
