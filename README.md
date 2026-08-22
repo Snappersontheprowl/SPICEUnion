@@ -178,6 +178,8 @@ SPICEUNION_ORDERED_POOL_SOURCE_DIR
 外部测试还需要 `spectre` 位于 `PATH`，Ngspice 位于 `PATH`（或通过
 `SPICEUNION_NGSPICE` 指定）。基线网表内部以绝对路径 include PDK，跨机器需要
 等价材料布局；本机 `/dev/shm/pdk_cache` 缓存已废弃，不再作为检查条件。
+`spectre_materials/external/netlist` 下的网表均为项目所有者实测的合法仿真网表，SPICEUnion
+只作为消费方读取，不修改网表内容。
 
 libpsf backend 默认查找：
 

@@ -16,6 +16,8 @@
 - 基线网表与 PDK 统一来自 `SPICEUNION_SPECTRE_MATERIALS_DIR`（默认
   `~/my_lab/projects/spectre_materials`）的 `external/netlist` 与 `external/pdk`，
   路径由 CMake 编译宏注入，不在本目录硬编码机器路径。
+- `spectre_materials/external/netlist` 下的网表均为项目所有者实测的合法仿真网表；
+  当前外部测试仅消费 `AMP/dc/input.scs`，其余电路网表可作为后续契约测试材料扩展。
 - 基线网表内部以绝对路径 include PDK，跨机器需要等价材料布局。
 - 本机 `/dev/shm/pdk_cache` 已废弃，SPICEUnion 不再检查该路径。
 
