@@ -113,6 +113,14 @@ cmake --build --preset external
 ctest --preset external --output-on-failure
 ```
 
+真实网表端到端（外部仿真 + libpsf 结果解析）：
+
+```bash
+cmake --preset external-libpsf
+cmake --build --preset external-libpsf
+ctest --preset external-libpsf --output-on-failure
+```
+
 libpsf backend 需要显式启用：
 
 ```bash

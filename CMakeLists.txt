@@ -303,6 +303,27 @@ if(SPICEUNION_BUILD_TESTS)
 
   gtest_discover_tests(spiceunion_spectre_session_lifecycle_test)
 
+  if(SPICEUNION_ENABLE_LIBPSF_READER)
+    add_executable(spiceunion_spectre_real_result_test
+      tests/external/spectre_real_result_test.cpp
+    )
+
+    target_link_libraries(spiceunion_spectre_real_result_test
+      PRIVATE
+        spiceunion_core
+        GTest::gtest_main
+    )
+
+    target_compile_definitions(spiceunion_spectre_real_result_test
+      PRIVATE
+        SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
+        SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
+        SPICEUNION_SPECTRE_MATERIALS_DIR="${SPICEUNION_SPECTRE_MATERIALS_DIR}"
+    )
+
+    gtest_discover_tests(spiceunion_spectre_real_result_test)
+  endif()
+
   add_executable(spiceunion_ngspice_session_test
     tests/ngspice_session_test.cpp
   )

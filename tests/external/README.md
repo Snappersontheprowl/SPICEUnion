@@ -10,6 +10,10 @@
 
 - `spectre_session_lifecycle_test.cpp`：外部 Spectre 生命周期契约（interactive
   handshake、单任务 `(sclRun "all")`、multi-worker batch）。
+- `spectre_real_result_test.cpp`：真实网表端到端——用真实 spectre 跑
+  `AMP/dc/input.scs`，再用 libpsf 解析真实 dcOp.dc，断言 Vos / Idd 与
+  `spectre_materials` `amp_dc` profile 校准值一致。需要 `SPICEUNION_ENABLE_LIBPSF_READER`。
+- `spectre_external_env.hpp`：外部环境检查与材料路径共享 helper。
 
 ## 当前约定
 
@@ -20,6 +24,8 @@
   当前外部测试仅消费 `AMP/dc/input.scs`，其余电路网表可作为后续契约测试材料扩展。
 - 基线网表内部以绝对路径 include PDK，跨机器需要等价材料布局。
 - 本机 `/dev/shm/pdk_cache` 已废弃，SPICEUnion 不再检查该路径。
+- 真实网表端到端测试需要 external 与 libpsf 同时开启，使用 `external-libpsf` 预设；
+  仅开启 libpsf 时该用例会在测试体开头 `GTEST_SKIP()`。
 
 ## 常用入口
 
@@ -27,4 +33,10 @@
 
 ```bash
 cmake --preset external && cmake --build --preset external && ctest --preset external --output-on-failure
+```
+
+- 真实网表端到端（仿真 + 解析）：
+
+```bash
+cmake --preset external-libpsf && cmake --build --preset external-libpsf && ctest --preset external-libpsf --output-on-failure
 ```

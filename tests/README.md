@@ -30,8 +30,8 @@
 - `support/`：测试共享 helper（如 `rc_semantics.hpp`），不含被测逻辑。
 - `fixtures/`：已提交的小体积固定样本（Spectre 源 netlist 与 PSF 结果），详见
   `fixtures/README.md`。
-- `external/`：外部 Spectre 生命周期测试，依赖 `spectre_materials/external/` 网表与 PDK，
-  默认 skip，详见 `external/README.md`。
+- `external/`：外部 Spectre 测试（生命周期契约 + 真实网表端到端仿真/解析），依赖
+  `spectre_materials/external/` 网表与 PDK，默认 skip，详见 `external/README.md`。
 - `manual/`：人工验证工具，不进入默认 ctest，详见 `manual/README.md`。
 
 ## 命名规则
@@ -63,6 +63,12 @@ cmake --preset default && cmake --build --preset default && ctest --preset defau
 
 ```bash
 cmake --preset external && cmake --build --preset external && ctest --preset external --output-on-failure
+```
+
+- 真实网表端到端（外部仿真 + libpsf 解析）：
+
+```bash
+cmake --preset external-libpsf && cmake --build --preset external-libpsf && ctest --preset external-libpsf --output-on-failure
 ```
 
 - libpsf / python / python-libpsf-pic 等其他预设及外部依赖说明见根 `README.md`。

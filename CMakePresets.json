@@ -33,6 +33,20 @@
       }
     },
     {
+      "name": "external-libpsf",
+      "displayName": "External Spectre + libpsf Debug",
+      "description": "Debug build with external Spectre/Ngspice tests and libpsf reader enabled, for end-to-end real netlist simulation and real result parsing.",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/external-libpsf",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SPICEUNION_BUILD_TESTS": "ON",
+        "SPICEUNION_ENABLE_EXTERNAL_TESTS": "ON",
+        "SPICEUNION_ENABLE_LIBPSF_READER": "ON"
+      }
+    },
+    {
       "name": "libpsf",
       "displayName": "libpsf Debug",
       "description": "Debug build with optional henjo/libpsf PSF reader backend enabled.",
@@ -84,6 +98,10 @@
       "configurePreset": "external"
     },
     {
+      "name": "external-libpsf",
+      "configurePreset": "external-libpsf"
+    },
+    {
       "name": "libpsf",
       "configurePreset": "libpsf"
     },
@@ -107,6 +125,13 @@
     {
       "name": "external",
       "configurePreset": "external",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "external-libpsf",
+      "configurePreset": "external-libpsf",
       "output": {
         "outputOnFailure": true
       }
