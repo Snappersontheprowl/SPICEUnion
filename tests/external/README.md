@@ -10,6 +10,8 @@
 
 - `spectre_session_lifecycle_test.cpp`：外部 Spectre 生命周期契约（interactive
   handshake、单任务 `(sclRun "all")`、multi-worker batch）。
+- `spectre_capability_test.cpp`：多网表能力矩阵——真实跑不同电路/分析，按矩阵
+  断言解析状态（支持路径断言结构，已知边界断言当前状态）。
 - `spectre_real_result_test.cpp`：真实网表端到端——用真实 spectre 跑
   `AMP/dc/input.scs`，再用 libpsf 解析真实 dcOp.dc，断言 Vos / Idd 与
   `spectre_materials` `amp_dc` profile 校准值一致。需要 `SPICEUNION_ENABLE_LIBPSF_READER`。
@@ -28,6 +30,21 @@
   （实测 tmpfs 对当前产物规模加速不可测量）。
 - 真实网表端到端测试需要 external 与 libpsf 同时开启，使用 `external-libpsf` 预设；
   仅开启 libpsf 时该用例会在测试体开头 `GTEST_SKIP()`。
+
+## 能力矩阵（实测状态）
+
+| 网表 | 分析 | 输出格式 | 解析 API | 当前状态 |
+|---|---|---|---|---|
+| `AMP/dc` | dcOp | BINPSF | `read_dc_value` | 支持（Vos/Idd 有校准断言） |
+| `AMP/ac` | AC | BINPSF | `read_ac_response` | 支持（`net1`，51 频点） |
+| `AMP/tran` | TRAN | PSFXL | `read_tran_waveform` | 边界：仿真可跑，解析 `unsupported_format` |
+| `BGR_AMP/dc` | dcOp + temp sweep | PSFASCII | `read_dc_value` / `read_dc_sweep` | 边界：仿真可跑，解析 `parse_error` |
+| `BGR_AMP/stb` | STB | PSFASCII | `read_ac_response` | 边界：仿真可跑，解析 `parse_error` |
+
+说明：`spectre_materials` 自身 Python `psf_ascii_reader` 可读 BGR_AMP 的 PSFASCII，而
+SPICEUnion 的 libpsf backend 目前解析失败——ASCII PSF 兼容性属已知缺口
+（既有 fixture 均为 BINPSF，未覆盖 ASCII 路径）。backend 改进后对应用例会翻红，
+提示更新本矩阵。
 
 ## 常用入口
 
