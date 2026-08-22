@@ -35,14 +35,18 @@ bool ngspice_available() {
          std::system("command -v ngspice_con >/dev/null 2>&1") == 0;
 }
 
-void skip_unless_external_ngspice_is_ready() {
+bool external_ngspice_environment_is_ready(std::string* reason) {
 #if !SPICEUNION_ENABLE_EXTERNAL_TESTS
-  GTEST_SKIP() << "External Ngspice tests are disabled. Reconfigure with "
-                  "-DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON to run this test.";
+  *reason =
+      "External Ngspice tests are disabled. Reconfigure with "
+      "-DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON to run this test.";
+  return false;
 #endif
   if (!ngspice_available()) {
-    GTEST_SKIP() << "ngspice executable is not available in PATH";
+    *reason = "ngspice executable is not available in PATH";
+    return false;
   }
+  return true;
 }
 
 }  // namespace
@@ -326,7 +330,10 @@ TEST(NgspiceWrdataParserTest, RejectsUnexpectedDcExtraColumns) {
 }
 
 TEST(NgspiceSessionExternalTest, RunsRcLowPassAcWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_session");
   std::filesystem::remove_all(root);
@@ -357,7 +364,10 @@ TEST(NgspiceSessionExternalTest, RunsRcLowPassAcWhenExternalNgspiceIsEnabled) {
 }
 
 TEST(NgspiceSessionExternalTest, RunsRcChargingTranWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_tran_session");
   std::filesystem::remove_all(root);
@@ -394,7 +404,10 @@ TEST(NgspiceSessionExternalTest, RunsRcChargingTranWhenExternalNgspiceIsEnabled)
 }
 
 TEST(NgspiceSessionExternalTest, RunsResistorDividerDcWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_dc_session");
   std::filesystem::remove_all(root);
@@ -434,7 +447,10 @@ TEST(NgspiceSessionExternalTest, RunsResistorDividerDcWhenExternalNgspiceIsEnabl
 }
 
 TEST(NgspiceEvaluatorExternalTest, RunsBatchThroughEvaluatorWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_evaluator");
   std::filesystem::remove_all(root);
@@ -461,7 +477,10 @@ TEST(NgspiceEvaluatorExternalTest, RunsBatchThroughEvaluatorWhenExternalNgspiceI
 }
 
 TEST(NgspiceEvaluatorExternalTest, RunsDcBatchThroughEvaluatorWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_dc_evaluator");
   std::filesystem::remove_all(root);
@@ -492,7 +511,10 @@ TEST(NgspiceEvaluatorExternalTest, RunsDcBatchThroughEvaluatorWhenExternalNgspic
 }
 
 TEST(NgspiceEvaluatorExternalTest, RunsTranBatchThroughEvaluatorWhenExternalNgspiceIsEnabled) {
-  skip_unless_external_ngspice_is_ready();
+  std::string skip_reason;
+  if (!external_ngspice_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   const auto root = test_root("external_tran_evaluator");
   std::filesystem::remove_all(root);

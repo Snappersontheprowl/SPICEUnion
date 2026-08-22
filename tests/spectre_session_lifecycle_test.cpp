@@ -19,7 +19,8 @@ bool spectre_available() {
 
 su::EvaluatorOptions spectre_options() {
   su::EvaluatorOptions options;
-  options.netlist_path = "~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs";
+  options.netlist_path =
+      "~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs";
   options.num_workers = 1;
   options.work_dir_base = "/dev/shm/spiceunion_spectre_lifecycle";
   options.workspace_namespace = "lifecycle";
@@ -27,26 +28,36 @@ su::EvaluatorOptions spectre_options() {
   return options;
 }
 
-void skip_unless_external_environment_is_ready() {
+bool external_spectre_environment_is_ready(std::string* reason) {
 #if !SPICEUNION_ENABLE_EXTERNAL_TESTS
-  GTEST_SKIP() << "External Spectre tests are disabled. Reconfigure with "
-                  "-DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON to run this test.";
+  *reason =
+      "External Spectre tests are disabled. Reconfigure with "
+      "-DSPICEUNION_ENABLE_EXTERNAL_TESTS=ON to run this test.";
+  return false;
 #endif
   if (!spectre_available()) {
-    GTEST_SKIP() << "spectre executable is not available in PATH";
+    *reason = "spectre executable is not available in PATH";
+    return false;
   }
   if (!file_exists("/dev/shm/pdk_cache/toplevel.scs")) {
-    GTEST_SKIP() << "required PDK include is missing: /dev/shm/pdk_cache/toplevel.scs";
+    *reason = "required PDK include is missing: /dev/shm/pdk_cache/toplevel.scs";
+    return false;
   }
-  if (!file_exists("~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs")) {
-    GTEST_SKIP() << "baseline Spectre netlist is missing";
+  if (!file_exists(
+          "~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs")) {
+    *reason = "baseline Spectre netlist is missing";
+    return false;
   }
+  return true;
 }
 
 }  // namespace
 
 TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsEnabled) {
-  skip_unless_external_environment_is_ready();
+  std::string skip_reason;
+  if (!external_spectre_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   auto options = spectre_options();
   su::SpectreSession session(0, options,
@@ -58,7 +69,10 @@ TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsE
 }
 
 TEST(SpectreSessionLifecycleTest, CanRunSingleTaskWhenExternalSpectreIsEnabled) {
-  skip_unless_external_environment_is_ready();
+  std::string skip_reason;
+  if (!external_spectre_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   auto options = spectre_options();
   options.workspace_namespace = "single_run";
@@ -73,7 +87,10 @@ TEST(SpectreSessionLifecycleTest, CanRunSingleTaskWhenExternalSpectreIsEnabled) 
 }
 
 TEST(SpectreSessionLifecycleTest, SpectreEvaluatorRunsBatchWhenExternalSpectreIsEnabled) {
-  skip_unless_external_environment_is_ready();
+  std::string skip_reason;
+  if (!external_spectre_environment_is_ready(&skip_reason)) {
+    GTEST_SKIP() << skip_reason;
+  }
 
   auto options = spectre_options();
   options.workspace_namespace = "batch_run";

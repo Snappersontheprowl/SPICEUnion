@@ -169,7 +169,7 @@ SPICEUNION_ORDERED_POOL_SOURCE_DIR
 
 - `spectre` 位于 `PATH` 中；
 - `/dev/shm/pdk_cache/toplevel.scs`；
-- `~/my_lab/projects/spectre_materials/netlist/AMP/dc/input.scs`；
+- `~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs`；
 - `ngspice_con` 或 `ngspice` 位于 `PATH` 中；
 - 或通过 `SPICEUNION_NGSPICE` 指向 Ngspice 可执行文件。
 
