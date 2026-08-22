@@ -14,7 +14,7 @@ su::EvaluatorOptions spectre_real_result_options() {
   su::EvaluatorOptions options;
   options.netlist_path = spectre_materials_netlist_path();
   options.num_workers = 1;
-  options.work_dir_base = "/dev/shm/spiceunion_spectre_real_result";
+  options.work_dir_base = spectre_runtime_root("real_result");
   options.workspace_namespace = "real_result";
   options.timeout_seconds = 30;
   return options;
@@ -29,8 +29,8 @@ TEST(SpectreRealResultTest, RunsRealAmpDcNetlistAndParsesRealDcResult) {
   }
 
   const auto options = spectre_real_result_options();
-  su::SpectreSession session(
-      0, options, "/dev/shm/spiceunion_spectre_real_result/real_result/worker_0");
+  su::SpectreSession session(0, options,
+                             spectre_runtime_root("real_result") + "/real_result/worker_0");
 
   ASSERT_NO_THROW(session.start());
   const auto result = session.run({}, std::chrono::seconds(30));

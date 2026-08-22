@@ -76,11 +76,15 @@ class FakeSession final : public su::SimulatorSession {
   std::shared_ptr<FakeSessionState> state_;
 };
 
+std::string pool_contract_runtime_root() {
+  return std::string(SPICEUNION_PROJECT_ROOT) + "/local/runtime/simulator_pool_contract";
+}
+
 su::EvaluatorOptions options(int workers = 2) {
   su::EvaluatorOptions opts;
   opts.netlist_path = "dummy.scs";
   opts.num_workers = workers;
-  opts.work_dir_base = "/tmp/spiceunion_pool_contract";
+  opts.work_dir_base = pool_contract_runtime_root();
   opts.timeout_seconds = 1;
   return opts;
 }
@@ -100,15 +104,15 @@ su::SessionFactory factory_with_states(std::vector<std::shared_ptr<FakeSessionSt
 
 void construct_pool_with_zero_workers() {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(0), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(0), pool_contract_runtime_root(), factory_with_states(&states));
 }
 
 void construct_pool_with_null_factory() {
-  su::SimulatorPool pool(options(1), "/tmp/spiceunion_pool_contract", {});
+  su::SimulatorPool pool(options(1), pool_contract_runtime_root(), {});
 }
 
 void construct_pool_with_null_session() {
-  su::SimulatorPool pool(options(1), "/tmp/spiceunion_pool_contract",
+  su::SimulatorPool pool(options(1), pool_contract_runtime_root(),
                          [](std::size_t, const su::EvaluatorOptions&,
                             const std::string&) -> su::SimulatorSessionPtr { return {}; });
 }
@@ -123,7 +127,7 @@ TEST(SimulatorPoolContractTest, RejectsInvalidConstructionArguments) {
 
 TEST(SimulatorPoolContractTest, StartAllStartsEveryWorkerAndExposesWorkDirs) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(3), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(3), pool_contract_runtime_root(), factory_with_states(&states));
 
   pool.start_all();
 
@@ -145,7 +149,7 @@ TEST(SimulatorPoolContractTest, StartupFailureStopsCreatedWorkersAndPropagates) 
   states[1] = std::make_shared<FakeSessionState>();
   states[0]->fail_start = true;
 
-  su::SimulatorPool pool(options(2), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(2), pool_contract_runtime_root(), factory_with_states(&states));
 
   EXPECT_THROW(pool.start_all(), std::runtime_error);
   EXPECT_GE(states[0]->stops.load(), 1);
@@ -154,7 +158,7 @@ TEST(SimulatorPoolContractTest, StartupFailureStopsCreatedWorkersAndPropagates) 
 
 TEST(SimulatorPoolContractTest, RunBeforeStartRejectsNonEmptyBatch) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(1), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(1), pool_contract_runtime_root(), factory_with_states(&states));
 
   EXPECT_TRUE(pool.evaluate_batch({}).empty());
   EXPECT_THROW(pool.evaluate_batch({su::ParameterState{{"tag", 1.0}}}), std::runtime_error);
@@ -162,7 +166,7 @@ TEST(SimulatorPoolContractTest, RunBeforeStartRejectsNonEmptyBatch) {
 
 TEST(SimulatorPoolContractTest, ResultsKeepInputOrderWhenTasksFinishOutOfOrder) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(2), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(2), pool_contract_runtime_root(), factory_with_states(&states));
   pool.start_all();
 
   std::vector<su::ParameterState> inputs = {
@@ -184,7 +188,7 @@ TEST(SimulatorPoolContractTest, ResultsKeepInputOrderWhenTasksFinishOutOfOrder) 
 
 TEST(SimulatorPoolContractTest, SingleTaskFailureDoesNotAffectOtherResults) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(2), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(2), pool_contract_runtime_root(), factory_with_states(&states));
   pool.start_all();
 
   std::vector<su::ParameterState> inputs = {
@@ -204,7 +208,7 @@ TEST(SimulatorPoolContractTest, SingleTaskFailureDoesNotAffectOtherResults) {
 
 TEST(SimulatorPoolContractTest, TaskExceptionIsConvertedToTaskResultFailure) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(2), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(2), pool_contract_runtime_root(), factory_with_states(&states));
   pool.start_all();
 
   std::vector<su::ParameterState> inputs = {
@@ -225,7 +229,7 @@ TEST(SimulatorPoolContractTest, TaskExceptionIsConvertedToTaskResultFailure) {
 
 TEST(SimulatorPoolContractTest, ShutdownIsRepeatable) {
   std::vector<std::shared_ptr<FakeSessionState>> states;
-  su::SimulatorPool pool(options(1), "/tmp/spiceunion_pool_contract", factory_with_states(&states));
+  su::SimulatorPool pool(options(1), pool_contract_runtime_root(), factory_with_states(&states));
   pool.start_all();
 
   pool.shutdown_all();

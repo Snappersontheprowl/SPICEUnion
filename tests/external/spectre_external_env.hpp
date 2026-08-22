@@ -26,6 +26,10 @@ std::string spectre_materials_pdk_toplevel_path() {
          "/external/pdk/tsmcN65/toplevel.scs";
 }
 
+std::string spectre_runtime_root(const char* scenario) {
+  return std::string(SPICEUNION_PROJECT_ROOT) + "/local/runtime/spectre_" + scenario;
+}
+
 bool external_spectre_environment_is_ready(std::string* reason) {
 #if !SPICEUNION_ENABLE_EXTERNAL_TESTS
   *reason =

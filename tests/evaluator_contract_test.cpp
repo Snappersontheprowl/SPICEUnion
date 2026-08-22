@@ -75,7 +75,8 @@ su::EvaluatorOptions options(int workers = 2) {
   su::EvaluatorOptions opts;
   opts.netlist_path = "dummy.scs";
   opts.num_workers = workers;
-  opts.work_dir_base = "/tmp/spiceunion_contract";
+  opts.work_dir_base =
+      std::string(SPICEUNION_PROJECT_ROOT) + "/local/runtime/evaluator_contract";
   return opts;
 }
 

@@ -45,8 +45,8 @@
 
 - 默认构建（`SPICEUNION_ENABLE_EXTERNAL_TESTS=OFF`）不调用任何外部 EDA 工具：
   Spectre / Ngspice 外部用例在测试体开头 `GTEST_SKIP()`，不产生真实仿真产物。
-- 外部测试启用后，真实仿真产物写入各用例指定的 work 目录（如 `/dev/shm`、`/tmp` 下的
-  临时目录）；`Evaluator::cleanup()` 只停止仿真进程，不删除产物目录，是否清理由用例决定。
+- 仿真产物统一写入 `<项目根>/local/runtime/<场景>/`（场景名说明来源与用途）；
+  `Evaluator::cleanup()` 只停止仿真进程，不删除产物目录，是否清理由用例决定。
 - 测试注册与构建开关的单一事实来源为根 `CMakeLists.txt`
   （`SPICEUNION_BUILD_TESTS`、`SPICEUNION_ENABLE_EXTERNAL_TESTS`、libpsf / python 开关）。
 - 各预设的验证数字不在本 README 维护，统一见 `doc/develop_doc/当前事实状态.md`。

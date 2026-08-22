@@ -206,6 +206,11 @@ if(SPICEUNION_BUILD_TESTS)
       GTest::gtest_main
   )
 
+  target_compile_definitions(spiceunion_evaluator_contract_test
+    PRIVATE
+      SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+
   gtest_discover_tests(spiceunion_evaluator_contract_test)
 
   add_executable(spiceunion_ordered_concurrent_pool_test
@@ -233,6 +238,11 @@ if(SPICEUNION_BUILD_TESTS)
     PRIVATE
       spiceunion_core
       GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_simulator_pool_contract_test
+    PRIVATE
+      SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
   gtest_discover_tests(spiceunion_simulator_pool_contract_test)
@@ -299,6 +309,7 @@ if(SPICEUNION_BUILD_TESTS)
     PRIVATE
       SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
       SPICEUNION_SPECTRE_MATERIALS_DIR="${SPICEUNION_SPECTRE_MATERIALS_DIR}"
+      SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
   gtest_discover_tests(spiceunion_spectre_session_lifecycle_test)
@@ -319,6 +330,7 @@ if(SPICEUNION_BUILD_TESTS)
         SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
         SPICEUNION_ENABLE_LIBPSF_READER=$<BOOL:${SPICEUNION_ENABLE_LIBPSF_READER}>
         SPICEUNION_SPECTRE_MATERIALS_DIR="${SPICEUNION_SPECTRE_MATERIALS_DIR}"
+        SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
     )
 
     gtest_discover_tests(spiceunion_spectre_real_result_test)
@@ -337,6 +349,7 @@ if(SPICEUNION_BUILD_TESTS)
   target_compile_definitions(spiceunion_ngspice_session_test
     PRIVATE
       SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
+      SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
   gtest_discover_tests(spiceunion_ngspice_session_test)

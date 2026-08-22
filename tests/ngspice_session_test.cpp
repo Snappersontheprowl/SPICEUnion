@@ -16,8 +16,8 @@
 namespace {
 
 std::filesystem::path test_root(const std::string& name) {
-  return std::filesystem::path("/tmp") /
-         ("spiceunion_ngspice_" + name + "_" + std::to_string(::getpid()));
+  return std::filesystem::path(SPICEUNION_PROJECT_ROOT) / "local/runtime" /
+         ("ngspice_" + name + "_" + std::to_string(::getpid()));
 }
 
 void write_text(const std::filesystem::path& path, const std::string& text) {

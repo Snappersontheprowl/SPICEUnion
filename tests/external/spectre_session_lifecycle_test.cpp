@@ -13,7 +13,7 @@ su::EvaluatorOptions spectre_options() {
   su::EvaluatorOptions options;
   options.netlist_path = spectre_materials_netlist_path();
   options.num_workers = 1;
-  options.work_dir_base = "/dev/shm/spiceunion_spectre_lifecycle";
+  options.work_dir_base = spectre_runtime_root("lifecycle");
   options.workspace_namespace = "lifecycle";
   options.timeout_seconds = 20;
   return options;
@@ -29,7 +29,7 @@ TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsE
 
   auto options = spectre_options();
   su::SpectreSession session(0, options,
-                             "/dev/shm/spiceunion_spectre_lifecycle/lifecycle/worker_0");
+                             spectre_runtime_root("lifecycle") + "/lifecycle/worker_0");
 
   ASSERT_NO_THROW(session.start());
   EXPECT_FALSE(session.recent_output().empty());
@@ -45,12 +45,12 @@ TEST(SpectreSessionLifecycleTest, CanRunSingleTaskWhenExternalSpectreIsEnabled) 
   auto options = spectre_options();
   options.workspace_namespace = "single_run";
   su::SpectreSession session(0, options,
-                             "/dev/shm/spiceunion_spectre_lifecycle/single_run/worker_0");
+                             spectre_runtime_root("lifecycle") + "/single_run/worker_0");
 
   ASSERT_NO_THROW(session.start());
   auto result = session.run({}, std::chrono::seconds(30));
   EXPECT_TRUE(result.ok()) << result.error_message;
-  EXPECT_EQ(result.work_dir, "/dev/shm/spiceunion_spectre_lifecycle/single_run/worker_0");
+  EXPECT_EQ(result.work_dir, spectre_runtime_root("lifecycle") + "/single_run/worker_0");
   EXPECT_NO_THROW(session.stop(true));
 }
 

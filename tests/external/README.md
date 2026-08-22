@@ -24,6 +24,8 @@
   当前外部测试仅消费 `AMP/dc/input.scs`，其余电路网表可作为后续契约测试材料扩展。
 - 基线网表内部以绝对路径 include PDK，跨机器需要等价材料布局。
 - 本机 `/dev/shm/pdk_cache` 已废弃，SPICEUnion 不再检查该路径。
+- 真实仿真产物写入 `<项目根>/local/runtime/spectre_<场景>/`，不使用内存盘
+  （实测 tmpfs 对当前产物规模加速不可测量）。
 - 真实网表端到端测试需要 external 与 libpsf 同时开启，使用 `external-libpsf` 预设；
   仅开启 libpsf 时该用例会在测试体开头 `GTEST_SKIP()`。
 
