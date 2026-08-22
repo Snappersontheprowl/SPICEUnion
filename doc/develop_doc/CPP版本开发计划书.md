@@ -6,9 +6,10 @@
 
 ## 1. 项目定位
 
-SPICEUnion 是 C++17 仿真器执行与结果读取基础设施库，来源于
-`~/my_lab/projects/spectre_materials/src/spectre_interactive/` 中已有 Python 执行路径的
-C++ 化沉淀。
+SPICEUnion 是 C++17 仿真器执行与结果读取基础设施库：批量把参数化仿真任务交给真实
+仿真器执行，并把仿真结果统一读取为结构化结果。项目最初参照 spectre_materials（Python 版）
+的 Spectre 执行与解析设计，现已独立演进，运行时不依赖 spectre_materials；验证期材料可选
+来自 `spectre_materials/external/`。
 
 核心链路：
 

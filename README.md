@@ -1,8 +1,19 @@
 # SPICEUnion
 
-SPICEUnion 是一个 C++17 仿真器执行与结果读取基础设施库，来源于
-`~/my_lab/projects/spectre_materials/src/spectre_interactive/` 中已有 Python 执行路径的
-C++ 化沉淀。
+SPICEUnion 是一个 C++17 的**仿真器执行与结果读取基础设施库**：把一批参数化仿真任务
+交给真实仿真器（Spectre / Ngspice）批量执行，并把仿真结果统一读取成结构化数据，
+供上层算法、优化器或工具链直接使用。
+
+## 项目是什么、解决什么问题
+
+电路设计、优化和参数扫描类项目经常需要成百上千次仿真：改参数 → 跑仿真 → 读结果 →
+再改参数。如果每次都手工调用仿真器、手工解析输出，流程既慢又脆弱。SPICEUnion 把这套
+重复劳动抽象成一个可嵌入的库：
+
+- 一次提交一批参数状态（`ParameterState` batch）；
+- 库负责拉起 / 复用真实仿真器、并发执行、按输入顺序返回结果；
+- 仿真产物（`.raw`）留在每个 worker 自己的工作目录，由调用方用统一 reader 读取；
+- 单个任务失败、超时或仿真器崩溃不会影响其他任务。
 
 核心链路：
 
@@ -16,70 +27,122 @@ ParameterState batch
   -> ordered TaskResult list
 ```
 
-## 当前事实
+## 核心能力
 
-已实现：
+### 执行层
 
-- batch execution facade；
-- worker 目录隔离；
-- 输入顺序保序返回；
-- per-task failure isolation；
-- Spectre interactive backend；
-- Ngspice batch backend；
-- 外部 `OrderedConcurrentPool` 项目装配；
-- `SimulatorPool` adapter；
-- 最小 ResultIR；
-- 可选 libpsf backend；
-- Spectre PSF fixture 读取；
-- Spectre / Ngspice 同类 AC、TRAN 与 DC sweep 语义对照；
-- Ngspice `wrdata` AC / TRAN / DC sweep 读取。
-- 可选 pybind11 Python binding，当前覆盖结果读取 helper、结果数学 helper、状态文本和 shape consistency helper。
+- batch 执行 facade（`Evaluator`），一次提交一批参数状态；
+- worker 工作目录隔离，多 worker 并行；
+- 输入顺序保序返回，不依赖任务完成顺序；
+- 单任务失败隔离；启动失败 / 超时 / 传输失败有标准 `TaskStatus`；
+- Spectre interactive backend：SKILL handshake、参数写入、`(sclRun "all")`、完成判定；
+- Ngspice batch backend。
 
-当前 ResultIR：
+### 结果读取层
 
-| 类型 | 含义 |
+- 统一 ResultIR：`ScalarResult`、`DcSweep`、`AcResponse`、`AcDerivedView`、
+  `TranWaveform`；
+- `.raw` 目录定位与 PSF 文件读取（可选 libpsf backend，默认关闭）；
+- Ngspice `wrdata` AC / TRAN / DC sweep 文本读取；
+- AC 数学 helper：magnitude/phase、UGBW、phase margin、settling time。
+
+### 多语言接入
+
+- C++17 公开 API（`include/su/`）；
+- 可选 pybind11 Python 绑定（结果读取 helper 与结果类型），模块名 `spiceunion`；
+- C ABI 目前为草案 / 暂缓状态。
+
+## 优势（为什么用它）
+
+- **面向嵌入**：是库不是工具，可放进优化器、参数搜索、设计空间探索等自己的流程里；
+- **批量化与保序**：并行执行，结果仍按提交顺序返回，上层无需关心调度细节；
+- **统一结果模型**：不同仿真器（Spectre / Ngspice）的输出归一为同一套 ResultIR；
+- **失败可控**：单任务失败 / 超时 / 仿真器崩溃被隔离并标准映射，不污染整批结果；
+- **依赖可控**：默认构建不依赖任何 EDA 工具；libpsf、外部测试、Python 绑定均为可选开关；
+- **可扩展**：新增仿真器只需实现 `SimulatorSession` 适配器。
+
+## 边界与不足
+
+- 不做 circuit metric / objective / penalty、optimizer、PDK 内容管理、GUI、
+  完整 netlist IR；
+- 解析边界（经真实网表实测）：PSFXL transient 明确返回 `unsupported_format`；
+  libpsf backend 对 Spectre 23.1 的 PSFASCII 输出存在兼容缺口（既有 fixture
+  均为 BINPSF，ASCII 路径未覆盖）；legacy sensitivity 未实现；原生 PSF parser
+  未实现；
+- Python 侧当前只能读取结果，不能发起仿真（执行层绑定暂缓）；
+- 尚未发布 wheel / package；性能数字未系统实测。
+
+能力边界由 `external-libpsf` 预设的多网表矩阵测试持续钉住，详细事实与验证数字见
+`doc/develop_doc/当前事实状态.md`。
+
+## 与 spectre_materials 的关系
+
+SPICEUnion 最初参照 `~/my_lab/projects/spectre_materials`（Python 版 Spectre 执行与
+解析路径）的设计，但现在是**独立演进的项目**：
+
+- 运行时：SPICEUnion 不依赖 spectre_materials；
+- 验证期材料：外部测试可选消费 `spectre_materials/external/` 下的网表与 PDK，通过
+  `SPICEUNION_SPECTRE_MATERIALS_DIR` 注入；
+- 职责不同：spectre_materials 是共享材料与参考实现（Python），SPICEUnion 是 C++17
+  基础设施库。
+
+## 快速开始
+
+### 环境要求
+
+- CMake 3.20+ 与 C++17 编译器；
+- sibling 项目 `~/my_lab/projects/OrderedConcurrentPool`（可通过
+  `SPICEUNION_ORDERED_POOL_SOURCE_DIR` 覆盖）；
+- 真实仿真（可选）：`spectre` 位于 PATH，并具备网表与 PDK 材料。
+
+### 构建与测试
+
+默认构建不依赖外部 EDA 工具：
+
+```bash
+cmake --preset default
+cmake --build --preset default
+ctest --preset default --output-on-failure
+```
+
+各预设用途：
+
+| 预设 | 用途 |
 |---|---|
-| `ScalarResult` | 单 signal 标量 |
-| `DcSweep` | 单 sweep axis、单 signal 实数响应 |
-| `AcResponse` | frequency + complex response |
-| `AcDerivedView` | AC magnitude / phase 派生视图 |
-| `TranWaveform` | time/value 波形 |
-| `SensitivityEntry` | legacy sensitivity 原始条目 |
+| `default` | 默认开发测试，不调用外部 EDA 工具 |
+| `external` | 启用真实 Spectre / Ngspice 外部测试 |
+| `libpsf` | 启用 libpsf PSF 结果读取 |
+| `external-libpsf` | 真实网表端到端：外部仿真 + libpsf 结果解析 |
+| `python` | 启用 pybind11 Python 绑定 |
+| `python-libpsf-pic` | Python 绑定 + libpsf（PIC 静态链接） |
 
-当前真实 backend：
+### C++ 最小示例
 
-| Backend | 当前能力 |
-|---|---|
-| Spectre | interactive handshake、参数写入、`(sclRun "all")`、completion 判断、PSF DC/AC/TRAN fixture 读取 |
-| Ngspice | batch-mode RC AC、RC TRAN、电阻分压 DC sweep |
+```cpp
+#include "su/evaluator.hpp"
+#include "su/result_reader.hpp"
 
-开发文档入口：
+su::EvaluatorOptions options;
+options.netlist_path = "input.scs";   // 参数化 Spectre 网表
+options.num_workers = 4;
 
-- `doc/develop_doc/README.md`：开发文档索引与维护规则；
-- `doc/develop_doc/当前事实状态.md`：当前事实唯一总账；
-- `doc/develop_doc/架构总览.md`：总体分层、执行链路、结果读取链路与模块责任图；
-- `doc/develop_doc/CPP版本开发计划书.md`：项目章程；
-- `doc/develop_doc/开发路线图.md`：后续施工路线；
-- `doc/develop_doc/M1.md`：M1 Spectre 执行层开发文档；
-- `doc/develop_doc/M2.md`：M2 ResultIR 与结果读取开发文档；
-- `doc/develop_doc/M3.md`：M3 多仿真器接入与结果语义收敛文档；
-- `doc/develop_doc/M4.md`：M4 pybind11 与 C ABI 接入开发文档；
-- `doc/develop_doc/OrderedConcurrentPool开发路线图.md`：OCP 专项；
-- `doc/resume/`：对外表达材料（亮点解析与事件笔记）。
+auto evaluator = su::make_spectre_evaluator(options);
+auto results = evaluator.run({{"wp", 14e-6}, {"wn", 10e-6}});
 
-## 当前边界
+// results[i].work_dir 即该任务的真实仿真产物目录（.raw）
+auto sweep = su::read_dc_sweep(results[0].work_dir, "vin_dc", "out");
+```
 
-尚未实现：
+读取 PSF 文件需要启用 libpsf 的构建；参数名需与网表中的参数一致。
 
-- legacy sensitivity 读取；
-- Spectre 23.1 PSFXL transient 解析或转换；
-- 原生 PSF parser；
-- C ABI 稳定化；
-- Python `Evaluator` / session binding；
-- Python wheel / package 发布；
-- Ngspice `.op` operating point；
-- MOS I-V / gm/Id 多曲线 DC 结果；
-- Xyce / Hspice backend。
+### Python 示例（构建 python 预设后）
+
+```bash
+PYTHONPATH=build/python/bindings/python python3.10 -c \
+  "import spiceunion; print(spiceunion.version())"
+```
+
+更多示例见 `bindings/python/examples/`。
 
 ## 仓库结构
 
@@ -91,87 +154,21 @@ src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
 bindings/python/ 可选 pybind11 Python binding
 tests/           GoogleTest 测试与 fixture
-doc/develop_doc/ 开发文档：事实、章程、路线、专题、表达
-doc/study_notes/ 可复用学习笔记
+doc/             开发文档、学习笔记与简历材料
+local/           本机运行产物与外部依赖构建产物（不入库）
+build/           CMake 构建产物（不入库）
 ```
 
-## 构建与测试
+## 文档入口
 
-默认测试不依赖外部 EDA 工具：
-
-```bash
-cmake --preset default
-cmake --build --preset default
-ctest --preset default --output-on-failure
-```
-
-外部测试会真实调用 Spectre / Ngspice：
-
-```bash
-cmake --preset external
-cmake --build --preset external
-ctest --preset external --output-on-failure
-```
-
-真实网表端到端（外部仿真 + libpsf 结果解析）：
-
-```bash
-cmake --preset external-libpsf
-cmake --build --preset external-libpsf
-ctest --preset external-libpsf --output-on-failure
-```
-
-libpsf backend 需要显式启用：
-
-```bash
-cmake --preset libpsf
-cmake --build --preset libpsf
-ctest --preset libpsf --output-on-failure
-```
-
-Python binding 需要显式启用：
-
-```bash
-cmake --preset python
-cmake --build --preset python
-ctest --preset python --output-on-failure
-```
-
-Python binding 同时启用 libpsf 时，静态 libpsf 需要能链接进 shared module。本机验证使用
-`local/external/libpsf/install-pic`，CMake 会优先查找该路径。
-
-Python 示例脚本：
-
-```bash
-PYTHONPATH=build/python/bindings/python \
-  ~/anaconda3/bin/python3.10 \
-  bindings/python/examples/read_fixture_results.py tests/fixtures
-```
-
-更多示例说明见：
-
-```text
-bindings/python/examples/README.md
-```
+- `doc/develop_doc/README.md`：开发文档地图与维护规则；
+- `doc/develop_doc/CPP版本开发计划书.md`：项目章程（定位、范围、设计原则、里程碑）；
+- `doc/develop_doc/架构总览.md`：分层架构、执行链路与结果读取链路图；
+- `doc/develop_doc/当前事实状态.md`：当前能力、验证数字与边界总账；
+- `doc/develop_doc/开发路线图.md`：后续施工路线；
+- `doc/resume/`：简历与面试表达材料。
 
 ## 外部依赖
-
-默认构建需要 sibling source tree：
-
-```text
-~/my_lab/projects/OrderedConcurrentPool
-```
-
-当前装配的 `OrderedConcurrentPool` 是 sibling 独立项目，已具备 MIT license、
-`CHANGELOG.md`、最小 benchmark、CMake install/export package 和 GitHub Actions
-CI，并已将 `main` 与 `v0.1.0` tag 发布到 `origin`。SPICEUnion 默认仍通过
-source tree 装配，不复制维护池源码。
-
-可通过 CMake cache 变量覆盖：
-
-```text
-SPICEUNION_ORDERED_POOL_SOURCE_DIR
-```
 
 外部测试材料来源：
 
@@ -188,12 +185,3 @@ SPICEUNION_ORDERED_POOL_SOURCE_DIR
 等价材料布局；本机 `/dev/shm/pdk_cache` 缓存已废弃，不再作为检查条件。
 `spectre_materials/external/netlist` 下的网表均为项目所有者实测的合法仿真网表，SPICEUnion
 只作为消费方读取，不修改网表内容。
-
-libpsf backend 默认查找：
-
-```text
-local/external/libpsf/install-pic
-local/external/libpsf/install
-```
-
-该目录不进入版本库。
