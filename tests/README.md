@@ -1,116 +1,67 @@
-# tests
+# tests 说明
 
-本目录存放基于 GoogleTest 的测试。
+## 功能
 
-## 测试分组
+- 存放 SPICEUnion 基于 GoogleTest 的自动化测试，覆盖执行层契约、ResultIR 与结果读取、
+  跨 backend 结果语义对照，以及真实 Spectre / Ngspice 生命周期验证。
+- 不负责存放真实仿真历史产物；除 `fixtures/` 固定样本外，运行期产物由各用例写入临时
+  目录并自行清理。
 
-- Smoke tests 验证构建与链接路径。
-- Contract tests 使用 fake 或 scripted session 验证执行层行为。
-- Ordered pool tests 通过外部 `ocp::ordered_concurrent_pool` target 验证
-  `OrderedConcurrentPool` 的领域无关池语义，包括构造校验、启动清理、保序返回、
-  单任务异常转换、重复 shutdown 与 stress batch。
-- Simulator pool contract tests 验证 `SimulatorPool` 作为 SPICEUnion adapter 后仍保持
-  worker work directory、`TaskResult` 映射、保序与失败隔离语义。
-- Result tests 验证 M2 ResultIR、读取状态和公开 result_reader API 骨架。
-- Result reader tests 验证 `.raw` 目录定位、AC 数学 helper、settling time 和
-  M2.3 文件读取行为。默认构建下真实 PSF 读取保持禁用。
-- Fixture tests 使用 `tests/fixtures/` 中的小型固定仿真结果样本，验证 reader 解析
-  是否稳定。
-- Simulation semantic tests 使用 `tests/support/` 中的公共语义 helper，验证不同 backend
-  读出的 ResultIR 是否满足同一类电路的物理语义。
-- Result reader tests 启用 libpsf backend 后，会读取 `tests/fixtures/psf/` 中的
-  `dcOp.dc` fixture 验证 scalar 读取，读取 Spectre resistor-divider `dc.dc` fixture
-  验证 `DcSweep` 读取，读取标准 `ac.ac` 与 `stb.stb` fixture 验证 swept complex
-  response 读取，并读取普通 `tran.tran` fixture 验证 transient waveform 读取。
-- Spectre fixture 源 netlist 位于 `tests/fixtures/spectre/`；固化后的普通 PSF 结果位于
-  `tests/fixtures/psf/`。
-- Ngspice session tests 默认验证 RC AC / RC TRAN / 电阻分压 DC 配置、netlist
-  渲染，以及三列 AC / 两列 TRAN / 两列 DC sweep `wrdata` 输出解析；启用外部测试后，
-  会真实调用 `ngspice -b` 并通过 evaluator / pool 跑 AC、TRAN 与 DC batch。
-- Python binding tests 位于 `bindings/python/tests/`，通过 CTest 调 Python，覆盖
-  `import spiceunion`、`version()`、libpsf 开关状态、result 对象 API 契约、
-  fixture 读取和失败读取 case。
-- Python 示例脚本位于 `bindings/python/examples/`，当前也通过 CTest 做 smoke 验证，
-  覆盖 fixture 读取示例和最小结果后处理示例。
-- Manual tests 位于 `tests/manual/`，只用于人工 spike，不进入默认 `ctest`。
-- 外部测试可能依赖 Spectre、PDK 或 Ngspice 访问权限，默认必须禁用，除非显式启用。
+## 本级模块职责
 
-## 命令
+- `smoke_test.cpp`：验证构建与链接路径（版本符号可用）。
+- `evaluator_contract_test.cpp`：验证 `Evaluator` batch facade 契约（保序返回、失败
+  隔离、worker 目录隔离、清理可重复）。
+- `ordered_concurrent_pool_test.cpp`：通过外部 `ocp::ordered_concurrent_pool` target
+  验证领域无关池语义（构造校验、启动清理、保序返回、异常转换、重复 shutdown、
+  stress batch）。
+- `simulator_pool_contract_test.cpp`：验证 `SimulatorPool` 作为 SPICEUnion adapter 的
+  契约（worker work directory、`TaskResult` 映射、保序与失败隔离）。
+- `result_test.cpp`：验证 ResultIR、`ReadResult` 状态与公开 result_reader API 骨架。
+- `result_reader_test.cpp`：验证 `.raw` 目录定位、AC 数学 helper、settling time 与
+  文件读取行为；真实 PSF 读取由 libpsf 开关控制。
+- `simulation_semantics_test.cpp`：使用 `support/rc_semantics.hpp` 的公共语义 helper，
+  验证不同 backend 读出的 ResultIR 满足同一类电路的物理语义（AC -3 dB、TRAN `τ`、
+  DC 分压比例）。
+- `spectre_protocol_test.cpp`：纯单元测试，验证 SKILL 命令格式与 completion 行分类，
+  不依赖真实 spectre。
+- `spectre_session_lifecycle_test.cpp`：外部 Spectre 生命周期契约（interactive
+  handshake、单任务、multi-worker batch），默认 skip。
+- `ngspice_session_test.cpp`：默认验证 Ngspice 配置、netlist 渲染与 `wrdata` 输出
+  解析；启用外部测试后真实调用 `ngspice -b` 跑 AC / TRAN / DC batch。
+- `support/`：测试共享 helper（如 `rc_semantics.hpp`），不含被测逻辑。
+- `fixtures/`：已提交的小体积固定样本（Spectre 源 netlist 与 PSF 结果），详见
+  `fixtures/README.md`。
+- `manual/`：人工验证工具，不进入默认 ctest，详见 `manual/README.md`。
 
-默认测试：
+## 命名规则
 
-```bash
-cmake --preset default
-cmake --build --preset default
-ctest --preset default
-```
+- 测试文件按被测模块命名，统一 `snake_case` 并以 `_test` 结尾，例如
+  `evaluator_contract_test.cpp`、`simulator_pool_contract_test.cpp`。
+- 目录按职责命名：`fixtures/` 固定样本、`support/` 共享 helper、`manual/` 人工工具。
 
-外部 Spectre 生命周期测试：
+## 当前约定
 
-```bash
-cmake --preset external
-cmake --build --preset external
-ctest --preset external
-```
+- 默认构建（`SPICEUNION_ENABLE_EXTERNAL_TESTS=OFF`）不调用任何外部 EDA 工具：
+  Spectre / Ngspice 外部用例在测试体开头 `GTEST_SKIP()`，不产生真实仿真产物。
+- 外部测试启用后，真实仿真产物写入各用例指定的 work 目录（如 `/dev/shm`、`/tmp` 下的
+  临时目录）；`Evaluator::cleanup()` 只停止仿真进程，不删除产物目录，是否清理由用例决定。
+- 测试注册与构建开关的单一事实来源为根 `CMakeLists.txt`
+  （`SPICEUNION_BUILD_TESTS`、`SPICEUNION_ENABLE_EXTERNAL_TESTS`、libpsf / python 开关）。
+- 各预设的验证数字不在本 README 维护，统一见 `doc/develop_doc/当前事实状态.md`。
 
-该 preset 同时会运行外部 Ngspice 测试；测试会优先检查 `SPICEUNION_NGSPICE`，再检查
-`PATH` 中的 `ngspice` / `ngspice_con`，找不到时对应测试会 skip。
+## 常用入口
 
-本机 libpsf reader 测试：
+- 默认测试（无需外部工具）：
 
 ```bash
-cmake --preset libpsf
-cmake --build --preset libpsf
-ctest --preset libpsf --output-on-failure
+cmake --preset default && cmake --build --preset default && ctest --preset default --output-on-failure
 ```
 
-该测试默认尝试使用 `local/external/libpsf/install` 中的 `henjo/libpsf`，并读取
-`tests/fixtures/psf/` 中已提交的小型 PSF fixture。启用 libpsf 后还会运行
-`spiceunion_simulation_semantics_test`，验证 Spectre RC low-pass AC fixture 读出的
-`AcResponse` 满足与 Ngspice RC AC 相同的 -3 dB 频率语义，并验证 Spectre RC
-charging TRAN fixture 读出的 `TranWaveform` 满足与 Ngspice RC TRAN 相同的 `τ` / `5τ`
-充电曲线语义；Spectre resistor-divider DC sweep fixture 读出的 `DcSweep` 满足与
-Ngspice resistor-divider DC sweep 相同的分压比例语义。libpsf 本身仍不属于默认 CI 契约。
-
-Python binding 测试：
+- 外部 Spectre / Ngspice：
 
 ```bash
-cmake --preset python
-cmake --build --preset python
-ctest --preset python --output-on-failure
+cmake --preset external && cmake --build --preset external && ctest --preset external --output-on-failure
 ```
 
-当前本机结果：
-
-```text
-100% tests passed, 0 tests failed out of 86
-```
-
-Python binding + libpsf 测试：
-
-```bash
-cmake --preset python-libpsf-pic
-cmake --build --preset python-libpsf-pic
-ctest --preset python-libpsf-pic --output-on-failure
-```
-
-当前本机结果：
-
-```text
-100% tests passed, 0 tests failed out of 99
-```
-
-启用 Python binding 与 libpsf 时，静态 libpsf 需要可被链接进 Python shared module。
-本机已使用 `local/external/libpsf/install-pic` 完成验证；该目录不进入版本库。
-
-外部测试当前覆盖：
-
-- Spectre interactive handshake 与 stop；
-- single-session `(sclRun "all")`；
-- 默认 Spectre evaluator multi-worker batch。
-- Ngspice RC low-pass AC batch session；
-- Ngspice RC charging TRAN batch session；
-- Ngspice resistor-divider DC sweep batch session；
-- 默认 Ngspice evaluator multi-worker batch；
-- Ngspice TRAN evaluator multi-worker batch；
-- Ngspice DC evaluator multi-worker batch。
+- libpsf / python / python-libpsf-pic 等其他预设及外部依赖说明见根 `README.md`。
