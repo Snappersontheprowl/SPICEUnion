@@ -65,7 +65,7 @@ ParameterState batch
 - `doc/develop_doc/M3.md`：M3 多仿真器接入与结果语义收敛文档；
 - `doc/develop_doc/M4.md`：M4 pybind11 与 C ABI 接入开发文档；
 - `doc/develop_doc/OrderedConcurrentPool开发路线图.md`：OCP 专项；
-- `doc/develop_doc/简历亮点解析.md`：对外表达材料。
+- `doc/resume/`：对外表达材料（亮点解析与事件笔记）。
 
 ## 当前边界
 
