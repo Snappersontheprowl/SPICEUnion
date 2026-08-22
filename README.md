@@ -165,13 +165,19 @@ source tree 装配，不复制维护池源码。
 SPICEUNION_ORDERED_POOL_SOURCE_DIR
 ```
 
-外部测试可能需要：
+外部测试材料来源：
 
-- `spectre` 位于 `PATH` 中；
-- `/dev/shm/pdk_cache/toplevel.scs`；
-- `~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs`；
-- `ngspice_con` 或 `ngspice` 位于 `PATH` 中；
-- 或通过 `SPICEUNION_NGSPICE` 指向 Ngspice 可执行文件。
+| 资源 | 来源 | 覆盖变量 |
+|---|---|---|
+| Spectre 基线网表 | `<spectre_materials>/external/netlist/AMP/dc/input.scs` | `SPICEUNION_SPECTRE_MATERIALS_DIR` |
+| PDK（tsmcN65 toplevel） | `<spectre_materials>/external/pdk/tsmcN65/toplevel.scs` | 同上 |
+| libpsf | `local/external/libpsf/install[-pic]` | `SPICEUNION_LIBPSF_INCLUDE_DIR` / `SPICEUNION_LIBPSF_LIBRARY` |
+| OrderedConcurrentPool | sibling 源树 | `SPICEUNION_ORDERED_POOL_SOURCE_DIR` |
+
+`SPICEUNION_SPECTRE_MATERIALS_DIR` 默认指向 `~/my_lab/projects/spectre_materials`；
+外部测试还需要 `spectre` 位于 `PATH`，Ngspice 位于 `PATH`（或通过
+`SPICEUNION_NGSPICE` 指定）。基线网表内部以绝对路径 include PDK，跨机器需要
+等价材料布局；本机 `/dev/shm/pdk_cache` 缓存已废弃，不再作为检查条件。
 
 libpsf backend 默认查找：
 

@@ -17,10 +17,19 @@ bool spectre_available() {
   return std::system("command -v spectre >/dev/null 2>&1") == 0;
 }
 
+std::string spectre_materials_netlist_path() {
+  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) +
+         "/external/netlist/AMP/dc/input.scs";
+}
+
+std::string spectre_materials_pdk_toplevel_path() {
+  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) +
+         "/external/pdk/tsmcN65/toplevel.scs";
+}
+
 su::EvaluatorOptions spectre_options() {
   su::EvaluatorOptions options;
-  options.netlist_path =
-      "~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs";
+  options.netlist_path = spectre_materials_netlist_path();
   options.num_workers = 1;
   options.work_dir_base = "/dev/shm/spiceunion_spectre_lifecycle";
   options.workspace_namespace = "lifecycle";
@@ -39,13 +48,14 @@ bool external_spectre_environment_is_ready(std::string* reason) {
     *reason = "spectre executable is not available in PATH";
     return false;
   }
-  if (!file_exists("/dev/shm/pdk_cache/toplevel.scs")) {
-    *reason = "required PDK include is missing: /dev/shm/pdk_cache/toplevel.scs";
+  const auto pdk_toplevel = spectre_materials_pdk_toplevel_path();
+  if (!file_exists(pdk_toplevel.c_str())) {
+    *reason = "required PDK include is missing: " + pdk_toplevel;
     return false;
   }
-  if (!file_exists(
-          "~/my_lab/projects/spectre_materials/external/netlist/AMP/dc/input.scs")) {
-    *reason = "baseline Spectre netlist is missing";
+  const auto netlist = spectre_materials_netlist_path();
+  if (!file_exists(netlist.c_str())) {
+    *reason = "baseline Spectre netlist is missing: " + netlist;
     return false;
   }
   return true;

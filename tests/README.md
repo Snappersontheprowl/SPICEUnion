@@ -25,20 +25,21 @@
   DC 分压比例）。
 - `spectre_protocol_test.cpp`：纯单元测试，验证 SKILL 命令格式与 completion 行分类，
   不依赖真实 spectre。
-- `spectre_session_lifecycle_test.cpp`：外部 Spectre 生命周期契约（interactive
-  handshake、单任务、multi-worker batch），默认 skip。
 - `ngspice_session_test.cpp`：默认验证 Ngspice 配置、netlist 渲染与 `wrdata` 输出
   解析；启用外部测试后真实调用 `ngspice -b` 跑 AC / TRAN / DC batch。
 - `support/`：测试共享 helper（如 `rc_semantics.hpp`），不含被测逻辑。
 - `fixtures/`：已提交的小体积固定样本（Spectre 源 netlist 与 PSF 结果），详见
   `fixtures/README.md`。
+- `external/`：外部 Spectre 生命周期测试，依赖 `spectre_materials/external/` 网表与 PDK，
+  默认 skip，详见 `external/README.md`。
 - `manual/`：人工验证工具，不进入默认 ctest，详见 `manual/README.md`。
 
 ## 命名规则
 
 - 测试文件按被测模块命名，统一 `snake_case` 并以 `_test` 结尾，例如
   `evaluator_contract_test.cpp`、`simulator_pool_contract_test.cpp`。
-- 目录按职责命名：`fixtures/` 固定样本、`support/` 共享 helper、`manual/` 人工工具。
+- 目录按职责命名：`fixtures/` 固定样本、`support/` 共享 helper、`external/` 外部
+  材料依赖测试、`manual/` 人工工具。
 
 ## 当前约定
 

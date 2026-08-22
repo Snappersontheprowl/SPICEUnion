@@ -28,6 +28,21 @@ if(NOT EXISTS "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}/CMakeLists.txt")
   )
 endif()
 
+set(SPICEUNION_SPECTRE_MATERIALS_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../spectre_materials"
+    CACHE PATH
+    "Path to the spectre_materials project that provides shared Spectre netlist/PDK materials"
+)
+
+if(SPICEUNION_ENABLE_EXTERNAL_TESTS AND NOT EXISTS
+   "${SPICEUNION_SPECTRE_MATERIALS_DIR}/external/netlist")
+  message(FATAL_ERROR
+    "SPICEUNION_ENABLE_EXTERNAL_TESTS=ON requires SPICEUNION_SPECTRE_MATERIALS_DIR "
+    "pointing to the spectre_materials project. Current value: "
+    "${SPICEUNION_SPECTRE_MATERIALS_DIR}"
+  )
+endif()
+
 set(ORDERED_CONCURRENT_POOL_BUILD_TESTS OFF CACHE BOOL
     "Build OrderedConcurrentPool tests when embedded by SPICEUnion" FORCE)
 set(ORDERED_CONCURRENT_POOL_BUILD_EXAMPLES OFF CACHE BOOL
@@ -271,7 +286,7 @@ if(SPICEUNION_BUILD_TESTS)
   gtest_discover_tests(spiceunion_simulation_semantics_test)
 
   add_executable(spiceunion_spectre_session_lifecycle_test
-    tests/spectre_session_lifecycle_test.cpp
+    tests/external/spectre_session_lifecycle_test.cpp
   )
 
   target_link_libraries(spiceunion_spectre_session_lifecycle_test
@@ -283,6 +298,7 @@ if(SPICEUNION_BUILD_TESTS)
   target_compile_definitions(spiceunion_spectre_session_lifecycle_test
     PRIVATE
       SPICEUNION_ENABLE_EXTERNAL_TESTS=$<BOOL:${SPICEUNION_ENABLE_EXTERNAL_TESTS}>
+      SPICEUNION_SPECTRE_MATERIALS_DIR="${SPICEUNION_SPECTRE_MATERIALS_DIR}"
   )
 
   gtest_discover_tests(spiceunion_spectre_session_lifecycle_test)
