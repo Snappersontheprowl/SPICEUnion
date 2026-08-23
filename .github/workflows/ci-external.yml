@@ -32,9 +32,13 @@ jobs:
           repository: ${{ vars.ORDERED_POOL_REPOSITORY }}
           path: OrderedConcurrentPool
 
+      - name: Verify OrderedConcurrentPool checkout
+        run: test -f "$GITHUB_WORKSPACE/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp"
+
       - name: Configure external-libpsf
         run: >
           cmake --preset external-libpsf
+          -DSPICEUNION_ORDERED_POOL_SOURCE_DIR=$GITHUB_WORKSPACE/OrderedConcurrentPool
           -DSPICEUNION_SPECTRE_MATERIALS_DIR=${{ secrets.SPECTRE_MATERIALS_DIR }}
           -DSPICEUNION_LIBPSF_INCLUDE_DIR=${{ secrets.LIBPSF_INCLUDE_DIR }}
           -DSPICEUNION_LIBPSF_LIBRARY=${{ secrets.LIBPSF_LIBRARY }}

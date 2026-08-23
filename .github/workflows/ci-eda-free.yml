@@ -41,8 +41,11 @@ jobs:
           repository: ${{ vars.ORDERED_POOL_REPOSITORY }}
           path: OrderedConcurrentPool
 
+      - name: Verify OrderedConcurrentPool checkout
+        run: test -f "$GITHUB_WORKSPACE/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp"
+
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }}
+        run: cmake --preset ${{ matrix.preset }} -DSPICEUNION_ORDERED_POOL_SOURCE_DIR=$GITHUB_WORKSPACE/OrderedConcurrentPool
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
