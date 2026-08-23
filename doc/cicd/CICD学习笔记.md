@@ -142,10 +142,15 @@ jobs:
 
 ## 6. 待验证问题（随进度更新）
 
-- [ ] OrderedConcurrentPool 在 CI 中最稳的装配方式（checkout 另一仓库 vs submodule）。
+- [x] OrderedConcurrentPool 在 CI 中最稳的装配方式 → 显式 checkout 到
+      `$GITHUB_WORKSPACE/OrderedConcurrentPool` + configure 显式
+      `-DSPICEUNION_ORDERED_POOL_SOURCE_DIR` 注入（当前采用，2026-08-23 验证）。
 - [ ] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）。
-- [ ] external 预设的自托管 runner 是否需要独立 label 与并发限制。
+- [x] external 预设的自托管 runner 独立 label → `eda`（已注册并验证接单）。
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
+- [ ] `ci-eda-free` 云 CI 首次绿跑确认。
+- [ ] libpsf 预设（`libpsf` / `python-libpsf-pic`）上云（阶段 2）。
+- [ ] 拆分 spectre / ngspice 外部测试门控，让 ngspice 上云（阶段 2）。
 
 ## 7. 落地记录（2026-08-23）
 
@@ -332,3 +337,45 @@ spectre 并输出 100% 通过。
   configure 依赖 `spectre_materials/external` 材料）；
 - 公共仓库使用自托管 runner 有任意代码执行风险（GitHub 官方警告）：只允许
   `push` 到 main / `workflow_dispatch` 触发，不用 `pull_request` 接自托管 job。
+
+### 首次绿跑与服务化记录（2026-08-23）
+
+**里程碑**：自托管 `ci-external` 端到端跑绿（external-libpsf：真实 spectre 仿真 +
+BINPSF/PSFASCII 解析，105/105）。GitHub 调度 → 本机 runner → checkout →
+configure → build → test 全链路打通。
+
+**runner 信息**
+
+| 项 | 值 |
+|---|---|
+| runner 名称 | `spiceunion-eda-runner` |
+| labels | `self-hosted, Linux, X64, eda`（`eda` 供 workflow 匹配） |
+| runner 版本 | 2.336.0 |
+| 服务单元 | `actions.runner.Snappersontheprowl-SPICEUnion.spiceunion-eda-runner.service` |
+| 运行用户 | `eda`（uid/gid 1000） |
+
+**服务命令**
+
+```bash
+sudo ./svc.sh install   # 已执行成功（2026-08-23）
+sudo ./svc.sh start     # 下一步：启动服务
+sudo ./svc.sh status    # 查看状态
+sudo ./svc.sh stop      # 停止
+```
+
+**本次踩坑复盘（错题记录）**
+
+1. **runner group ≠ runner name**：组名用默认 `Default`（回车），名字才填
+   `spiceunion-eda-runner`；labels 提示处必须补 `eda`；
+2. **隐式相对路径依赖**：CMake 默认 `../OrderedConcurrentPool` 在 CI 干净环境里
+   不成立 → configure 显式注入 `-DSPICEUNION_ORDERED_POOL_SOURCE_DIR`；
+3. **checkout 假绿陷阱**：`ORDERED_POOL_REPOSITORY` 未设置时，checkout 会把当前
+   仓库拉进目标路径（目录“存在”但内容错）→ 用 OCP 标记文件
+   `include/ocp/ordered_concurrent_pool.hpp` 做校验步骤；
+4. **Node 20 弃用警告**：`actions/checkout` v4 → v5（Node 24 运行时，要求 runner
+   ≥ 2.327.1，当前 2.336.0 满足）。
+
+**待确认项**
+
+- `ci-eda-free`（云 CI）是否也首次跑绿；
+- 07:28 失败 → 07:39 成功之间改了什么（若已知，补进复盘）。
