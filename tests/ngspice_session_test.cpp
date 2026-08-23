@@ -352,6 +352,7 @@ TEST(NgspiceSessionExternalTest, RunsRcLowPassAcWhenExternalNgspiceIsEnabled) {
 
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(result.work_dir, (root / "single_worker" / "worker_0").string());
+  EXPECT_EQ(result.result_format, su::ResultFormat::kNspiceWrdata);
   EXPECT_NE(result.detail.find("samples="), std::string::npos);
 
   const auto ac = su::read_ngspice_wrdata_ac_response(

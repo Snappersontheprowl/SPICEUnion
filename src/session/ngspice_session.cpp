@@ -703,16 +703,24 @@ TaskResult NgspiceSession::run(const ParameterState& state, std::chrono::seconds
     start();
   }
 
+  TaskResult result = TaskResult::failure(TaskStatus::kException, work_dir_,
+                                          "unknown Ngspice builtin task");
   switch (task_) {
     case NgspiceBuiltinTask::kRcAc:
-      return run_rc_ac_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_rc_ac_task(ngspice_executable_, work_dir_, state, timeout);
+      break;
     case NgspiceBuiltinTask::kRcTran:
-      return run_rc_tran_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_rc_tran_task(ngspice_executable_, work_dir_, state, timeout);
+      break;
     case NgspiceBuiltinTask::kResistorDividerDc:
-      return run_resistor_divider_dc_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_resistor_divider_dc_task(ngspice_executable_, work_dir_, state, timeout);
+      break;
   }
 
-  return TaskResult::failure(TaskStatus::kException, work_dir_, "unknown Ngspice builtin task");
+  if (result.ok()) {
+    result.result_format = ResultFormat::kNspiceWrdata;
+  }
+  return result;
 }
 
 void NgspiceSession::stop(bool graceful) noexcept {

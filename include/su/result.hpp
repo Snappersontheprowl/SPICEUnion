@@ -19,6 +19,16 @@ enum class ResultStatus {
 
 const char* to_string(ResultStatus status) noexcept;
 
+// 仿真产物格式声明。由执行层在仿真完成后交付（TaskResult.result_format），
+// 解析层“声明优先”，仅在 kUnknown 时才按文件内容嗅探。
+enum class ResultFormat {
+  kUnknown,     // 未声明，解析时回退嗅探
+  kPsfAscii,    // Spectre PSFASCII（rawfmt=psfascii）
+  kBinPsf,      // Spectre 二进制 BINPSF（默认 / rawfmt=psfbin）
+  kPsfxl,       // Spectre 23.1 PSFXL transient
+  kNspiceWrdata,  // Ngspice wrdata 文本输出
+};
+
 struct ResultError {
   ResultStatus status = ResultStatus::kOk;
   std::string message;

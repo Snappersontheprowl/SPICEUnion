@@ -42,7 +42,8 @@ ParameterState batch
 
 - 统一 ResultIR：`ScalarResult`、`DcSweep`、`AcResponse`、`AcDerivedView`、
   `TranWaveform`；
-- `.raw` 目录定位与 PSF 文件读取（可选 libpsf backend，默认关闭）；
+- `.raw` 目录定位与 PSF 文件读取：结果格式由执行层声明交付（`ResultFormat`），
+  PSFASCII 内置解析、BINPSF 走可选 libpsf，声明未知时才按内容嗅探；
 - Ngspice `wrdata` AC / TRAN / DC sweep 文本读取；
 - AC 数学 helper：magnitude/phase、UGBW、phase margin、settling time。
 

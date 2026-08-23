@@ -43,7 +43,9 @@
 
 说明：PSFASCII 由内置 parser 解析（`src/parse/psf_ascii_backend.cpp`），BINPSF
 由可选 libpsf 解析，运行时按文件格式自动分发；`SPICEUNION_ENABLE_LIBPSF_READER`
-只控制 BINPSF 能力。
+只控制 BINPSF 能力。执行层通过 `TaskResult.result_format` 交付实际格式
+（`ResultFormat`），解析层声明优先、`kUnknown` 才嗅探；矩阵用例同时断言
+`result_format`（AMP/tran 由运行期产物特征确认为 `kPsfxl`）。
 
 ## 常用入口
 

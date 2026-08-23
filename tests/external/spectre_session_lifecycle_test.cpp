@@ -50,6 +50,7 @@ TEST(SpectreSessionLifecycleTest, CanRunSingleTaskWhenExternalSpectreIsEnabled) 
   ASSERT_NO_THROW(session.start());
   auto result = session.run({}, std::chrono::seconds(30));
   EXPECT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.result_format, su::ResultFormat::kBinPsf);
   EXPECT_EQ(result.work_dir, spectre_runtime_root("lifecycle") + "/single_run/worker_0");
   EXPECT_NO_THROW(session.stop(true));
 }

@@ -68,7 +68,8 @@ ReadResult<ResultDirectory> find_result_directory(const std::string& work_dir) {
 }
 
 ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
-                                       const std::string& signal_name) {
+                                       const std::string& signal_name,
+                                       ResultFormat format) {
   if (result_dir.empty()) {
     return ReadResult<ScalarResult>::failure(ResultStatus::kInvalidInput,
                                              "result_dir must not be empty");
@@ -76,6 +77,24 @@ ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
   if (signal_name.empty()) {
     return ReadResult<ScalarResult>::failure(ResultStatus::kInvalidInput,
                                              "signal_name must not be empty");
+  }
+
+  if (format == ResultFormat::kPsfAscii) {
+    return parse::read_dc_value_with_ascii(result_dir, signal_name);
+  }
+  if (format == ResultFormat::kPsfxl) {
+    return ReadResult<ScalarResult>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "PSFXL transient reading is not supported: " + signal_name);
+  }
+  if (format == ResultFormat::kBinPsf) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+    return parse::read_dc_value_with_libpsf(result_dir, signal_name);
+#else
+    return ReadResult<ScalarResult>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "dcOp.dc BINPSF reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
   }
 
   const auto psf_file = std::filesystem::path(result_dir) / kDcOpFilename;
@@ -95,7 +114,26 @@ ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
 ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
                                   const std::string& sweep_name,
                                   const std::string& signal_name,
-                                  const std::string& filename) {
+                                  const std::string& filename,
+                                  ResultFormat format) {
+  if (format == ResultFormat::kPsfAscii) {
+    return parse::read_dc_sweep_with_ascii(result_dir, sweep_name, signal_name, filename);
+  }
+  if (format == ResultFormat::kPsfxl) {
+    return ReadResult<DcSweep>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "PSFXL transient reading is not supported: " + signal_name);
+  }
+  if (format == ResultFormat::kBinPsf) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+    return parse::read_dc_sweep_with_libpsf(result_dir, sweep_name, signal_name, filename);
+#else
+    return ReadResult<DcSweep>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "DC sweep BINPSF reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
+  }
+
   const auto psf_file = std::filesystem::path(result_dir) / filename;
   if (std::filesystem::is_regular_file(psf_file) &&
       parse::is_psf_ascii_file(psf_file.string())) {
@@ -112,7 +150,26 @@ ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
 
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
-                                        const std::string& filename) {
+                                        const std::string& filename,
+                                        ResultFormat format) {
+  if (format == ResultFormat::kPsfAscii) {
+    return parse::read_ac_response_with_ascii(result_dir, signal_name, filename);
+  }
+  if (format == ResultFormat::kPsfxl) {
+    return ReadResult<AcResponse>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "PSFXL transient reading is not supported: " + signal_name);
+  }
+  if (format == ResultFormat::kBinPsf) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+    return parse::read_ac_response_with_libpsf(result_dir, signal_name, filename);
+#else
+    return ReadResult<AcResponse>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "AC/STB BINPSF reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
+  }
+
   const auto psf_file = std::filesystem::path(result_dir) / filename;
   if (std::filesystem::is_regular_file(psf_file) &&
       parse::is_psf_ascii_file(psf_file.string())) {
@@ -129,7 +186,26 @@ ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
 
 ReadResult<TranWaveform> read_tran_waveform(const std::string& result_dir,
                                             const std::string& signal_name,
-                                            const std::string& filename) {
+                                            const std::string& filename,
+                                            ResultFormat format) {
+  if (format == ResultFormat::kPsfAscii) {
+    return parse::read_tran_waveform_with_ascii(result_dir, signal_name, filename);
+  }
+  if (format == ResultFormat::kPsfxl) {
+    return ReadResult<TranWaveform>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "PSFXL transient reading is not supported: " + signal_name);
+  }
+  if (format == ResultFormat::kBinPsf) {
+#ifdef SPICEUNION_ENABLE_LIBPSF_READER
+    return parse::read_tran_waveform_with_libpsf(result_dir, signal_name, filename);
+#else
+    return ReadResult<TranWaveform>::failure(
+        ResultStatus::kUnsupportedFormat,
+        "transient BINPSF reading requires SPICEUNION_ENABLE_LIBPSF_READER");
+#endif
+  }
+
   const auto psf_file = std::filesystem::path(result_dir) / filename;
   if (std::filesystem::is_regular_file(psf_file) &&
       parse::is_psf_ascii_file(psf_file.string())) {

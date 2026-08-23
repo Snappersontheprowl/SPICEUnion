@@ -10,6 +10,9 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -66,6 +69,39 @@ bool write_all(int fd, const std::string& text) {
   return true;
 }
 
+su::ResultFormat requested_format_from_netlist(const std::string& path) {
+  std::ifstream input(path);
+  if (!input) {
+    return su::ResultFormat::kUnknown;
+  }
+  const std::string content((std::istreambuf_iterator<char>(input)),
+                            std::istreambuf_iterator<char>());
+  if (content.find("rawfmt=psfascii") != std::string::npos) {
+    return su::ResultFormat::kPsfAscii;
+  }
+  if (content.find("rawfmt=psfbin") != std::string::npos) {
+    return su::ResultFormat::kBinPsf;
+  }
+  return su::ResultFormat::kUnknown;
+}
+
+// 实际产物格式以产物特征为准（如 spectre 可能自动产出 PSFXL），
+// 特征缺失时回落到请求格式，再回落到 spectre 默认 BINPSF。
+su::ResultFormat infer_actual_result_format(const std::string& work_dir,
+                                            su::ResultFormat requested) {
+  std::error_code error;
+  for (std::filesystem::recursive_directory_iterator it(work_dir, error), end;
+       !error && it != end; it.increment(error)) {
+    if (it->path().filename().string().find(".psfxl") != std::string::npos) {
+      return su::ResultFormat::kPsfxl;
+    }
+  }
+  if (requested != su::ResultFormat::kUnknown) {
+    return requested;
+  }
+  return su::ResultFormat::kBinPsf;
+}
+
 }  // namespace
 
 namespace su {
@@ -82,6 +118,10 @@ void SpectreSession::start() {
   if (active_) {
     return;
   }
+
+  requested_format_ = options_.result_format != ResultFormat::kUnknown
+                          ? options_.result_format
+                          : requested_format_from_netlist(options_.netlist_path);
 
   prepare_workspace();
   launch_process();
@@ -219,7 +259,11 @@ TaskResult SpectreSession::run_once(const ParameterState& state, std::chrono::se
     return TaskResult::failure(TaskStatus::kTransportFailure, work_dir_,
                                "failed to dispatch Spectre run command");
   }
-  return wait_for_completion(timeout);
+  auto result = wait_for_completion(timeout);
+  if (result.ok()) {
+    result.result_format = infer_actual_result_format(work_dir_, requested_format_);
+  }
+  return result;
 }
 
 TaskResult SpectreSession::wait_for_completion(std::chrono::seconds timeout) {

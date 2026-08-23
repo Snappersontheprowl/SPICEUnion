@@ -10,20 +10,24 @@ namespace su {
 ReadResult<ResultDirectory> find_result_directory(const std::string& work_dir);
 
 ReadResult<ScalarResult> read_dc_value(const std::string& result_dir,
-                                       const std::string& signal_name);
+                                       const std::string& signal_name,
+                                       ResultFormat format = ResultFormat::kUnknown);
 
 ReadResult<DcSweep> read_dc_sweep(const std::string& result_dir,
                                   const std::string& sweep_name,
                                   const std::string& signal_name,
-                                  const std::string& filename = "dc.dc");
+                                  const std::string& filename = "dc.dc",
+                                  ResultFormat format = ResultFormat::kUnknown);
 
 ReadResult<AcResponse> read_ac_response(const std::string& result_dir,
                                         const std::string& signal_name,
-                                        const std::string& filename = "ac.ac");
+                                        const std::string& filename = "ac.ac",
+                                        ResultFormat format = ResultFormat::kUnknown);
 
 ReadResult<TranWaveform> read_tran_waveform(const std::string& result_dir,
                                             const std::string& signal_name,
-                                            const std::string& filename = "tran.tran");
+                                            const std::string& filename = "tran.tran",
+                                            ResultFormat format = ResultFormat::kUnknown);
 
 ReadResult<std::vector<SensitivityEntry>> read_sensitivity_legacy(const std::string& work_dir);
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "su/result.hpp"
+
 #include <string>
 
 namespace su {
@@ -18,6 +20,7 @@ const char* to_string(TaskStatus status) noexcept;
 struct TaskResult {
   TaskStatus status = TaskStatus::kException;
   std::string work_dir;
+  ResultFormat result_format = ResultFormat::kUnknown;
   int error_code = 0;
   std::string error_message;
   std::string detail;

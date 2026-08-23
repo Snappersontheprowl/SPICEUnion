@@ -47,8 +47,8 @@ CMake 会优先查找 `install-pic`，再查找 `install`。这两个目录均�
 
 当前本机验证结果：
 
-- Python binding 默认无 libpsf：`90/90` passed；
-- Python binding + libpsf PIC：`109/109` passed。
+- Python binding 默认无 libpsf：`91/91` passed；
+- Python binding + libpsf PIC：`110/110` passed。
 
 ## 当前 Python API
 

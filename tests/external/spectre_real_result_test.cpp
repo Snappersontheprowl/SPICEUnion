@@ -35,6 +35,7 @@ TEST(SpectreRealResultTest, RunsRealAmpDcNetlistAndParsesRealDcResult) {
   ASSERT_NO_THROW(session.start());
   const auto result = session.run({}, std::chrono::seconds(30));
   ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.result_format, su::ResultFormat::kBinPsf);
 
   const auto directory = su::find_result_directory(result.work_dir);
   ASSERT_TRUE(directory.ok()) << directory.error_message;

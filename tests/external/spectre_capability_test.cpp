@@ -20,20 +20,23 @@ struct CapabilityCase {
   const char* signal;
   const char* filename;  // nullptr 时使用 reader 默认文件名
   su::ResultStatus expected_status;
+  su::ResultFormat expected_format;
 };
 
 const CapabilityCase kCapabilityCases[] = {
     // 支持路径：BINPSF 输出
-    {"amp_dc", "AMP/dc", ReaderKind::kDcValue, "net7", nullptr, su::ResultStatus::kOk},
-    {"amp_ac", "AMP/ac", ReaderKind::kAcResponse, "net1", nullptr, su::ResultStatus::kOk},
+    {"amp_dc", "AMP/dc", ReaderKind::kDcValue, "net7", nullptr, su::ResultStatus::kOk,
+     su::ResultFormat::kBinPsf},
+    {"amp_ac", "AMP/ac", ReaderKind::kAcResponse, "net1", nullptr, su::ResultStatus::kOk,
+     su::ResultFormat::kBinPsf},
     // 已知边界：真实仿真可跑，解析命中当前 backend 限制
     {"amp_tran_psfxl", "AMP/tran", ReaderKind::kTranWaveform, "net6", "tran.tran.tran",
-     su::ResultStatus::kUnsupportedFormat},
+     su::ResultStatus::kUnsupportedFormat, su::ResultFormat::kPsfxl},
     // 支持路径：PSFASCII（内置 parser）
     {"bgr_amp_dc_psfascii", "BGR_AMP/dc", ReaderKind::kDcValue, "V_BGR", nullptr,
-     su::ResultStatus::kOk},
+     su::ResultStatus::kOk, su::ResultFormat::kPsfAscii},
     {"bgr_amp_stb_psfascii", "BGR_AMP/stb", ReaderKind::kAcResponse, "loopGain", "stb.stb",
-     su::ResultStatus::kOk},
+     su::ResultStatus::kOk, su::ResultFormat::kPsfAscii},
 };
 
 void PrintTo(const CapabilityCase& test_case, std::ostream* os) {
@@ -78,6 +81,7 @@ TEST_P(SpectreCapabilityTest, RunsRealNetlistAndParsesWithDocumentedStatus) {
   ASSERT_NO_THROW(session.start());
   const auto result = session.run({}, std::chrono::seconds(90));
   ASSERT_TRUE(result.ok()) << result.error_message;
+  EXPECT_EQ(result.result_format, test_case.expected_format);
 
   const auto directory = su::find_result_directory(result.work_dir);
   ASSERT_TRUE(directory.ok()) << directory.error_message;

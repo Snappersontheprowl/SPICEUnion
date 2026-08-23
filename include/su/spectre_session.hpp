@@ -51,6 +51,7 @@ class SpectreSession final : public SimulatorSession {
   int stdout_fd_ = -1;
   int child_pid_ = -1;
   bool active_ = false;
+  ResultFormat requested_format_ = ResultFormat::kUnknown;
   std::vector<std::string> recent_output_;
 };
 

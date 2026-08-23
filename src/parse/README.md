@@ -23,8 +23,9 @@ Python `task_library.py` 只作为历史参考与 fixture 来源；本目录不�
 
 当前文件读取状态：
 
-- `read_dc_value()`：按文件格式分发——PSFASCII 走内置 parser；BINPSF 需启用
-  libpsf backend，否则返回 `kUnsupportedFormat`。
+- `read_dc_value()`：格式声明优先（`ResultFormat` 参数，来自
+  `TaskResult.result_format`）；`kUnknown` 才按文件内容嗅探——PSFASCII 走内置
+  parser；BINPSF 需启用 libpsf backend，否则返回 `kUnsupportedFormat`。
 - `read_dc_sweep()`：PSFASCII 走内置 parser（已用 BGR_AMP temp sweep 真实样本
   验证）；BINPSF 需 libpsf，映射为 `DcSweep`（Spectre resistor divider DC sweep
   fixture 验证）。
