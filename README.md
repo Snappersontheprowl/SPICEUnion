@@ -167,6 +167,7 @@ build/           CMake 构建产物（不入库）
 - `doc/develop_doc/当前事实状态.md`：当前能力、验证数字与边界总账；
 - `doc/develop_doc/开发路线图.md`：后续施工路线；
 - `doc/resume/`：简历与面试表达材料。
+- `doc/CI&CD/`：CI/CD 学习与落地方案。
 
 ## 外部依赖
 
