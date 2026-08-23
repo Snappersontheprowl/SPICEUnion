@@ -2,7 +2,9 @@
 #
 # 阶段 1 覆盖：default、python。
 # 阶段 2（当前）：matrix 扩展为 default / python / libpsf / python-libpsf-pic；
-#   - libpsf 预设先在 runner 上从上游 henjo/libpsf 源码构建（本机 local/external/libpsf 不入库）；
+#   - libpsf 预设先在 runner 上从上游 henjo/libpsf 源码构建；上游是 autotools
+#     工程，无 CMakeLists.txt，构建前把 third_party/libpsf 的 vendored CMake
+#     配方复制进源码根目录（本机 local/external/libpsf 不入库）；
 #   - 引入 ccache（actions/cache 持久化）与 JUnit 测试结果 artifact。
 #
 # 前置配置（仓库 Settings → Secrets and variables → Actions → Variables）：
@@ -73,6 +75,13 @@ jobs:
           repository: henjo/libpsf
           ref: ${{ env.LIBPSF_REF }}
           path: libpsf-src
+
+      - name: Install vendored CMake build recipe
+        if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
+        run: |
+          cp "$GITHUB_WORKSPACE/third_party/libpsf/CMakeLists.txt" \
+             "$GITHUB_WORKSPACE/libpsf-src/CMakeLists.txt"
+          test -f "$GITHUB_WORKSPACE/libpsf-src/CMakeLists.txt"
 
       - name: Configure libpsf
         if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'

@@ -157,6 +157,7 @@ tests/           GoogleTest 测试与 fixture
 doc/             开发文档、学习笔记与简历材料
 local/           本机运行产物与外部依赖构建产物（不入库）
 build/           CMake 构建产物（不入库）
+third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf 的 vendored CMake 配方）
 .github/         GitHub Actions 流水线（云 CI 四个 EDA-free 预设 + 自托管 CI）
 ```
 

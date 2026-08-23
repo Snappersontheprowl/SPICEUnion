@@ -416,6 +416,7 @@ sudo ./svc.sh stop      # 停止
 | 项 | 值 | 原因 |
 |---|---|---|
 | 上游 | `https://github.com/henjo/libpsf`，锁 `6efc14f…`（master HEAD） | 复现性，依赖升级显式进行 |
+| 构建方式 | vendored CMake 配方（`third_party/libpsf/CMakeLists.txt`） | 上游是 autotools 工程，无 CMakeLists.txt（见 8.5 踩坑） |
 | CMake 生成 | `-DCMAKE_BUILD_TYPE=Release` | libpsf 自身无 Debug 需求 |
 | PIC | `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` | 静态库要链进 Python shared module（python-libpsf-pic） |
 | 安装前缀 | `${{ runner.temp }}/libpsf-install` | 随 job 生命周期回收，不污染工作区 |
@@ -424,6 +425,9 @@ sudo ./svc.sh stop      # 停止
 SPICEUnion 的 CMake 逻辑：变量为空时自动去 `local/external/libpsf/install[-pic]`
 下查找；CI 干净环境没有该目录，所以显式传参。库文件用
 `find -name 'libpsf.a'` 动态定位（本机落在 `lib64/`，不硬编码 lib/lib64）。
+CI 侧流程：checkout 上游源码 → 把 `third_party/libpsf/CMakeLists.txt` 复制到
+源码根目录 → 常规 CMake configure / build / install；配方与升级规则见
+`third_party/libpsf/README.md`。
 
 ### 8.2 缓存设计（key 与失效时机）
 
@@ -450,3 +454,23 @@ SPICEUnion 的 CMake 逻辑：变量为空时自动去 `local/external/libpsf/in
 - `python` 系 preset 通过 FetchContent 拉 pybind11，首次网络下载可能偏慢；
 - 四个 matrix job 冷缓存同时跑会各自拉一次 libpsf 源码，量级很小，暂不优化；
 - 若出现与本地不一致（如 lib64 布局、编译告警），以云端日志为准回填本节。
+
+### 8.5 第二次云端运行踩坑：上游没有 CMakeLists.txt（2026-08-23）
+
+**现象**：`libpsf` / `python-libpsf-pic` 两个 job 都在
+`cmake -S …/libpsf-src` 报
+`The source directory … does not appear to contain CMakeLists.txt`。
+
+**根因**：`henjo/libpsf` 是 **autotools 工程**（`configure.ac` / `Makefile.am` /
+`autogen.sh`），上游仓库根本没有 CMakeLists.txt。本机之所以能用 CMake 构建，
+是因为 `local/external/libpsf/src`（上游 git clone 的根目录）里有一个**本地手写
+的 CMakeLists.txt**——它位于被 `.gitignore` 忽略的 `local/` 下，既不在上游仓库，
+也不在 SPICEUnion 仓库，干净 runner 上自然不存在。
+
+**修复**：把这份 CMake 配方 vendor 到 `third_party/libpsf/CMakeLists.txt`，
+workflow 在 checkout 上游源码后先用 `cp` 复制进 `libpsf-src/` 根目录再配置构建；
+同时写 `third_party/libpsf/README.md` 记录锁定版本与升级规则。
+
+**教训**：“本机能构建” ≠ “上游能构建”。依赖本机 `local/` 下的额外文件时，
+CI 要么把文件显式带入（vendor/commit），要么用上游原生的构建系统；
+本方案选前者，保证云 CI 与本机构建参数完全一致。
