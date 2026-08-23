@@ -30,7 +30,72 @@
 | cache | 跨运行复用的依赖/构建缓存 |
 | secret | 仓库级加密变量（许可、token），日志中自动打码 |
 
-## 2. 最小 workflow 示例（阶段 1 起点）
+## 2. 整体逻辑：从 push 到全绿（心智模型）
+
+### 2.1 一句话模型
+
+CI/CD = 把“你本来就会做的验证动作”写成**事件触发 + 机器选择 + 步骤 + 配置注入**
+的声明式规则，交给 GitHub 在每次变更时自动执行、留痕、强制把关；EDA 部分因为许可
+和材料只能在本机跑，就用自托管 runner 把本机接进同一个调度体系。
+
+### 2.2 角色类比（工头与工人）
+
+| 概念 | 类比 | 本项目中的具体物 |
+|---|---|---|
+| workflow | 流程卡：什么情况开工、派谁、按什么步骤 | `.github/workflows/*.yml` |
+| runner | 工人 | 云 runner（干净机器）/ 自托管 runner（本机，label `eda`） |
+| job / step | 一单活 / 活里的动作 | `require-config`、`build-test`、checkout / configure / build / test |
+| event | 开工信号 | `push` / `pull_request` / `workflow_dispatch` / `schedule` |
+| variables / secrets | 干活前的便签与钥匙 | `ORDERED_POOL_REPOSITORY` / `SPECTRE_MATERIALS_DIR` 等 |
+
+核心：**workflow 是规则，配置是材料，runner 是人力，事件是触发。** CI 没有发明新
+动作，只是把你手动跑的命令搬到另一台机器上、由事件自动触发、结果自动留痕。
+
+### 2.3 运行故事线（云 CI）
+
+1. push（或 PR）→ GitHub 读取仓库**默认分支**上的 workflow；
+2. `require-config` 先校验材料（缺 `ORDERED_POOL_REPOSITORY` 直接红，提示补配置，
+   不让后续步骤白跑）；
+3. 云 runner（干净的 ubuntu）接单：拉 SPICEUnion → 按 Variables 拉
+   `OrderedConcurrentPool` → configure → build → test；
+4. 结果回到 GitHub：绿了留痕，红了留下日志——从此“绿了才提交”由机器强制。
+
+### 2.4 为什么是“两级 + 本机脚本”
+
+| 部分 | 存在原因 | 解决的问题 |
+|---|---|---|
+| 云 CI | 干净环境、push/PR 自动触发 | 证明“从零 clone 能构建”，集成问题早暴露 |
+| 自托管 CI（本机） | 只有本机有 spectre 许可与材料 | 真实仿真必须真实跑，仍由 GitHub 调度留痕 |
+| 本机一键脚本 | 开发时秒级自检 | 不等 CI，本地快速反馈 |
+
+分工本质：**干净环境证明可复现，真实工具证明真能用，本机脚本提供日常手感。**
+
+### 2.5 与本地验证的映射
+
+```text
+你的手  → cmake --preset → cmake --build → ctest
+CI      → push 触发     → 同一套命令     → 在干净机器上跑 → 日志留痕
+```
+
+`scripts/verify_all_presets.sh` 把“你的手”脚本化；workflow 把脚本“搬到机器上并
+自动触发”。所以学的不是陌生系统，而是“如何把手动验证声明成机器规则”。
+
+### 2.6 流程图
+
+```mermaid
+flowchart LR
+    Push["git push / PR"] --> Read["GitHub 读取默认分支 workflow"]
+    Read --> Guard["require-config<br/>校验 Variables 配置"]
+    Guard -- 缺配置 --> Fail["红：提示补 ORDERED_POOL_REPOSITORY"]
+    Guard -- 配置齐 --> Cloud["云 runner ubuntu-latest<br/>拉取 SPICEUnion + OrderedConcurrentPool"]
+    Cloud --> Steps["configure → build → test"]
+    Steps --> Green["绿：100% passed，日志留痕"]
+    Manual["手动 Run workflow<br/>（ci-external）"] --> SelfHosted["自托管 runner<br/>[self-hosted, linux, eda]<br/>本机 spectre + PDK + libpsf"]
+    SelfHosted --> ExtSteps["external-libpsf<br/>真实仿真"]
+    ExtSteps --> ExtGreen["绿：结果回填当前事实状态"]
+```
+
+## 3. 最小 workflow 示例（阶段 1 起点）
 
 ```yaml
 name: ci-default
@@ -60,7 +125,7 @@ jobs:
 - `run` 里的命令与本地 shell 一致；SPICEUnion 的 preset 设计让 CI 命令与本地
   完全复用。
 
-## 3. SPICEUnion 的已知卡点（阶段 1 必踩）
+## 4. SPICEUnion 的已知卡点（阶段 1 必踩）
 
 - **OrderedConcurrentPool 不在 CI 环境**：默认构建要求 sibling 源树，需要
   `actions/checkout` 额外获取该仓库（或改用 submodule / install 包）。
@@ -68,21 +133,21 @@ jobs:
   spectre 许可与 `spectre_materials/external` 材料，公共 runner 没有；方案是自托管
   runner + secrets。
 
-## 4. 常见误区
+## 5. 常见误区
 
 - 把 CI 等同于“写了 YAML”：核心是“机器在干净环境强制重跑”，YAML 只是载体。
 - `push` 与 `pull_request` 触发混用导致同一提交跑两遍：需要按分支策略选择。
 - 在 CI 里依赖本机已有依赖/缓存：干净环境必须显式安装或 checkout。
 - 把密钥写进 `run` 命令：必须用 `secrets` 并在日志中打码。
 
-## 5. 待验证问题（随进度更新）
+## 6. 待验证问题（随进度更新）
 
 - [ ] OrderedConcurrentPool 在 CI 中最稳的装配方式（checkout 另一仓库 vs submodule）。
 - [ ] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）。
 - [ ] external 预设的自托管 runner 是否需要独立 label 与并发限制。
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
 
-## 6. 落地记录（2026-08-23）
+## 7. 落地记录（2026-08-23）
 
 ### 采用的方案（业界主流折中，已确认）
 
