@@ -168,7 +168,7 @@ third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf �
 - `doc/develop_doc/架构总览.md`：分层架构、执行链路与结果读取链路图；
 - `doc/develop_doc/当前事实状态.md`：当前能力、验证数字与边界总账；
 - `doc/develop_doc/开发路线图.md`：后续施工路线；
-- `doc/resume/`：简历与面试表达材料。
+- `doc/resume/`：简历与面试表达材料（事件笔记：真实网表端到端验证、两级 CI 流水线落地）。
 - `doc/cicd/`：CI/CD 学习与落地方案。
 
 ## 外部依赖
