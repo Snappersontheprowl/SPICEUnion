@@ -157,7 +157,7 @@ tests/           GoogleTest 测试与 fixture
 doc/             开发文档、学习笔记与简历材料
 local/           本机运行产物与外部依赖构建产物（不入库）
 build/           CMake 构建产物（不入库）
-.github/         GitHub Actions 流水线（云 CI + 自托管 CI）
+.github/         GitHub Actions 流水线（云 CI 四个 EDA-free 预设 + 自托管 CI）
 ```
 
 ## 文档入口

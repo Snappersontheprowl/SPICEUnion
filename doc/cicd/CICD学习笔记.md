@@ -145,12 +145,16 @@ jobs:
 - [x] OrderedConcurrentPool 在 CI 中最稳的装配方式 → 显式 checkout 到
       `$GITHUB_WORKSPACE/OrderedConcurrentPool` + configure 显式
       `-DSPICEUNION_ORDERED_POOL_SOURCE_DIR` 注入（当前采用，2026-08-23 验证）。
-- [ ] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）。
+- [x] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）→ 阶段 2 落地：
+      ccache 按 `ccache-<preset>-<sha>` 存、`ccache-<preset>-` / `ccache-` 回退；
+      libpsf 安装产物按 `libpsf-<os>-<上游commit>` 存，依赖版本升级即换 key 失效。
 - [x] external 预设的自托管 runner 独立 label → `eda`（已注册并验证接单）。
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
 - [x] `ci-eda-free` 云 CI 首次绿跑确认（2026-08-23）。
-- [ ] libpsf 预设（`libpsf` / `python-libpsf-pic`）上云（阶段 2）。
-- [ ] 拆分 spectre / ngspice 外部测试门控，让 ngspice 上云（阶段 2）。
+- [x] libpsf 预设（`libpsf` / `python-libpsf-pic`）上云（阶段 2，工作流已落地，
+      首次云端绿跑待观察）。
+- [x] 拆分 spectre / ngspice 外部测试门控 → 用户决定放弃（阶段 2 任务 3），
+      暂缓池保留 ngspice 相关探索。
 
 ## 7. 落地记录（2026-08-23）
 
@@ -158,15 +162,17 @@ jobs:
 
 | 层 | 执行位置 | 内容 | 触发 |
 |---|---|---|---|
-| 云 CI | GitHub 托管 runner | `default` / `python`（阶段 1）；libpsf 预设待阶段 2 | push + PR |
+| 云 CI | GitHub 托管 runner | `default` / `python` / `libpsf` / `python-libpsf-pic`（阶段 2 全量 EDA-free 预设） | push + PR |
 | 自托管 CI | 本机 runner（label `eda`） | `external-libpsf`（spectre + PDK + libpsf） | 手动 / 定时 |
 | 本机脚本 | 本机 | `scripts/verify_all_presets.sh` 一键六预设 | 手动 |
 
 ### 已交付的仓库侧产物
 
-- `.github/workflows/ci-eda-free.yml`：云 runner 流水线，matrix 覆盖 default / python；
-  `OrderedConcurrentPool` 通过仓库变量 `ORDERED_POOL_REPOSITORY` 装配（sibling 依赖
-  在干净环境的第一个卡点）。
+- `.github/workflows/ci-eda-free.yml`：云 runner 流水线，matrix 覆盖
+  default / python / libpsf / python-libpsf-pic；libpsf 预设先在 runner 上从
+  上游 `henjo/libpsf` 源码构建，配套 ccache 缓存与 JUnit artifact；
+  `OrderedConcurrentPool` 通过仓库变量 `ORDERED_POOL_REPOSITORY` 装配
+  （sibling 依赖在干净环境的第一个卡点）。
 - `.github/workflows/ci-external.yml`：自托管流水线，`runs-on: [self-hosted, linux, eda]`，
   仅手动/定时触发；`SPECTRE_MATERIALS_DIR`、`LIBPSF_INCLUDE_DIR`、`LIBPSF_LIBRARY`
   经 secrets 注入。
@@ -391,3 +397,51 @@ sudo ./svc.sh stop      # 停止
 
 **runner 服务状态（2026-08-23 确认）**：systemd 单元 `active (running)`、
 `√ Connected to GitHub`，服务已启用（enabled），关终端不再掉线。
+
+## 8. 阶段 2 落地记录（2026-08-23）
+
+**范围**：用户确认放弃任务 3（spectre / ngspice 门控拆分）；执行任务 1
+（libpsf 预设上云）+ 任务 2（缓存与 artifact）。
+
+### 8.1 libpsf 在干净 runner 上的构建方式
+
+本机 `local/external/libpsf` 不入库，云 runner 每次从上游源码构建（命中缓存则
+直接复用安装产物）。构建参数与本机 `local/external/libpsf/build-pic` 保持一致：
+
+| 项 | 值 | 原因 |
+|---|---|---|
+| 上游 | `https://github.com/henjo/libpsf`，锁 `6efc14f…`（master HEAD） | 复现性，依赖升级显式进行 |
+| CMake 生成 | `-DCMAKE_BUILD_TYPE=Release` | libpsf 自身无 Debug 需求 |
+| PIC | `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` | 静态库要链进 Python shared module（python-libpsf-pic） |
+| 安装前缀 | `${{ runner.temp }}/libpsf-install` | 随 job 生命周期回收，不污染工作区 |
+| 注入方式 | `-DSPICEUNION_LIBPSF_INCLUDE_DIR` / `-DSPICEUNION_LIBPSF_LIBRARY` | 与 `ci-external.yml` 的 secrets 注入同一组 CMake 变量 |
+
+SPICEUnion 的 CMake 逻辑：变量为空时自动去 `local/external/libpsf/install[-pic]`
+下查找；CI 干净环境没有该目录，所以显式传参。库文件用
+`find -name 'libpsf.a'` 动态定位（本机落在 `lib64/`，不硬编码 lib/lib64）。
+
+### 8.2 缓存设计（key 与失效时机）
+
+两级缓存，语义不同：
+
+- **ccache（编译器缓存）**：key `ccache-<preset>-<github.sha>`，restore-keys
+  `ccache-<preset>-` → `ccache-`。每次 push 新 sha 不会命中精确 key，但会回退到
+  同 preset 上次的缓存，天然按 preset 分桶；换依赖/编译器版本时只需换前缀。
+- **libpsf 安装产物**：key `libpsf-<runner.os>-<上游commit>`。换 libpsf 版本
+  （改 `LIBPSF_REF`）即换 key 失效；同一版本四个 preset 共享一份，只构建一次。
+
+缓存路径放在 `${{ runner.temp }}` 下，随 job 回收，避免污染仓库工作区。
+
+### 8.3 测试结果 artifact
+
+- ctest 增加 `--output-junit results-<preset>.xml`（CMake ≥ 3.21，云端
+  ubuntu-latest 满足；本机 3.26.5 已本地冒烟验证，81KB 报告生成正常）；
+- `actions/upload-artifact@v5` 按 preset 命名上传（`results-<preset>`），
+  `if: always()` 保证失败时也能下载报告排查。
+
+### 8.4 待观察（首次云端跑）
+
+- libpsf 首次构建（冷缓存）依赖其自身 CMakeLists 与系统编译器，预计秒级；
+- `python` 系 preset 通过 FetchContent 拉 pybind11，首次网络下载可能偏慢；
+- 四个 matrix job 冷缓存同时跑会各自拉一次 libpsf 源码，量级很小，暂不优化；
+- 若出现与本地不一致（如 lib64 布局、编译告警），以云端日志为准回填本节。

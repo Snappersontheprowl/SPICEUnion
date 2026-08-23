@@ -2,7 +2,7 @@
 
 ## 当前活跃待办
 
-暂无。
+（无未完成任务；最近落地见文末“归档”。）
 
 ## 暂缓池
 
@@ -16,9 +16,18 @@
 - [ ] M4.3 执行层 binding 评估。
 - [ ] C ABI 正式实现（M4 第一版暂缓，仅保留 ownership 草案）。
 - [ ] libpsf backend 产品化分发与 license notice。
+- [ ] spectre / ngspice 外部测试门控拆分（让 ngspice 上云）——阶段 2 任务 3，
+      用户决定放弃，暂缓。
 - [ ] Xyce / Hspice 多仿真器扩展。
 
 ## 监控项
 
 - [ ] `spectre_materials` 行为基线变化时，同步审视 SPICEUnion 当前事实文档与契约测试。
 - [ ] 性能数字未实测前，只能作为目标值，不得写成已完成结果。
+- [ ] 云 CI 阶段 2 首次绿跑观察：libpsf 上游构建、pybind11 FetchContent 网络、
+      JUnit artifact 可下载；偶发失败（阶段 1 出现过一次重跑恢复）若复现再深挖。
+
+## 归档
+
+- 阶段 2：云 CI 补 libpsf 预设 + 缓存与 artifact（2026-08-23 落地，
+  见 `doc/cicd/CICD学习笔记.md` 第 8 节；工作流 `.github/workflows/ci-eda-free.yml`）。

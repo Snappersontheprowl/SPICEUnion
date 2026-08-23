@@ -1,8 +1,9 @@
-# 云 runner 流水线：EDA-free 预设（无需 spectre / PDK / libpsf 许可）
+# 云 runner 流水线：EDA-free 预设（无需 spectre / PDK / 本机 libpsf）
 #
 # 阶段 1 覆盖：default、python。
-# 阶段 2 待补：libpsf、python-libpsf-pic 需要在 runner 上先构建 henjo/libpsf
-# （本机 local/external/libpsf 不入库），加入后 matrix 再扩展这两个 preset。
+# 阶段 2（当前）：matrix 扩展为 default / python / libpsf / python-libpsf-pic；
+#   - libpsf 预设先在 runner 上从上游 henjo/libpsf 源码构建（本机 local/external/libpsf 不入库）；
+#   - 引入 ccache（actions/cache 持久化）与 JUnit 测试结果 artifact。
 #
 # 前置配置（仓库 Settings → Secrets and variables → Actions → Variables）：
 #   ORDERED_POOL_REPOSITORY：OrderedConcurrentPool 的 GitHub 仓库，如 owner/OrderedConcurrentPool
@@ -30,7 +31,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [default, python]
+        include:
+          - preset: default
+            needs_libpsf: false
+          - preset: python
+            needs_libpsf: false
+          - preset: libpsf
+            needs_libpsf: true
+          - preset: python-libpsf-pic
+            needs_libpsf: true
+    env:
+      # ccache 缓存目录固定到 runner 临时区，随 job 生命周期回收
+      CCACHE_DIR: ${{ runner.temp }}/ccache
+      # 与 doc/cicd/CICD学习笔记.md 中锁定的上游版本保持一致
+      LIBPSF_REF: 6efc14f7c5fa7e09a07e354cc54b9135ec353d70
     steps:
       - name: Checkout SPICEUnion
         uses: actions/checkout@v5
@@ -44,11 +58,89 @@ jobs:
       - name: Verify OrderedConcurrentPool checkout
         run: test -f "$GITHUB_WORKSPACE/OrderedConcurrentPool/include/ocp/ordered_concurrent_pool.hpp"
 
+      # ---- libpsf：仅在需要该后端的 preset 上构建，命中缓存则直接复用安装产物 ----
+
+      - name: Cache libpsf install
+        id: cache-libpsf
+        if: matrix.needs_libpsf
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.temp }}/libpsf-install
+          key: libpsf-${{ runner.os }}-${{ env.LIBPSF_REF }}
+
+      - name: Checkout henjo/libpsf (source)
+        if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: henjo/libpsf
+          ref: ${{ env.LIBPSF_REF }}
+          path: libpsf-src
+
+      - name: Configure libpsf
+        if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
+        run: >
+          cmake -S "$GITHUB_WORKSPACE/libpsf-src" -B "${{ runner.temp }}/libpsf-build"
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          -DCMAKE_INSTALL_PREFIX="${{ runner.temp }}/libpsf-install"
+
+      - name: Build and install libpsf
+        if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
+        run: cmake --build "${{ runner.temp }}/libpsf-build" --target install -j "$(nproc)"
+
+      - name: Resolve libpsf install paths
+        id: libpsf-paths
+        if: matrix.needs_libpsf
+        run: |
+          lib_file="$(find "${{ runner.temp }}/libpsf-install" -name 'libpsf.a' -print -quit)"
+          test -n "$lib_file"
+          echo "include_dir=${{ runner.temp }}/libpsf-install/include" >> "$GITHUB_OUTPUT"
+          echo "lib_file=$lib_file" >> "$GITHUB_OUTPUT"
+
+      # ---- ccache：编译器缓存，按 preset 分桶，miss 时回退到同 preset / 公共缓存 ----
+
+      - name: Ensure ccache
+        run: |
+          if ! command -v ccache >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y ccache
+          fi
+          ccache --version | head -n 1
+
+      - name: Cache ccache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-${{ matrix.preset }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ matrix.preset }}-
+            ccache-
+
+      # ---- SPICEUnion 配置 / 构建 / 测试 ----
+
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }} -DSPICEUNION_ORDERED_POOL_SOURCE_DIR=$GITHUB_WORKSPACE/OrderedConcurrentPool
+        run: |
+          args=(--preset "${{ matrix.preset }}"
+                -DSPICEUNION_ORDERED_POOL_SOURCE_DIR="$GITHUB_WORKSPACE/OrderedConcurrentPool"
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache)
+          if [[ "${{ matrix.needs_libpsf }}" == "true" ]]; then
+            args+=(-DSPICEUNION_LIBPSF_INCLUDE_DIR="${{ steps.libpsf-paths.outputs.include_dir }}"
+                   -DSPICEUNION_LIBPSF_LIBRARY="${{ steps.libpsf-paths.outputs.lib_file }}")
+          fi
+          cmake "${args[@]}"
 
       - name: Build
-        run: cmake --build --preset ${{ matrix.preset }}
+        run: cmake --build --preset "${{ matrix.preset }}"
 
       - name: Test
-        run: ctest --preset ${{ matrix.preset }} --output-on-failure
+        run: >
+          ctest --preset "${{ matrix.preset }}"
+          --output-on-failure
+          --output-junit "results-${{ matrix.preset }}.xml"
+
+      - name: Upload test results (JUnit)
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: results-${{ matrix.preset }}
+          path: results-${{ matrix.preset }}.xml
+          if-no-files-found: warn
