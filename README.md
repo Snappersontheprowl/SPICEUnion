@@ -154,7 +154,7 @@ src/session/     Spectre / Ngspice backend
 src/parse/       ResultIR helper 与可选 libpsf backend
 bindings/python/ 可选 pybind11 Python binding
 tests/           GoogleTest 测试与 fixture
-doc/             开发文档、学习笔记与简历材料
+doc/             开发文档与学习笔记（简历材料本地私有，不入库）
 local/           本机运行产物与外部依赖构建产物（不入库）
 build/           CMake 构建产物（不入库）
 third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf 的 vendored CMake 配方）
@@ -168,7 +168,7 @@ third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf �
 - `doc/develop_doc/架构总览.md`：分层架构、执行链路与结果读取链路图；
 - `doc/develop_doc/当前事实状态.md`：当前能力、验证数字与边界总账；
 - `doc/develop_doc/开发路线图.md`：后续施工路线；
-- `doc/resume/`：简历与面试表达材料（事件笔记：真实网表端到端验证、两级 CI 流水线落地）。
+- `doc/resume/`（本地私有，不入库）：简历与面试表达材料与事件笔记。
 - `doc/cicd/`：CI/CD 学习与落地方案。
 
 ## 外部依赖
@@ -188,3 +188,19 @@ third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf �
 等价材料布局；本机 `/dev/shm/pdk_cache` 缓存已废弃，不再作为检查条件。
 `spectre_materials/external/netlist` 下的网表均为项目所有者实测的合法仿真网表，SPICEUnion
 只作为消费方读取，不修改网表内容。
+
+## 许可证
+
+SPICEUnion 本体采用 [Apache-2.0](./LICENSE)。
+
+第三方组件与材料按各自许可使用：
+
+| 组件 | 用途 | 许可 |
+|---|---|---|
+| [henjo/libpsf](https://github.com/henjo/libpsf) | 可选 BINPSF 结果解析后端 | LGPL-3.0（以源形式从上游构建，不随本仓库分发） |
+| pybind11 | 可选 Python 绑定 | MIT（构建期 FetchContent 获取） |
+| GoogleTest | 测试框架 | BSD-3-Clause（构建期获取） |
+| OrderedConcurrentPool | sibling 依赖（有序并发池） | MIT（见其仓库 `LICENSE`） |
+
+`third_party/libpsf/CMakeLists.txt` 是本项目为上游 libpsf 编写的构建配方，
+随本项目以 Apache-2.0 发布。

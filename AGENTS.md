@@ -9,7 +9,7 @@ SPICEUnion 是一个 C++17 仿真器执行与结果读取基础设施库，支�
 ## 基本环境
 
 - 代码编辑工具：`VSCode`
-- 项目根目录：`~/my_lab/projects/SPICEUnion`
+- 项目根目录：仓库根目录（本机示例：`~/my_lab/projects/SPICEUnion`）
 
 ## Git 与提交流程
 

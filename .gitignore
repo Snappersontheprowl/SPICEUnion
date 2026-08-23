@@ -3,6 +3,7 @@
 cmake-build-*/
 /local/*
 !/local/README.md
+/doc/resume/
 
 *.o
 *.a
