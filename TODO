@@ -24,10 +24,10 @@
 
 - [ ] `spectre_materials` 行为基线变化时，同步审视 SPICEUnion 当前事实文档与契约测试。
 - [ ] 性能数字未实测前，只能作为目标值，不得写成已完成结果。
-- [ ] 云 CI 阶段 2 首次绿跑观察：libpsf 上游构建、pybind11 FetchContent 网络、
-      JUnit artifact 可下载；偶发失败（阶段 1 出现过一次重跑恢复）若复现再深挖。
+- [ ] 云 CI 偶发失败观察：阶段 1 曾出现一次重跑即恢复的失败，若复现再深挖日志。
 
 ## 归档
 
-- 阶段 2：云 CI 补 libpsf 预设 + 缓存与 artifact（2026-08-23 落地，
-  见 `doc/cicd/CICD学习笔记.md` 第 8 节；工作流 `.github/workflows/ci-eda-free.yml`）。
+- 阶段 2：云 CI 补 libpsf 预设 + 缓存与 artifact（2026-08-23 落地并验收，
+  云 CI 四预设全绿；见 `doc/cicd/CICD学习笔记.md` 第 8.7 节；工作流
+  `.github/workflows/ci-eda-free.yml`）。

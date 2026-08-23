@@ -157,7 +157,7 @@ jobs:
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
 - [x] `ci-eda-free` 云 CI 首次绿跑确认（2026-08-23）。
 - [x] libpsf 预设（`libpsf` / `python-libpsf-pic`）上云（阶段 2，工作流已落地，
-      首次云端绿跑待观察）。
+      2026-08-23 云端四预设绿跑确认，见第 8.7 节）。
 - [x] 拆分 spectre / ngspice 外部测试门控 → 用户决定放弃（阶段 2 任务 3），
       暂缓池保留 ngspice 相关探索。
 
@@ -449,12 +449,13 @@ CI 侧流程：checkout 上游源码 → 把 `third_party/libpsf/CMakeLists.txt`
 - `actions/upload-artifact@v5` 按 preset 命名上传（`results-<preset>`），
   `if: always()` 保证失败时也能下载报告排查。
 
-### 8.4 待观察（首次云端跑）
+### 8.4 首次云端跑观察（2026-08-23 已验证）
 
-- libpsf 首次构建（冷缓存）依赖其自身 CMakeLists 与系统编译器，预计秒级；
-- `python` 系 preset 通过 FetchContent 拉 pybind11，首次网络下载可能偏慢；
-- 四个 matrix job 冷缓存同时跑会各自拉一次 libpsf 源码，量级很小，暂不优化；
-- 若出现与本地不一致（如 lib64 布局、编译告警），以云端日志为准回填本节。
+- libpsf 首次构建（冷缓存）：约秒级，途中补装 Boost 头文件后一次通过；
+- `python` 系 preset 通过 FetchContent 拉 pybind11：首轮网络下载正常，未超时；
+- 四个 matrix job 各自拉一次 libpsf 源码：量级很小，无并发问题；
+- 产物布局与本地一致（`lib64/libpsf.a` + `include/psf.h`/`psfdata.h`），
+  未出现与本地不一致。
 
 ### 8.5 第二次云端运行踩坑：上游没有 CMakeLists.txt（2026-08-23）
 
@@ -492,3 +493,22 @@ CI 要么把文件显式带入（vendor/commit），要么用上游原生的构�
 **教训**：“本机环境满足” ≠ “干净环境满足”。第三方依赖自身的系统级依赖
 （Boost 等）必须在 workflow 里显式安装；该步骤与 libpsf 构建共用
 `cache-hit != 'true'` 条件，命中缓存时直接跳过。
+
+### 8.7 云 CI 阶段 2 验收（2026-08-23）
+
+**里程碑**：`ci-eda-free` 云端四预设（default / python / libpsf /
+python-libpsf-pic）全绿，阶段 2 任务 1（libpsf 上云）+ 任务 2（缓存与 artifact）
+验收通过。
+
+本轮共经历三次失败、三次修复：
+
+| # | 失败点 | 根因 | 修复 |
+|---|---|---|---|
+| 1 | workflow 语法校验 | job 级 `env` 误用 `runner.temp`（`runner` 上下文仅 step 级） | `CCACHE_DIR` 下沉到 step `env` |
+| 2 | libpsf configure | 上游为 autotools，无 CMakeLists.txt；本地配方在被忽略的 `local/` 下 | vendor 到 `third_party/libpsf/`，CI 先复制再构建 |
+| 3 | libpsf compile | 干净 runner 无 Boost 头文件 | 构建前 `apt-get install -y libboost-dev` |
+
+**已验证生效**：libpsf 安装产物缓存（key 含上游 commit）、ccache 按 preset 分桶
+回退、JUnit artifact 按 preset 命名上传。
+
+**收尾**：根 TODO 阶段 2 项收口到归档；学习笔记同步到本节。
