@@ -148,7 +148,7 @@ jobs:
 - [ ] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）。
 - [x] external 预设的自托管 runner 独立 label → `eda`（已注册并验证接单）。
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
-- [ ] `ci-eda-free` 云 CI 首次绿跑确认。
+- [x] `ci-eda-free` 云 CI 首次绿跑确认（2026-08-23）。
 - [ ] libpsf 预设（`libpsf` / `python-libpsf-pic`）上云（阶段 2）。
 - [ ] 拆分 spectre / ngspice 外部测试门控，让 ngspice 上云（阶段 2）。
 
@@ -382,10 +382,12 @@ sudo ./svc.sh stop      # 停止
    `sudo chcon -Rt bin_t <runner目录>` 后重新 `sudo ./svc.sh start`；
    更“正规”的备选是把 runner 移到 `/opt/actions-runner` 并重新 config。
 
-**待确认项**
+**确认结果（2026-08-23）——阶段 1 验收通过**
 
-- `ci-eda-free`（云 CI）是否也首次跑绿；
-- 07:28 失败 → 07:39 成功之间改了什么（若已知，补进复盘）。
+- `ci-eda-free` 云 CI 首次跑绿 → **两级流水线全部打通**（云 runner 无 EDA +
+  本机自托管 runner 有 EDA）；
+- 07:28 失败 → 07:39 成功：未发现改动，判断为偶发失败、重跑恢复，列入观察项
+  （若复现再深挖日志）。
 
 **runner 服务状态（2026-08-23 确认）**：systemd 单元 `active (running)`、
 `√ Connected to GitHub`，服务已启用（enabled），关终端不再掉线。
