@@ -112,15 +112,152 @@ jobs:
 - `runs-on: [self-hosted, linux, eda]`：多个 label 是“且”关系，只有带 `eda` label
   的自托管 runner 能接这个 job。
 
-### GitHub 侧待办清单（需要人工操作）
+### GitHub 侧待办清单（详细版，含原因与验证）
 
-1. 把 SPICEUnion 与 OrderedConcurrentPool 推送到 GitHub；
-2. 仓库 Settings → Secrets and variables → Actions → **Variables**：
-   `ORDERED_POOL_REPOSITORY`（如 `owner/OrderedConcurrentPool`）；
-3. 同上 → **Secrets**：`SPECTRE_MATERIALS_DIR`、
-   `LIBPSF_INCLUDE_DIR`、`LIBPSF_LIBRARY`（自托管机器上的绝对路径）；
-4. 仓库 Settings → Actions → **Runners**：在本机注册 runner 并添加 `eda` label；
-5. push 后观察 `ci-eda-free` 首次运行，读日志、修失败。
+先理解一个背景：workflow 文件写在仓库里，但它引用的**仓库配置**（Variables、
+Secrets、Runner）都存在于 GitHub 仓库设置里，而不是代码里。下面每一步都是在
+“把 workflow 引用到的配置补全”，让流水线真正能跑。
+
+#### 0. 前置：仓库可见性与 Actions 额度
+
+- 把 SPICEUnion、OrderedConcurrentPool 各建为一个独立 GitHub 仓库；
+- **Public vs Private**：公共仓库的云 runner 免费且无限量；自托管 runner 跑在
+  你自己的机器上，公共仓库有“fork PR 可执行任意代码”的安全风险（GitHub 官方
+  警告）。本项目 external workflow 已只开 `workflow_dispatch` / `schedule`，规避了
+  大部分风险；如果你仍不放心，两个仓库保持 **Private** 也完全可以（GitHub Free
+  私有仓库每月 2000 分钟 Actions 额度，对本项目足够）。
+
+#### 1. 推送两个仓库
+
+**怎么做**：分别在两个仓库目录执行
+
+```bash
+git remote add origin https://github.com/<owner>/<repo>.git
+git push -u origin main
+```
+
+**为什么**：GitHub Actions 只对“托管在 GitHub 上的仓库”生效；workflow 文件必须在
+**默认分支（main）** 上，push 事件才会读取并触发它。
+
+**常见坑**：
+
+- workflow 文件放错位置（必须是 `.github/workflows/*.yml`，且已提交）；
+- 默认分支不是 `main`（如 `master`）时，push main 不触发；
+- 仓库刚创建时 Actions 页是空的，push 之后才会出现第一个 workflow。
+
+**怎么验证**：GitHub 仓库 Actions 页出现 `ci-eda-free` 工作流；或本地
+`git ls-remote origin` 能看到远端分支。
+
+#### 2. Variables：`ORDERED_POOL_REPOSITORY`
+
+**怎么做**：Settings → Secrets and variables → Actions → **Variables** →
+New repository variable：
+
+```text
+Name:  ORDERED_POOL_REPOSITORY
+Value: <owner>/OrderedConcurrentPool   （例如 eda/OrderedConcurrentPool，不要带 https:// 或 .git）
+```
+
+**为什么**：`ci-eda-free.yml` 里用 `actions/checkout` 拉取 sibling 依赖，`repository`
+参数来自 `${{ vars.ORDERED_POOL_REPOSITORY }}`。用 Variables 而不是写死，是为了
+仓库属主变化、换人 fork 复用时不用改代码。
+
+**常见坑**：
+
+- 值带了 `https://github.com/` 或 `.git` 后缀 → checkout 解析失败；
+- 没设置时，`require-config` job 会主动失败并输出中文提示（这是我们加的守卫）；
+- Variables 是明文、可被 workflow 读取，只放非敏感信息。
+
+**怎么验证**：跑一次 `ci-eda-free`，`require-config` 不再失败，`Checkout
+OrderedConcurrentPool` 步骤能拉到仓库。
+
+#### 3. Secrets：`SPECTRE_MATERIALS_DIR` / `LIBPSF_INCLUDE_DIR` / `LIBPSF_LIBRARY`
+
+**怎么做**：Settings → Secrets and variables → Actions → **Secrets** →
+New repository secret，填入自托管机器上的**绝对路径**：
+
+```text
+SPECTRE_MATERIALS_DIR = ~/my_lab/projects/spectre_materials
+LIBPSF_INCLUDE_DIR    = ~/my_lab/projects/SPICEUnion/local/external/libpsf/install-pic/include
+LIBPSF_LIBRARY        = ~/my_lab/projects/SPICEUnion/local/external/libpsf/install-pic/lib64/libpsf.a
+```
+
+（`lib64` 或 `lib` 以本机实际安装位置为准；建议统一指向 `install-pic`，因为
+静态 libpsf 链接进 shared module 需要 PIC 构建，external-libpsf 用同一份最省心。）
+
+**为什么**：
+
+- 这些路径属于“机器环境细节”，且 `local/` 被 gitignore 不入库，CI 干净环境里
+  不存在——必须由配置注入；
+- Secrets 在日志中自动打码，避免机器路径/许可信息外泄（惯例是把“不该出现在
+  公开日志里的东西”都走 Secrets）。
+
+**常见坑**：
+
+- Secrets 只在 job 运行时注入，不是持久环境变量；改完 Secrets 后新运行才生效；
+- 路径含空格时 YAML 的 `-D...=${{ secrets.X }}` 展开会断——当前路径无空格，
+  安全；以后有空格需要加引号；
+- 值指向不存在的文件时，configure 阶段报 `FATAL_ERROR`（CMake 会提示找不到
+  libpsf），先 `ls` 确认路径真实存在。
+
+**怎么验证**：在 Actions 页手动触发 `ci-external`（workflow_dispatch），观察
+Configure 步骤是否通过；日志里路径会被打码成 `***`，属正常现象。
+
+#### 4. 注册自托管 runner 并添加 `eda` label
+
+**怎么做**：
+
+1. 仓库 Settings → Actions → **Runners** → New self-hosted runner → 选 Linux，
+   页面会给一组命令；
+2. 在**本机**下载 runner 包并执行：
+
+```bash
+./config.sh --url https://github.com/<owner>/<repo> --token <页面给的token> --labels eda
+./run.sh
+```
+
+3. 长期运行建议装成系统服务：`sudo ./svc.sh install && sudo ./svc.sh start`。
+
+**为什么**：`ci-external.yml` 的 `runs-on: [self-hosted, linux, eda]` 是**多 label
+“且”关系**——runner 必须同时拥有这三个 label 才会被分配这个 job。默认 label 自带
+`self-hosted`、`linux`；`eda` 需要注册时用 `--labels eda` 显式添加。
+
+**常见坑**：
+
+- runner 机器必须能访问 spectre license 服务器、PDK 材料、libpsf 安装——这些是
+  机器能力，不是 GitHub 配置；
+- `./run.sh` 在前台，关终端就掉线；务必装成服务；
+- 公共仓库安全：自托管 runner 会执行分配给它的任何 job，所以 external job 只开
+  手动/定时；云 job（`runs-on: ubuntu-latest`）永远不会打到自托管 runner；
+- 一台机器可在不同目录注册多个 runner，但同一目录不要重复注册。
+
+**怎么验证**：Settings → Actions → Runners 页面看到 runner **Online**（绿色），
+并可查看它拥有的 labels。
+
+#### 5. push 后观察首次运行并修失败
+
+**怎么做**：推送 main（workflow 已随 `26c7aad` 进入仓库）→ Actions 页出现
+`ci-eda-free` 运行 → 点进运行、点 job、逐个 step 看日志。
+
+**预期首次失败点与排查顺序**（这是阶段 1 最好的实战教材）：
+
+1. `require-config` 红：`ORDERED_POOL_REPOSITORY` 未设置 → 补 Variables；
+2. `Checkout OrderedConcurrentPool` 红：变量格式错 / 仓库不存在 / 私有仓库无权限；
+3. `Configure` 红：CMake 版本过低（ubuntu-latest 自带 3.28+，一般不是这个）、
+   OCP 路径没落在 `../OrderedConcurrentPool`；
+4. `python` preset 红：pybind11 走 FetchContent，网络拉取慢或失败，可重跑。
+
+**修失败的方法论**：先看“哪个 step 红”→ 看该 step 的第一条 error → 对照 workflow
+定义定位 → 改 workflow 后 push 新 commit 重跑（或 Actions 页 Re-run）。把每次失败
+和根因记进本笔记的“错题/卡点记录”，避免重复踩。
+
+**怎么验证**：所有 step 绿，Test step 输出 `100% tests passed`。
+
+#### 6. 手动触发 external（可选，验证自托管链路）
+
+Actions 页 → `ci-external` → **Run workflow**（workflow_dispatch 按钮）→ 选择
+默认分支 → 运行。若本机 runner 在线且 Secrets 正确，`external-libpsf` 会真实跑
+spectre 并输出 100% 通过。
 
 ### 已知限制 / 阶段 2 待办
 
