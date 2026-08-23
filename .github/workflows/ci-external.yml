@@ -1,0 +1,46 @@
+# 自托管 runner 流水线：EDA 预设（需要 spectre 许可 + PDK + libpsf）
+#
+# 运行前提（本机自托管 runner 机器）：
+#   - 注册 runner 并打 label：eda（仓库 Settings → Actions → Runners）
+#   - spectre 位于 PATH，license 可达
+#   - spectre_materials/external 材料可访问
+#   - libpsf 已构建（本机 local/external/libpsf/install-pic 或等价路径）
+#
+# 前置配置（仓库 Secrets and variables → Actions → Secrets）：
+#   SPECTRE_MATERIALS_DIR：spectre_materials 仓库路径，如 ~/my_lab/projects/spectre_materials
+#   LIBPSF_INCLUDE_DIR / LIBPSF_LIBRARY：libpsf 安装的 include 与库文件路径
+#   ORDERED_POOL_REPOSITORY：见 ci-eda-free.yml（Variables）
+#
+# 注意：外部预设涉及真实仿真，默认只允许手动/定时触发，避免 fork PR 在本机执行。
+name: ci-external
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 22 * * 5"  # 每周五 22:00 UTC，可选
+
+jobs:
+  external-libpsf:
+    runs-on: [self-hosted, linux, eda]
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v4
+
+      - name: Checkout OrderedConcurrentPool (sibling source tree)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ORDERED_POOL_REPOSITORY }}
+          path: OrderedConcurrentPool
+
+      - name: Configure external-libpsf
+        run: >
+          cmake --preset external-libpsf
+          -DSPICEUNION_SPECTRE_MATERIALS_DIR=${{ secrets.SPECTRE_MATERIALS_DIR }}
+          -DSPICEUNION_LIBPSF_INCLUDE_DIR=${{ secrets.LIBPSF_INCLUDE_DIR }}
+          -DSPICEUNION_LIBPSF_LIBRARY=${{ secrets.LIBPSF_LIBRARY }}
+
+      - name: Build
+        run: cmake --build --preset external-libpsf
+
+      - name: Test
+        run: ctest --preset external-libpsf --output-on-failure

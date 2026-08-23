@@ -81,3 +81,52 @@ jobs:
 - [ ] ccache / CMake 缓存的 key 设计（preset 变化时如何失效）。
 - [ ] external 预设的自托管 runner 是否需要独立 label 与并发限制。
 - [ ] 验证数字回填的最小实现（从 ctest 输出解析并写入文档）。
+
+## 6. 落地记录（2026-08-23）
+
+### 采用的方案（业界主流折中，已确认）
+
+| 层 | 执行位置 | 内容 | 触发 |
+|---|---|---|---|
+| 云 CI | GitHub 托管 runner | `default` / `python`（阶段 1）；libpsf 预设待阶段 2 | push + PR |
+| 自托管 CI | 本机 runner（label `eda`） | `external-libpsf`（spectre + PDK + libpsf） | 手动 / 定时 |
+| 本机脚本 | 本机 | `scripts/verify_all_presets.sh` 一键六预设 | 手动 |
+
+### 已交付的仓库侧产物
+
+- `.github/workflows/ci-eda-free.yml`：云 runner 流水线，matrix 覆盖 default / python；
+  `OrderedConcurrentPool` 通过仓库变量 `ORDERED_POOL_REPOSITORY` 装配（sibling 依赖
+  在干净环境的第一个卡点）。
+- `.github/workflows/ci-external.yml`：自托管流水线，`runs-on: [self-hosted, linux, eda]`，
+  仅手动/定时触发；`SPECTRE_MATERIALS_DIR`、`LIBPSF_INCLUDE_DIR`、`LIBPSF_LIBRARY`
+  经 secrets 注入。
+- `scripts/verify_all_presets.sh`：本机一键 configure/build/test 六个预设，
+  已在本机实测跑通（全部通过）。
+
+### workflow 逐段解读（学习要点）
+
+- `on:`：`push` / `pull_request` / `workflow_dispatch` / `schedule`（cron 定时）；
+- `needs:`：`build-test` 等 `require-config` 完成后才跑，先校验配置缺失并给出中文提示；
+- `strategy.matrix`：一个 job 模板展开多个预设，互不阻塞（`fail-fast: false`）；
+- `vars.` 与 `secrets.`：仓库级配置与机密，分别用于可公开变量和必须打码的路径/许可；
+- `runs-on: [self-hosted, linux, eda]`：多个 label 是“且”关系，只有带 `eda` label
+  的自托管 runner 能接这个 job。
+
+### GitHub 侧待办清单（需要人工操作）
+
+1. 把 SPICEUnion 与 OrderedConcurrentPool 推送到 GitHub；
+2. 仓库 Settings → Secrets and variables → Actions → **Variables**：
+   `ORDERED_POOL_REPOSITORY`（如 `owner/OrderedConcurrentPool`）；
+3. 同上 → **Secrets**：`SPECTRE_MATERIALS_DIR`、
+   `LIBPSF_INCLUDE_DIR`、`LIBPSF_LIBRARY`（自托管机器上的绝对路径）；
+4. 仓库 Settings → Actions → **Runners**：在本机注册 runner 并添加 `eda` label；
+5. push 后观察 `ci-eda-free` 首次运行，读日志、修失败。
+
+### 已知限制 / 阶段 2 待办
+
+- libpsf 预设（`libpsf` / `python-libpsf-pic`）需要先在 runner 上构建
+  `henjo/libpsf`（本机 `local/external/libpsf` 不入库），matrix 再扩展；
+- ngspice 外部测试上云需要先拆分 spectre / ngspice 门控（当前 external 预设
+  configure 依赖 `spectre_materials/external` 材料）；
+- 公共仓库使用自托管 runner 有任意代码执行风险（GitHub 官方警告）：只允许
+  `push` 到 main / `workflow_dispatch` 触发，不用 `pull_request` 接自托管 job。

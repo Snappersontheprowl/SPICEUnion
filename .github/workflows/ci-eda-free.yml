@@ -1,0 +1,51 @@
+# 云 runner 流水线：EDA-free 预设（无需 spectre / PDK / libpsf 许可）
+#
+# 阶段 1 覆盖：default、python。
+# 阶段 2 待补：libpsf、python-libpsf-pic 需要在 runner 上先构建 henjo/libpsf
+# （本机 local/external/libpsf 不入库），加入后 matrix 再扩展这两个 preset。
+#
+# 前置配置（仓库 Settings → Secrets and variables → Actions → Variables）：
+#   ORDERED_POOL_REPOSITORY：OrderedConcurrentPool 的 GitHub 仓库，如 owner/OrderedConcurrentPool
+name: ci-eda-free
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  require-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require ORDERED_POOL_REPOSITORY variable
+        if: vars.ORDERED_POOL_REPOSITORY == ''
+        run: |
+          echo "请在仓库 Settings → Secrets and variables → Actions → Variables 设置"
+          echo "ORDERED_POOL_REPOSITORY，例如 owner/OrderedConcurrentPool。"
+          exit 1
+
+  build-test:
+    needs: require-config
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [default, python]
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v4
+
+      - name: Checkout OrderedConcurrentPool (sibling source tree)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ORDERED_POOL_REPOSITORY }}
+          path: OrderedConcurrentPool
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure
