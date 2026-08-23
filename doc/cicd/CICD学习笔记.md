@@ -139,6 +139,11 @@ jobs:
 - `push` 与 `pull_request` 触发混用导致同一提交跑两遍：需要按分支策略选择。
 - 在 CI 里依赖本机已有依赖/缓存：干净环境必须显式安装或 checkout。
 - 把密钥写进 `run` 命令：必须用 `secrets` 并在日志中打码。
+- 上下文作用域（`runner.temp` 是阶段 2 实测踩的坑）：`runner` 上下文只在
+  step 级（step `env` / `run` / `with`）可用，job 级 `env` 里写
+  `${{ runner.temp }}/…` 会被判 `Unrecognized named-value: 'runner'`；
+  需要按 job 维度复用的值要么用 `GITHUB_WORKSPACE` 这类全局上下文，要么
+  在具体 step 的 `env` 里注入。
 
 ## 6. 待验证问题（随进度更新）
 

@@ -41,8 +41,6 @@ jobs:
           - preset: python-libpsf-pic
             needs_libpsf: true
     env:
-      # ccache 缓存目录固定到 runner 临时区，随 job 生命周期回收
-      CCACHE_DIR: ${{ runner.temp }}/ccache
       # 与 doc/cicd/CICD学习笔记.md 中锁定的上游版本保持一致
       LIBPSF_REF: 6efc14f7c5fa7e09a07e354cc54b9135ec353d70
     steps:
@@ -118,6 +116,9 @@ jobs:
       # ---- SPICEUnion 配置 / 构建 / 测试 ----
 
       - name: Configure
+        env:
+          # runner 上下文仅在 step 级可用，ccache 缓存目录随 job 生命周期回收
+          CCACHE_DIR: ${{ runner.temp }}/ccache
         run: |
           args=(--preset "${{ matrix.preset }}"
                 -DSPICEUNION_ORDERED_POOL_SOURCE_DIR="$GITHUB_WORKSPACE/OrderedConcurrentPool"
@@ -129,6 +130,8 @@ jobs:
           cmake "${args[@]}"
 
       - name: Build
+        env:
+          CCACHE_DIR: ${{ runner.temp }}/ccache
         run: cmake --build --preset "${{ matrix.preset }}"
 
       - name: Test
