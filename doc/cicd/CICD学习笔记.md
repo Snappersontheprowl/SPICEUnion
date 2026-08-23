@@ -358,7 +358,8 @@ configure → build → test 全链路打通。
 
 ```bash
 sudo ./svc.sh install   # 已执行成功（2026-08-23）
-sudo ./svc.sh start     # 下一步：启动服务
+sudo chcon -Rt bin_t ~/my_lab/actions-runner   # SELinux 修复（见坑 5）
+sudo ./svc.sh start     # 已启动成功，服务常驻 + Connected to GitHub
 sudo ./svc.sh status    # 查看状态
 sudo ./svc.sh stop      # 停止
 ```
@@ -374,8 +375,17 @@ sudo ./svc.sh stop      # 停止
    `include/ocp/ordered_concurrent_pool.hpp` 做校验步骤；
 4. **Node 20 弃用警告**：`actions/checkout` v4 → v5（Node 24 运行时，要求 runner
    ≥ 2.327.1，当前 2.336.0 满足）。
+5. **SELinux Enforcing 下 systemd 启动失败（203/EXEC）**：runner 装在用户主目录
+   （`~/...`），文件上下文为 `user_home_t`，systemd 服务执行
+   `runsvc.sh` 被 SELinux 拒绝（`status=203/EXEC`）。文件权限、shebang 均正常，
+   用 `ausearch -m AVC` 可看到 `denied { execute }`。修复：
+   `sudo chcon -Rt bin_t <runner目录>` 后重新 `sudo ./svc.sh start`；
+   更“正规”的备选是把 runner 移到 `/opt/actions-runner` 并重新 config。
 
 **待确认项**
 
 - `ci-eda-free`（云 CI）是否也首次跑绿；
 - 07:28 失败 → 07:39 成功之间改了什么（若已知，补进复盘）。
+
+**runner 服务状态（2026-08-23 确认）**：systemd 单元 `active (running)`、
+`√ Connected to GitHub`，服务已启用（enabled），关终端不再掉线。
