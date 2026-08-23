@@ -83,6 +83,12 @@ jobs:
              "$GITHUB_WORKSPACE/libpsf-src/CMakeLists.txt"
           test -f "$GITHUB_WORKSPACE/libpsf-src/CMakeLists.txt"
 
+      - name: Install libpsf build dependencies (Boost headers)
+        if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-dev
+
       - name: Configure libpsf
         if: matrix.needs_libpsf && steps.cache-libpsf.outputs.cache-hit != 'true'
         run: >

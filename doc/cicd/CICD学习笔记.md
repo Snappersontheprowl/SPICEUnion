@@ -417,6 +417,7 @@ sudo ./svc.sh stop      # 停止
 |---|---|---|
 | 上游 | `https://github.com/henjo/libpsf`，锁 `6efc14f…`（master HEAD） | 复现性，依赖升级显式进行 |
 | 构建方式 | vendored CMake 配方（`third_party/libpsf/CMakeLists.txt`） | 上游是 autotools 工程，无 CMakeLists.txt（见 8.5 踩坑） |
+| 系统依赖 | `libboost-dev`（Ubuntu 包，Boost 头文件） | 上游 `psfinternal.h` 使用 `boost::iterator::iterator_facade`（见 8.6 踩坑） |
 | CMake 生成 | `-DCMAKE_BUILD_TYPE=Release` | libpsf 自身无 Debug 需求 |
 | PIC | `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` | 静态库要链进 Python shared module（python-libpsf-pic） |
 | 安装前缀 | `${{ runner.temp }}/libpsf-install` | 随 job 生命周期回收，不污染工作区 |
@@ -474,3 +475,20 @@ workflow 在 checkout 上游源码后先用 `cp` 复制进 `libpsf-src/` 根目�
 **教训**：“本机能构建” ≠ “上游能构建”。依赖本机 `local/` 下的额外文件时，
 CI 要么把文件显式带入（vendor/commit），要么用上游原生的构建系统；
 本方案选前者，保证云 CI 与本机构建参数完全一致。
+
+### 8.6 第三次云端运行踩坑：干净 runner 缺 Boost（2026-08-23）
+
+**现象**：libpsf 编译在 `psfinternal.h:18` 报
+`boost/iterator/iterator_facade.hpp: No such file or directory`，
+`libpsf` / `python-libpsf-pic` 两个 job 均失败（exit code 2）。
+
+**根因**：上游 libpsf 的 `psfinternal.h` 使用 Boost 迭代器头文件
+（`configure.ac` 里 `AX_BOOST_BASE([1.32.0])` 校验）。本机装有
+`boost-devel`，所以本机构建正常；ubuntu-latest 干净镜像默认不带 Boost 头文件。
+
+**修复**：libpsf 构建前 `sudo apt-get update && sudo apt-get install -y libboost-dev`
+（只装基础头文件；CMake 配方不构建 python binding，无需 boost-python）。
+
+**教训**：“本机环境满足” ≠ “干净环境满足”。第三方依赖自身的系统级依赖
+（Boost 等）必须在 workflow 里显式安装；该步骤与 libpsf 构建共用
+`cache-hit != 'true'` 条件，命中缓存时直接跳过。
