@@ -24,10 +24,10 @@ jobs:
     runs-on: [self-hosted, linux, eda]
     steps:
       - name: Checkout SPICEUnion
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout OrderedConcurrentPool (sibling source tree)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ vars.ORDERED_POOL_REPOSITORY }}
           path: OrderedConcurrentPool
