@@ -4,6 +4,7 @@
 
 ## 目录结构
 
+- `workflow/`：普通用户工作流 facade，实现 `Simulation` 与 `SimulationResult`。
 - `core/`：面向 evaluator 的核心类型与编排实现。
 - `pool/`：有序 worker 调度与 session pool 实现。
 - `session/`：simulator session 实现与 protocol helper。

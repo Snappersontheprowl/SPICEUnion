@@ -1,13 +1,13 @@
 # 用户工作流 API 设计
 
-状态：`draft`
+状态：`active`
 最后验证：`2026-09-02`
 适用范围：`C++ workflow facade / Python workflow binding / future MATLAB bridge`
 单一事实来源：
 
-- `include/su/workflow.hpp`（落地后）
-- `src/workflow/`（落地后）
-- `tests/workflow_test.cpp`（落地后）
+- `include/su/workflow.hpp`
+- `src/workflow/`
+- `tests/workflow_test.cpp`
 
 ## 1. 要解决的问题
 
@@ -31,7 +31,7 @@ wrdata 分派或 libpsf 后端细节。
 
 ## 2. 不解决的问题
 
-第一版 workflow API 不做以下事情：
+第一版 C++ workflow API 不做以下事情：
 
 - 不实现 optimizer、搜索算法、objective、penalty 或业务 metric 系统。
 - 不实现完整 netlist IR、netlist template DSL 或 PDK 内容管理。
@@ -129,7 +129,7 @@ ac = results(1).readAc("out");
 
 MATLAB 具体接入方式后续再评估 C ABI + MEX 或 JSON/CLI bridge。
 
-## 4. 第一版 C++ API 草案
+## 4. 第一版 C++ API
 
 ```cpp
 namespace su {
@@ -148,6 +148,7 @@ struct SimulationOptions {
   int timeout_seconds = 60;
   int restart_attempts = 1;
   ResultFormat result_format = ResultFormat::kUnknown;
+  NgspiceBuiltinTask ngspice_task = NgspiceBuiltinTask::kRcAc;
 };
 
 using SimulationCase = std::map<std::string, double>;
@@ -223,7 +224,7 @@ SimulationResult
 
 workflow API 增加“声明可变参数”的用户层契约。
 
-规则草案：
+当前规则：
 
 - `add_parameter(name)` 声明一个必须由每个 case 提供的参数。
 - `add_parameter(name, default_value)` 声明一个可由默认值补齐的参数。
@@ -254,7 +255,7 @@ workflow API 应保持三层失败语义：
 
 ## 8. 测试策略
 
-新增 `tests/workflow_test.cpp`，优先覆盖用户层契约：
+`tests/workflow_test.cpp` 覆盖用户层契约：
 
 - `SimulationOptions` 非法配置拒绝。
 - 参数声明拒绝空名和重复名。
@@ -279,9 +280,9 @@ session。候选方案：
 
 ## 9. 开发切分
 
-建议分两轮落地。
+当前按两轮落地。
 
-第一轮：C++ workflow facade。
+第一轮：C++ workflow facade，已完成。
 
 - 新增 `include/su/workflow.hpp`。
 - 新增 `src/workflow/simulation.cpp` 与 `src/workflow/README.md`。
@@ -292,7 +293,7 @@ session。候选方案：
   `../00_项目总览/03_开发路线图.md`。
 - 更新 `include/su/README.md`、`src/README.md`、`tests/README.md`。
 
-第二轮：Python workflow binding。
+第二轮：Python workflow binding，暂缓。
 
 - 在 C++ workflow API 稳定后，将 Python 执行层 binding 绑定到 workflow 层。
 - 不直接暴露 `SimulatorSession`、`SessionFactory` 或 `OrderedConcurrentPool`。
@@ -300,23 +301,21 @@ session。候选方案：
 
 ## 10. 完成定义
 
-第一轮完成定义：
+第一轮完成事实：
 
 - C++ 用户可以通过 `Simulation` 提供网表、声明参数、提交 batch 并获得 `SimulationResult`。
 - 成功任务可通过 `SimulationResult.read_dc()`、`read_dc_sweep()`、`read_ac()`、
   `read_tran()` 读取结果。
 - 普通用户主路径不需要直接调用 `find_result_directory()`。
-- workflow API 契约有默认测试覆盖。
+- workflow API 契约已有默认测试覆盖。
 - 默认预设构建与测试通过。
-- 根 README 主示例改为 workflow API。
-- 当前事实、架构总览、路线图和相关目录 README 完成收口。
+- 根 README 主示例已改为 workflow API。
+- 当前事实、架构总览、路线图和相关目录 README 已完成收口。
 
-## 11. 草案收口规则
+## 11. 后续维护规则
 
-本草案落地前保持 `draft` 状态。
+本文件作为 workflow 设计说明保留，状态为 `active`。
 
-第一轮 C++ workflow facade 落地后：
-
-- 若本文件继续作为 workflow 设计说明保留，则状态改为 `active`，并删除过期草案内容。
-- 若设计内容已被当前事实、架构总览和 README 完全吸收，则移动到 `../90_归档备注/` 或删除。
-- 不允许长期保留已经过期的 `draft` 版本。
+后续 Python workflow binding 或 MATLAB bridge 若改变本文件中的用户模型、失败语义或内部映射，
+应同步更新本文；若本文内容完全被当前事实、架构总览和 README 吸收，可移动到
+`../90_归档备注/` 或删除。

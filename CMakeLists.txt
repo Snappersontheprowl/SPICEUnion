@@ -109,6 +109,7 @@ add_library(spiceunion_core STATIC
   src/session/ngspice_session.cpp
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
+  src/workflow/simulation.cpp
   src/core/version.cpp
 )
 
@@ -313,6 +314,23 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   gtest_discover_tests(spiceunion_simulation_semantics_test)
+
+  add_executable(spiceunion_workflow_test
+    tests/workflow_test.cpp
+  )
+
+  target_link_libraries(spiceunion_workflow_test
+    PRIVATE
+      spiceunion_core
+      GTest::gtest_main
+  )
+
+  target_compile_definitions(spiceunion_workflow_test
+    PRIVATE
+      SPICEUNION_PROJECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+
+  gtest_discover_tests(spiceunion_workflow_test)
 
   add_executable(spiceunion_spectre_session_lifecycle_test
     tests/external/spectre_session_lifecycle_test.cpp

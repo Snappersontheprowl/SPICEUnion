@@ -6,6 +6,28 @@
 
 ## 模块概览
 
+### `workflow.hpp`
+
+普通用户工作流入口。
+
+该头文件当前定义：
+
+- `SimulatorKind`：普通用户选择 simulator 的轻量枚举。
+- `SimulationOptions`：workflow 层配置，包括 simulator、网表路径、worker 数量、
+  工作目录、超时、重启次数、结果格式声明和当前 Ngspice 内置任务选择。
+- `SimulationCase`：单个用户仿真 case 的参数映射。
+- `SimulationResult`：单个任务结果 facade，包装 `TaskResult` 并提供 `read_dc()`、
+  `read_dc_sweep()`、`read_ac()`、`read_tran()`。
+- `Simulation`：普通用户主入口，支持声明可变参数、提交 batch、清理底层 evaluator。
+- `make_simulation_for_session_factory()`：测试与高级嵌入入口，用于注入自定义
+  `SessionFactory`。
+
+普通用户应优先使用 `Simulation` / `SimulationResult` 完成“提供网表、声明参数、运行
+batch、读取信号”的主路径。`work_dir`、`ResultFormat` 和底层 reader 仍可用于高级诊断，
+但不作为普通读取主路径。
+
+该模块不实现 optimizer、netlist DSL、PDK 管理、GUI 或业务 metric。
+
 ### `core.hpp`
 
 执行层共享核心数据类型。
@@ -234,6 +256,10 @@ Ngspice 支持。不要在这里提前引入完整 netlist IR、binary raw parse
 当前公开头文件分层如下：
 
 ```text
+workflow.hpp
+  -> evaluator.hpp
+  -> result_reader.hpp
+
 core.hpp
 task_result.hpp
 result.hpp
@@ -251,6 +277,7 @@ spectre_protocol.hpp
 约定：
 
 - 共享的仿真器无关类型放在 `core.hpp` 或 `task_result.hpp`。
+- 普通用户工作流入口放在 `workflow.hpp`。
 - 结果层通用类型放在 `result.hpp`。
 - 结果读取 API 放在 `result_reader.hpp`。
 - 抽象 simulator lifecycle 放在 `session.hpp`。

@@ -17,6 +17,8 @@
   stress batch）。
 - `simulator_pool_contract_test.cpp`：验证 `SimulatorPool` 作为 SPICEUnion adapter 的
   契约（worker work directory、`TaskResult` 映射、保序与失败隔离）。
+- `workflow_test.cpp`：验证用户工作流 facade 契约（参数声明、非法 case 拒绝、默认值
+  补齐、保序返回、单任务失败封装和 `SimulationResult` 读取封装）。
 - `result_test.cpp`：验证 ResultIR、`ReadResult` 状态与公开 result_reader API 骨架。
 - `result_reader_test.cpp`：验证 `.raw` 目录定位、AC 数学 helper、settling time 与
   文件读取行为；真实 PSF 读取由 libpsf 开关控制。

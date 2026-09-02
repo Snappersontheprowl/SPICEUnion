@@ -15,7 +15,17 @@ SPICEUnion 是一个 C++17 的**仿真器执行与结果读取基础设施库**�
 - 仿真产物（`.raw`）留在每个 worker 自己的工作目录，由调用方用统一 reader 读取；
 - 单个任务失败、超时或仿真器崩溃不会影响其他任务。
 
-核心链路：
+普通用户主链路：
+
+```text
+Simulation
+  -> declare parameters
+  -> run SimulationCase batch
+  -> SimulationResult
+  -> read signals
+```
+
+内部执行链路：
 
 ```text
 ParameterState batch
@@ -31,6 +41,8 @@ ParameterState batch
 
 ### 执行层
 
+- 用户工作流 facade（`Simulation` / `SimulationResult`），隐藏 worker directory 与
+  result directory 主路径细节；
 - batch 执行 facade（`Evaluator`），一次提交一批参数状态；
 - worker 工作目录隔离，多 worker 并行；
 - 输入顺序保序返回，不依赖任务完成顺序；
@@ -69,7 +81,7 @@ ParameterState batch
 - 解析边界（经真实网表实测）：PSFXL transient 明确返回 `unsupported_format`；
   PSFASCII 由内置 parser 支持、BINPSF 由可选 libpsf 支持；legacy sensitivity
   未实现；完整原生 PSF parser（内置 BINPSF）未实现；
-- Python 侧当前只能读取结果，不能发起仿真（执行层绑定暂缓）；
+- Python 侧当前只能读取结果，不能发起仿真（workflow / 执行层 binding 暂缓）；
 - 尚未发布 wheel / package；性能数字未系统实测。
 
 能力边界由 `external-libpsf` 预设的多网表矩阵测试持续钉住，详细事实与验证数字见
@@ -119,18 +131,26 @@ ctest --preset default --output-on-failure
 ### C++ 最小示例
 
 ```cpp
-#include "su/evaluator.hpp"
-#include "su/result_reader.hpp"
+#include "su/workflow.hpp"
 
-su::EvaluatorOptions options;
-options.netlist_path = "input.scs";   // 参数化 Spectre 网表
-options.num_workers = 4;
+su::SimulationOptions options;
+options.simulator = su::SimulatorKind::kSpectre;
+options.netlist_path = "input.scs";  // 参数化 Spectre 网表
+options.workers = 4;
 
-auto evaluator = su::make_spectre_evaluator(options);
-auto results = evaluator.run({{"wp", 14e-6}, {"wn", 10e-6}});
+su::Simulation simulation(options);
+simulation.add_parameter("wp");
+simulation.add_parameter("wn");
 
-// results[i].work_dir 即该任务的真实仿真产物目录（.raw）
-auto sweep = su::read_dc_sweep(results[0].work_dir, "vin_dc", "out");
+const std::vector<su::SimulationCase> cases = {
+    {{"wp", 14e-6}, {"wn", 10e-6}},
+    {{"wp", 16e-6}, {"wn", 11e-6}},
+};
+
+auto results = simulation.run(cases);
+if (results[0].ok()) {
+  auto sweep = results[0].read_dc_sweep("vin_dc", "out");
+}
 ```
 
 读取 PSF 文件需要启用 libpsf 的构建；参数名需与网表中的参数一致。
@@ -148,6 +168,7 @@ PYTHONPATH=build/python/bindings/python python3.10 -c \
 
 ```text
 include/su/      公开 C++ API
+src/workflow/    用户工作流 facade 实现
 src/core/        evaluator 与通用执行逻辑
 src/pool/        SimulatorPool adapter
 src/session/     Spectre / Ngspice backend

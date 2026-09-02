@@ -2,7 +2,7 @@
 
 ## 当前活跃待办
 
-（无未完成任务；最近落地见文末“归档”。）
+（无。）
 
 ## 暂缓池
 
@@ -28,6 +28,9 @@
 
 ## 归档
 
+- 统一用户工作流 API 第一轮：C++ workflow facade 已落地，公开入口
+  `include/su/workflow.hpp`，实现目录 `src/workflow/`，契约测试
+  `tests/workflow_test.cpp`；默认测试 97/97 通过（2026-09-02）。
 - 开发文档体系重构：`doc/develop_doc` 已按 `00_项目总览`、`10_阶段记录`、
   `20_专题记录`、`90_归档备注` 编号分层；文档地图与维护规范见
   `doc/develop_doc/README.md`（2026-09-02 落地）。
