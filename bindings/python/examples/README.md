@@ -71,6 +71,33 @@ PYTHONPATH=build/python-libpsf-pic/bindings/python \
 
 脚本不依赖 numpy、matplotlib 或 pytest。
 
+### 运行 workflow 示例
+
+默认只构造 workflow 并提交空 batch，不调用外部 EDA 工具：
+
+```bash
+PYTHONPATH=build/python/bindings/python \
+  ~/anaconda3/bin/python3.10 \
+  bindings/python/examples/run_workflow.py input.scs
+```
+
+若要真实执行，需要提供合法网表和可用 simulator，并显式加 `--execute`：
+
+```bash
+PYTHONPATH=build/python/bindings/python \
+  ~/anaconda3/bin/python3.10 \
+  bindings/python/examples/run_workflow.py input.scs --execute
+```
+
+这个脚本演示：
+
+- 创建 `Simulation`；
+- 声明参数；
+- 提交 batch；
+- 遍历 `SimulationResult`；
+- 成功时读取 AC signal；
+- 失败时打印 `status_text()` 和 `message`。
+
 ## 失败语义
 
 普通读取失败不抛异常，而是返回 result 对象：
@@ -91,9 +118,9 @@ Python 参数类型错误仍由 pybind11 抛出 Python 异常。
 
 ## CTest
 
-当前两个示例脚本都纳入 CTest smoke 验证：
+当前 fixture 示例脚本纳入 CTest smoke 验证：
 
 - `python_example_read_fixture_results`
 - `python_example_analyze_fixture_results`
 
-因此示例脚本需要保持无交互、可重复运行，并且不能依赖未提交的业务数据。
+`run_workflow.py` 需要用户提供真实网表；默认不纳入 CTest。

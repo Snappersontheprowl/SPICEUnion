@@ -62,7 +62,8 @@ ParameterState batch
 ### 多语言接入
 
 - C++17 公开 API（`include/su/`）；
-- 可选 pybind11 Python 绑定（结果读取 helper 与结果类型），模块名 `spiceunion`；
+- 可选 pybind11 Python 绑定（用户 workflow、结果读取 helper 与结果类型），模块名
+  `spiceunion`；
 - C ABI 目前为草案 / 暂缓状态。
 
 ## 优势（为什么用它）
@@ -81,7 +82,8 @@ ParameterState batch
 - 解析边界（经真实网表实测）：PSFXL transient 明确返回 `unsupported_format`；
   PSFASCII 由内置 parser 支持、BINPSF 由可选 libpsf 支持；legacy sensitivity
   未实现；完整原生 PSF parser（内置 BINPSF）未实现；
-- Python 侧当前只能读取结果，不能发起仿真（workflow / 执行层 binding 暂缓）；
+- Python 侧已支持第一版 workflow binding；默认测试覆盖 API 契约，真实 simulator smoke
+  通过环境变量显式开启；
 - 尚未发布 wheel / package；性能数字未系统实测。
 
 能力边界由 `external-libpsf` 预设的多网表矩阵测试持续钉住，详细事实与验证数字见
@@ -162,6 +164,24 @@ PYTHONPATH=build/python/bindings/python python3.10 -c \
   "import spiceunion; print(spiceunion.version())"
 ```
 
+最小 workflow：
+
+```python
+import spiceunion as su
+
+with su.Simulation(netlist_path="input.scs", simulator="spectre", workers=4) as simulation:
+    simulation.add_parameter("wp")
+    simulation.add_parameter("wn", default_value=10e-6)
+
+    results = simulation.run([
+        {"wp": 14e-6},
+        {"wp": 16e-6, "wn": 11e-6},
+    ])
+
+    if results[0].ok():
+        ac = results[0].read_ac("out")
+```
+
 更多示例见 `bindings/python/examples/`。
 
 ## 仓库结构
@@ -189,7 +209,7 @@ third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf �
 - `doc/develop_doc/00_项目总览/02_架构总览.md`：分层架构、执行链路与结果读取链路图；
 - `doc/develop_doc/00_项目总览/03_开发路线图.md`：后续施工路线；
 - `doc/develop_doc/00_项目总览/00_项目章程.md`：项目章程（定位、范围、设计原则、里程碑）；
-- `doc/develop_doc/10_阶段记录/`：M1-M4 阶段设计背景与收口记录；
+- `doc/develop_doc/10_阶段记录/`：M1-M6 阶段设计背景与收口记录；
 - `doc/develop_doc/20_专题记录/`：跨阶段专项文档；
 - `doc/develop_doc/90_归档备注/`：遗留调研与暂缓备注；
 - `doc/resume/`（本地私有，不入库）：简历与面试表达材料与事件笔记。

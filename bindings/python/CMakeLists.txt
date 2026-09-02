@@ -52,6 +52,28 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   add_test(
+    NAME python_workflow_api_contract
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_workflow_api_contract.py
+  )
+
+  set_tests_properties(python_workflow_api_contract
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
+
+  add_test(
+    NAME python_workflow_external_smoke
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_workflow_external.py
+  )
+
+  set_tests_properties(python_workflow_external_smoke
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
+
+  add_test(
     NAME python_read_results_smoke
     COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_read_results.py

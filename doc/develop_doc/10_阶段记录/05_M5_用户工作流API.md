@@ -9,7 +9,7 @@
 ```text
 M5.0 C++ 用户工作流 facade 已完成；
 普通 C++ 用户主路径收敛到 Simulation / SimulationResult；
-Python workflow binding 不进入 M5.0，已作为 M6 完成开发文档侧工作；
+Python workflow binding 不进入 M5.0，已作为 M6 第一版完成；
 MATLAB bridge 继续暂缓。
 ```
 
@@ -204,8 +204,7 @@ M5.0 已同步：
 
 ## 9. 后续阶段
 
-M5.0 完成后，最自然的后续方向是 Python workflow binding。该方向已作为 M6 完成开发文档侧
-工作。
+M5.0 完成后，最自然的后续方向是 Python workflow binding。该方向已作为 M6 第一版完成。
 
 后续进入条件：
 

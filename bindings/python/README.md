@@ -6,9 +6,7 @@
 
 - 这是 C++ core 的可选外部语言接口；
 - 默认构建不启用；
-- 第一版只绑定结果读取 helper 和少量基础结果类型；
-- M6 Python workflow binding 文档侧已完成，后续应绑定 `Simulation` /
-  `SimulationResult`；
+- 当前绑定用户 workflow、结果读取 helper 和基础结果类型；
 - 不绑定 `Evaluator`、`SimulatorSession`、`SpectreSession`、`NgspiceSession`；
 - 不实现 C ABI；
 - 不引入 numpy；
@@ -49,8 +47,9 @@ CMake 会优先查找 `install-pic`，再查找 `install`。这两个目录均�
 
 当前本机验证结果：
 
-- Python binding 默认无 libpsf：`91/91` passed；
-- Python binding + libpsf PIC：`110/110` passed。
+- Python binding 默认无 libpsf：`104/104` passed；
+- 显式开启 Python workflow external smoke：`1/1` passed（Ngspice）；
+- Python binding + libpsf PIC：`123/123` passed。
 
 ## 当前 Python API
 
@@ -65,7 +64,14 @@ import spiceunion
 - `version()`
 - `libpsf_reader_enabled()`
 - `status_text()`
+- `task_status_text()`
 - `ResultStatus`
+- `TaskStatus`
+- `SimulatorKind`
+- `ResultFormat`
+- `NgspiceBuiltinTask`
+- `Simulation`
+- `SimulationResult`
 - `ScalarResult`
 - `DcSweep`
 - `AcResponse`
@@ -83,9 +89,10 @@ import spiceunion
 
 结果读取函数返回带状态对象，不抛出异常来表示普通读取失败。
 
-## Python workflow binding 计划
+## Python workflow
 
-M6 计划把 M5 的 C++ workflow facade 绑定到 Python，而不是直接暴露底层执行层对象。
+Python workflow binding 把 M5 的 C++ workflow facade 绑定到 Python，而不是直接暴露底层
+执行层对象。
 
 目标用户路径：
 
@@ -108,6 +115,14 @@ if results[0].ok():
 
 - `../../doc/develop_doc/10_阶段记录/06_M6_Python工作流Binding.md`
 - `../../doc/develop_doc/20_专题记录/03_Python工作流Binding设计.md`
+
+真实 Ngspice workflow smoke 默认不运行；需要本机有 `ngspice` 或 `SPICEUNION_NGSPICE`，
+并显式开启：
+
+```bash
+SPICEUNION_ENABLE_PYTHON_WORKFLOW_EXTERNAL_TESTS=1 \
+  ctest --test-dir build/python -R python_workflow_external_smoke --output-on-failure
+```
 
 ## API 契约
 
@@ -138,6 +153,20 @@ if not result.ok():
 | `TranWaveform` | `status`、`message`、`signal`、`time_s`、`value`、`ok()`、`status_text()`、`shape_consistent()`、`len()` |
 | `UgbwPhaseMarginResult` | `status`、`message`、`unity_gain_bandwidth_hz`、`phase_margin_deg`、`ok()`、`status_text()` |
 | `SettlingTimeResult` | `status`、`message`、`settling_time_s`、`ok()`、`status_text()` |
+| `SimulationResult` | `status`、`message`、`detail`、`work_dir`、`result_format`、`ok()`、`status_text()`、`read_dc()`、`read_dc_sweep()`、`read_ac()`、`read_tran()` |
+
+### 当前 workflow 对象
+
+`Simulation` 支持：
+
+- keyword constructor；
+- `add_parameter(name, default_value=None)`；
+- `run(cases)`；
+- `cleanup()`；
+- context manager。
+
+普通 workflow 输入结构错误抛 `ValueError`；单点仿真失败通过 `SimulationResult.ok()`
+表达；结果读取失败继续通过 result 对象 `ok()` 表达。
 
 ### pytest 取舍
 
@@ -157,6 +186,7 @@ if not result.ok():
 |---|---|
 | `read_fixture_results.py` | 演示读取 DC / AC / TRAN fixture 和失败状态 |
 | `analyze_fixture_results.py` | 演示基于 Python list 做 DC / AC / TRAN 最小后处理 |
+| `run_workflow.py` | 演示 `Simulation` / `SimulationResult` workflow 主路径 |
 
 说明文档见 `bindings/python/examples/README.md`。
 

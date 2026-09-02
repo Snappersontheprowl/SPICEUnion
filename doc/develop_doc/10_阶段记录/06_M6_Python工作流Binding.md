@@ -7,8 +7,7 @@
 当前状态：
 
 ```text
-M6 开发文档侧已完成；
-代码实现尚未开始；
+M6 Python workflow binding 第一版已完成；
 本阶段应绑定 M5 workflow facade，而不是绑定底层 Evaluator / Session / Pool。
 ```
 
@@ -65,7 +64,7 @@ M6 文档负责 Python workflow binding 阶段收口。
 | 单点仿真失败 | `SimulationResult.ok() == False` |
 | 结果读取失败 | result 对象 `ok() == False` |
 | 默认测试 | 不依赖外部 Spectre / Ngspice |
-| 外部测试 | 有 EDA 工具时再跑真实 workflow smoke |
+| 外部测试 | 已有显式开启的 Ngspice workflow smoke；Spectre workflow smoke 暂缓 |
 
 ## 4. 范围
 
@@ -194,7 +193,9 @@ Python API 不用异常表达普通仿真点失败，也不用异常表达可预
 
 ### M6.1 Python API 最小绑定
 
-目标：
+状态：已完成。
+
+产出：
 
 - 绑定 `Simulation`；
 - 绑定 `SimulationResult`；
@@ -203,7 +204,9 @@ Python API 不用异常表达普通仿真点失败，也不用异常表达可预
 
 ### M6.2 Python workflow 读取闭环
 
-目标：
+状态：已完成。
+
+产出：
 
 - `SimulationResult.read_*()` 返回现有 Python result 对象；
 - 补充读取相关 contract test；
@@ -211,14 +214,55 @@ Python API 不用异常表达普通仿真点失败，也不用异常表达可预
 
 ### M6.3 外部 simulator smoke
 
-目标：
+状态：部分完成。
 
-- 在 external 或可跳过测试中覆盖真实 Spectre / Ngspice workflow；
-- 不让默认 Python preset 依赖外部 EDA 工具。
+产出：
 
-## 9. 完成定义
+- 新增 `python_workflow_external_smoke`；
+- 默认不调用真实 EDA 工具；
+- 设置 `SPICEUNION_ENABLE_PYTHON_WORKFLOW_EXTERNAL_TESTS=1` 时跑 Ngspice workflow smoke；
+- Spectre Python workflow smoke 暂缓。
 
-M6 完成时必须满足：
+## 9. 验证事实
+
+Python binding 默认无 libpsf：
+
+```bash
+cmake --preset python
+cmake --build --preset python
+ctest --preset python --output-on-failure
+```
+
+```text
+100% tests passed, 0 tests failed out of 104
+```
+
+Python workflow external smoke（显式开启，当前覆盖 Ngspice）：
+
+```bash
+SPICEUNION_ENABLE_PYTHON_WORKFLOW_EXTERNAL_TESTS=1 \
+  ctest --test-dir build/python -R python_workflow_external_smoke --output-on-failure
+```
+
+```text
+100% tests passed, 0 tests failed out of 1
+```
+
+Python binding + libpsf PIC：
+
+```bash
+cmake --preset python-libpsf-pic
+cmake --build --preset python-libpsf-pic
+ctest --preset python-libpsf-pic --output-on-failure
+```
+
+```text
+100% tests passed, 0 tests failed out of 123
+```
+
+## 10. 完成定义
+
+M6 第一版完成事实：
 
 - Python 用户可以创建 `spiceunion.Simulation`；
 - Python 用户可以声明参数；
@@ -230,14 +274,15 @@ M6 完成时必须满足：
 - 普通用户不需要接触 `Evaluator`、`SessionFactory`、`SimulatorSession`、worker directory
   或 `.raw` 查找 helper；
 - 默认 Python preset 测试通过；
-- 外部 simulator workflow smoke 可按门控执行；
+- Ngspice external workflow smoke 可按门控执行；
 - README、当前事实、架构总览、路线图、阶段记录和专题记录完成收口。
 
-## 10. 暂缓项
+## 11. 暂缓项
 
 - numpy 数组返回；
 - pytest；
 - wheel / package 发布；
+- Spectre Python workflow smoke；
 - MATLAB binding；
 - C ABI；
 - optimizer / objective / metric；

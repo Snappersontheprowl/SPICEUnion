@@ -1,9 +1,12 @@
 #include "su/result_reader.hpp"
 #include "su/version.hpp"
+#include "su/workflow.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +17,68 @@ namespace {
 
 std::string status_text(su::ResultStatus status) {
   return su::to_string(status);
+}
+
+std::string task_status_text(su::TaskStatus status) {
+  return su::to_string(status);
+}
+
+std::string result_format_text(su::ResultFormat format) {
+  switch (format) {
+    case su::ResultFormat::kUnknown:
+      return "unknown";
+    case su::ResultFormat::kPsfAscii:
+      return "psf_ascii";
+    case su::ResultFormat::kBinPsf:
+      return "bin_psf";
+    case su::ResultFormat::kPsfxl:
+      return "psfxl";
+    case su::ResultFormat::kNspiceWrdata:
+      return "nspice_wrdata";
+  }
+  return "unknown";
+}
+
+su::SimulatorKind parse_simulator_kind(const std::string& value) {
+  if (value == "spectre") {
+    return su::SimulatorKind::kSpectre;
+  }
+  if (value == "ngspice") {
+    return su::SimulatorKind::kNgspice;
+  }
+  throw std::invalid_argument("unsupported simulator: " + value);
+}
+
+su::ResultFormat parse_result_format(const std::string& value) {
+  if (value == "unknown") {
+    return su::ResultFormat::kUnknown;
+  }
+  if (value == "psf_ascii") {
+    return su::ResultFormat::kPsfAscii;
+  }
+  if (value == "bin_psf") {
+    return su::ResultFormat::kBinPsf;
+  }
+  if (value == "psfxl") {
+    return su::ResultFormat::kPsfxl;
+  }
+  if (value == "nspice_wrdata") {
+    return su::ResultFormat::kNspiceWrdata;
+  }
+  throw std::invalid_argument("unsupported result_format: " + value);
+}
+
+su::NgspiceBuiltinTask parse_ngspice_task(const std::string& value) {
+  if (value == "rc_ac") {
+    return su::NgspiceBuiltinTask::kRcAc;
+  }
+  if (value == "rc_tran") {
+    return su::NgspiceBuiltinTask::kRcTran;
+  }
+  if (value == "resistor_divider_dc") {
+    return su::NgspiceBuiltinTask::kResistorDividerDc;
+  }
+  throw std::invalid_argument("unsupported ngspice_task: " + value);
 }
 
 template <typename T>
@@ -239,6 +304,118 @@ PySettlingTimeResult to_python(su::ReadResult<su::SettlingTimeResult> result) {
   return output;
 }
 
+struct PySimulationResult {
+  explicit PySimulationResult(su::SimulationResult result) : result(std::move(result)) {}
+
+  bool ok() const noexcept {
+    return result.ok();
+  }
+
+  su::TaskStatus status() const noexcept {
+    return result.status();
+  }
+
+  std::string status_text() const {
+    return result.status_text();
+  }
+
+  std::string message() const {
+    return result.message();
+  }
+
+  std::string detail() const {
+    return result.detail();
+  }
+
+  std::string work_dir() const {
+    return result.work_dir();
+  }
+
+  std::string result_format() const {
+    return result_format_text(result.result_format());
+  }
+
+  PyScalarResult read_dc(const std::string& signal_name) const {
+    return to_python(result.read_dc(signal_name));
+  }
+
+  PyDcSweep read_dc_sweep(const std::string& sweep_name, const std::string& signal_name,
+                          const std::string& filename) const {
+    return to_python(result.read_dc_sweep(sweep_name, signal_name, filename));
+  }
+
+  PyAcResponse read_ac(const std::string& signal_name, const std::string& filename) const {
+    return to_python(result.read_ac(signal_name, filename));
+  }
+
+  PyTranWaveform read_tran(const std::string& signal_name, const std::string& filename) const {
+    return to_python(result.read_tran(signal_name, filename));
+  }
+
+  su::SimulationResult result;
+};
+
+struct PySimulation {
+  PySimulation(std::string netlist_path, const std::string& simulator, int workers,
+               std::string work_dir_base, std::string workspace_namespace, int timeout_seconds,
+               int restart_attempts, const std::string& result_format,
+               const std::string& ngspice_task) {
+    su::SimulationOptions options;
+    options.simulator = parse_simulator_kind(simulator);
+    options.netlist_path = std::move(netlist_path);
+    options.workers = workers;
+    options.work_dir_base = std::move(work_dir_base);
+    options.workspace_namespace = std::move(workspace_namespace);
+    options.timeout_seconds = timeout_seconds;
+    options.restart_attempts = restart_attempts;
+    options.result_format = parse_result_format(result_format);
+    options.ngspice_task = parse_ngspice_task(ngspice_task);
+    simulation.reset(new su::Simulation(std::move(options)));
+  }
+
+  void add_parameter(const std::string& name, py::object default_value) {
+    if (default_value.is_none()) {
+      simulation->add_parameter(name);
+      return;
+    }
+    simulation->add_parameter(name, default_value.cast<double>());
+  }
+
+  std::vector<PySimulationResult> run(const std::vector<su::SimulationCase>& cases) {
+    std::vector<su::SimulationResult> cpp_results;
+    {
+      py::gil_scoped_release release;
+      cpp_results = simulation->run(cases);
+    }
+
+    std::vector<PySimulationResult> results;
+    results.reserve(cpp_results.size());
+    for (auto& result : cpp_results) {
+      results.emplace_back(std::move(result));
+    }
+    return results;
+  }
+
+  void cleanup() noexcept {
+    simulation->cleanup();
+  }
+
+  std::string workspace_root() const {
+    return simulation->workspace_root();
+  }
+
+  PySimulation& enter() noexcept {
+    return *this;
+  }
+
+  bool exit(const py::object&, const py::object&, const py::object&) noexcept {
+    cleanup();
+    return false;
+  }
+
+  std::unique_ptr<su::Simulation> simulation;
+};
+
 su::AcResponse to_cpp(const PyAcResponse& response) {
   su::AcResponse output;
   output.signal = response.signal;
@@ -267,7 +444,7 @@ su::TranWaveform to_cpp(const PyTranWaveform& waveform) {
 }  // namespace
 
 PYBIND11_MODULE(spiceunion, module) {
-  module.doc() = "Minimal pybind11 bindings for SPICEUnion result readers";
+  module.doc() = "pybind11 bindings for SPICEUnion workflow and result readers";
 
   py::enum_<su::ResultStatus>(module, "ResultStatus")
       .value("OK", su::ResultStatus::kOk)
@@ -277,6 +454,30 @@ PYBIND11_MODULE(spiceunion, module) {
       .value("UNSUPPORTED_FORMAT", su::ResultStatus::kUnsupportedFormat)
       .value("PARSE_ERROR", su::ResultStatus::kParseError)
       .value("INVALID_INPUT", su::ResultStatus::kInvalidInput);
+
+  py::enum_<su::TaskStatus>(module, "TaskStatus")
+      .value("SUCCESS", su::TaskStatus::kSuccess)
+      .value("SIMULATION_FAILED", su::TaskStatus::kSimulationFailed)
+      .value("STARTUP_FAILED", su::TaskStatus::kStartupFailed)
+      .value("TIMEOUT", su::TaskStatus::kTimeout)
+      .value("TRANSPORT_FAILURE", su::TaskStatus::kTransportFailure)
+      .value("EXCEPTION", su::TaskStatus::kException);
+
+  py::enum_<su::SimulatorKind>(module, "SimulatorKind")
+      .value("SPECTRE", su::SimulatorKind::kSpectre)
+      .value("NGSPICE", su::SimulatorKind::kNgspice);
+
+  py::enum_<su::ResultFormat>(module, "ResultFormat")
+      .value("UNKNOWN", su::ResultFormat::kUnknown)
+      .value("PSF_ASCII", su::ResultFormat::kPsfAscii)
+      .value("BIN_PSF", su::ResultFormat::kBinPsf)
+      .value("PSFXL", su::ResultFormat::kPsfxl)
+      .value("NSPICE_WRDATA", su::ResultFormat::kNspiceWrdata);
+
+  py::enum_<su::NgspiceBuiltinTask>(module, "NgspiceBuiltinTask")
+      .value("RC_AC", su::NgspiceBuiltinTask::kRcAc)
+      .value("RC_TRAN", su::NgspiceBuiltinTask::kRcTran)
+      .value("RESISTOR_DIVIDER_DC", su::NgspiceBuiltinTask::kResistorDividerDc);
 
   py::class_<PyScalarResult>(module, "ScalarResult")
       .def(py::init<>())
@@ -354,8 +555,42 @@ PYBIND11_MODULE(spiceunion, module) {
       .def_readwrite("message", &PySettlingTimeResult::message)
       .def_readwrite("settling_time_s", &PySettlingTimeResult::settling_time_s);
 
+  py::class_<PySimulationResult>(module, "SimulationResult")
+      .def("ok", &PySimulationResult::ok)
+      .def("status_text", &PySimulationResult::status_text)
+      .def_property_readonly("status", &PySimulationResult::status)
+      .def_property_readonly("message", &PySimulationResult::message)
+      .def_property_readonly("detail", &PySimulationResult::detail)
+      .def_property_readonly("work_dir", &PySimulationResult::work_dir)
+      .def_property_readonly("result_format", &PySimulationResult::result_format)
+      .def("read_dc", &PySimulationResult::read_dc, py::arg("signal_name"))
+      .def("read_dc_sweep", &PySimulationResult::read_dc_sweep, py::arg("sweep_name"),
+           py::arg("signal_name"), py::arg("filename") = "dc.dc")
+      .def("read_ac", &PySimulationResult::read_ac, py::arg("signal_name"),
+           py::arg("filename") = "ac.ac")
+      .def("read_tran", &PySimulationResult::read_tran, py::arg("signal_name"),
+           py::arg("filename") = "tran.tran");
+
+  py::class_<PySimulation>(module, "Simulation")
+      .def(py::init<std::string, const std::string&, int, std::string, std::string, int, int,
+                    const std::string&, const std::string&>(),
+           py::arg("netlist_path"), py::arg("simulator") = "spectre", py::arg("workers") = 1,
+           py::arg("work_dir_base") = "local/runtime/simulations",
+           py::arg("workspace_namespace") = "", py::arg("timeout_seconds") = 60,
+           py::arg("restart_attempts") = 1, py::arg("result_format") = "unknown",
+           py::arg("ngspice_task") = "rc_ac")
+      .def("add_parameter", &PySimulation::add_parameter, py::arg("name"),
+           py::arg("default_value") = py::none())
+      .def("run", &PySimulation::run, py::arg("cases"))
+      .def("cleanup", &PySimulation::cleanup)
+      .def_property_readonly("workspace_root", &PySimulation::workspace_root)
+      .def("__enter__", &PySimulation::enter, py::return_value_policy::reference_internal)
+      .def("__exit__", &PySimulation::exit, py::arg("exc_type"), py::arg("exc"),
+           py::arg("traceback"));
+
   module.def("version", &su::version);
   module.def("status_text", &status_text, py::arg("status"));
+  module.def("task_status_text", &task_status_text, py::arg("status"));
 
   module.def("libpsf_reader_enabled", []() {
 #if SPICEUNION_ENABLE_LIBPSF_READER_FOR_PYTHON

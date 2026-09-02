@@ -1,10 +1,10 @@
 # Python 工作流 Binding 设计
 
-状态：`draft`
+状态：`active`
 最后验证：`2026-09-02`
 适用范围：`bindings/python workflow API`
 阶段记录：`../10_阶段记录/06_M6_Python工作流Binding.md`
-落地后事实来源：
+事实来源：
 
 - `bindings/python/spiceunion_py.cpp`
 - `bindings/python/tests/`
@@ -248,7 +248,7 @@ with spiceunion.Simulation(netlist_path="input.scs") as simulation:
 
 默认 Python preset 不依赖外部 EDA 工具。
 
-建议新增或扩展：
+已新增：
 
 - `bindings/python/tests/test_workflow_api_contract.py`
 
@@ -266,21 +266,22 @@ with spiceunion.Simulation(netlist_path="input.scs") as simulation:
 
 ### 9.2 外部 simulator preset
 
-建议新增可跳过测试：
+已新增可跳过测试：
 
 - `bindings/python/tests/test_workflow_external.py`
 
 覆盖：
 
-- Spectre workflow smoke；
 - Ngspice workflow smoke；
 - 成功 `SimulationResult` 可调用 `read_*()`。
 
-外部测试必须按现有 external 规则跳过，不能让默认 Python preset 依赖本机 EDA 工具。
+外部测试默认跳过真实执行。设置 `SPICEUNION_ENABLE_PYTHON_WORKFLOW_EXTERNAL_TESTS=1` 后，
+若本机存在 `ngspice` 或 `SPICEUNION_NGSPICE` 指向可执行文件，则运行真实 Ngspice workflow。
+Spectre Python workflow smoke 暂缓。
 
 ## 10. 示例脚本
 
-建议新增：
+已新增：
 
 - `bindings/python/examples/run_workflow.py`
 
@@ -309,11 +310,11 @@ with spiceunion.Simulation(netlist_path="input.scs") as simulation:
 
 ## 12. 完成定义
 
-本专题转为 `active` 或收口时，至少应满足：
+当前完成事实：
 
 - Python workflow API 已实现；
 - 默认 Python preset 覆盖 API contract；
-- 外部 workflow smoke 有明确门控；
+- Ngspice external workflow smoke 有明确门控；
 - Python README 和 examples 已更新；
 - `00_项目总览/01_当前事实状态.md`、`02_架构总览.md`、`03_开发路线图.md` 已更新；
 - M6 阶段记录完成收口。
