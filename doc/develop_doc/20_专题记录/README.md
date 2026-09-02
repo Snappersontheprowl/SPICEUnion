@@ -5,6 +5,7 @@
 ## 本级模块职责
 
 - `01_OrderedConcurrentPool专项.md`：OrderedConcurrentPool 独立化专项的边界、装配方式、验证入口和后续限制。
+- `02_用户工作流API设计.md`：统一用户工作流 API 的目标、边界、API 草案、失败语义和开发切分。
 
 ## 命名规则
 
