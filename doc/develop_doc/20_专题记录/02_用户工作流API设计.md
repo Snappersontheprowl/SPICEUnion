@@ -9,6 +9,8 @@
 - `src/workflow/`
 - `tests/workflow_test.cpp`
 
+阶段收口记录：`../10_阶段记录/05_M5_用户工作流API.md`
+
 ## 1. 要解决的问题
 
 SPICEUnion 当前已经具备底层执行层、结果读取层、多 backend 基础能力和 Python 结果读取

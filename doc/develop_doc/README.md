@@ -26,6 +26,7 @@ develop_doc/
     02_M2_ResultIR与结果读取.md
     03_M3_多仿真器与语义收敛.md
     04_M4_语言绑定.md
+    05_M5_用户工作流API.md
   20_专题记录/
     01_OrderedConcurrentPool专项.md
     02_用户工作流API设计.md
@@ -62,6 +63,7 @@ develop_doc/
 | L2 | `10_阶段记录/02_M2_ResultIR与结果读取.md` | M2 ResultIR、结果读取、libpsf backend、fixture 与结果层暂缓边界 |
 | L2 | `10_阶段记录/03_M3_多仿真器与语义收敛.md` | M3 多仿真器接入、跨 backend 语义对照和后续推进选项 |
 | L2 | `10_阶段记录/04_M4_语言绑定.md` | M4 pybind11、C ABI 评估、语言绑定边界和后续计划 |
+| L2 | `10_阶段记录/05_M5_用户工作流API.md` | M5 用户工作流 API、C++ facade 收口、后续 Python / MATLAB 接入边界 |
 | L2 | `20_专题记录/01_OrderedConcurrentPool专项.md` | OrderedConcurrentPool 独立化专项的边界、装配关系和当前状态 |
 | L2 | `20_专题记录/02_用户工作流API设计.md` | 统一用户工作流 API 的目标、边界、API、失败语义和开发切分 |
 | L3 | `90_归档备注/` | 外部调研、遗留判断、候选方案和暂缓问题；不作为当前事实或路线图的替代 |

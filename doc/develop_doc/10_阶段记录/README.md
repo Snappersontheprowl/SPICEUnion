@@ -9,6 +9,7 @@
 - `02_M2_ResultIR与结果读取.md`：ResultIR、结果读取、libpsf backend、fixture 与结果层边界。
 - `03_M3_多仿真器与语义收敛.md`：Ngspice 接入、跨 backend 结果语义对照和 M3 收口。
 - `04_M4_语言绑定.md`：pybind11、C ABI 评估、语言绑定边界和 M4 后续项。
+- `05_M5_用户工作流API.md`：用户工作流 API、C++ facade 收口和跨语言入口后续边界。
 
 ## 命名规则
 
