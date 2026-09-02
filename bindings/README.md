@@ -8,6 +8,6 @@
 
 ## 当前约定
 
-- Python workflow / 执行层 binding 暂缓，后续应优先绑定 `Simulation` /
-  `SimulationResult`，而不是直接暴露底层 session。
+- Python workflow binding 已完成 M6 开发文档侧工作，后续应优先绑定
+  `Simulation` / `SimulationResult`，而不是直接暴露底层 session。
 - MATLAB MEX 或 JSON/CLI bridge 暂缓。

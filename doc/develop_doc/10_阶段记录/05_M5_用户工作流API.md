@@ -9,7 +9,8 @@
 ```text
 M5.0 C++ 用户工作流 facade 已完成；
 普通 C++ 用户主路径收敛到 Simulation / SimulationResult；
-Python workflow binding 与 MATLAB bridge 不进入 M5.0，实现顺延到后续阶段。
+Python workflow binding 不进入 M5.0，已作为 M6 完成开发文档侧工作；
+MATLAB bridge 继续暂缓。
 ```
 
 ## 1. M5 目标
@@ -203,7 +204,8 @@ M5.0 已同步：
 
 ## 9. 后续阶段
 
-M5.0 完成后，最自然的后续方向是 Python workflow binding。
+M5.0 完成后，最自然的后续方向是 Python workflow binding。该方向已作为 M6 完成开发文档侧
+工作。
 
 后续进入条件：
 
@@ -211,6 +213,11 @@ M5.0 完成后，最自然的后续方向是 Python workflow binding。
 - Python `Simulation` 生命周期与 C++ `cleanup()` 关系收口；
 - Python result 对象是否包装现有 `SimulationResult` 或复用现有读取层对象完成决策；
 - Python API 不直接暴露底层 session、factory、pool。
+
+责任文档：
+
+- `06_M6_Python工作流Binding.md`；
+- `../20_专题记录/03_Python工作流Binding设计.md`。
 
 完成定义应保持和 M5.0 一致：
 

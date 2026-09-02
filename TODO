@@ -2,7 +2,22 @@
 
 ## 当前活跃待办
 
-（无。）
+- [ ] M6 Python workflow binding 代码实施：
+  - [ ] 更新 `bindings/python/spiceunion_py.cpp`，引入 `su/workflow.hpp` 并绑定
+        `Simulation` / `SimulationResult`。
+  - [ ] 提供 Python keyword constructor，普通用户不必创建 `SimulationOptions`。
+  - [ ] 支持 `simulator`、`result_format`、`ngspice_task` 字符串到 C++ enum 的转换。
+  - [ ] 支持 `Simulation.add_parameter(name)` 和
+        `Simulation.add_parameter(name, default_value=...)`。
+  - [ ] 支持 `Simulation.run(list[dict[str, float]])`，非法 batch 在启动仿真前抛
+        `ValueError`。
+  - [ ] 支持 `Simulation.cleanup()` 和 context manager。
+  - [ ] 让 `SimulationResult.read_*()` 复用现有 Python result 对象包装。
+  - [ ] 新增 Python workflow API contract test，不依赖外部 EDA 工具。
+  - [ ] 视现有 external 预设条件新增可跳过的真实 simulator workflow smoke test。
+  - [ ] 更新 `bindings/python/README.md`、Python examples、当前事实、架构总览、
+        路线图、M6 阶段记录和专题草案。
+  - [ ] 运行 Python preset 验证；必要时运行默认 preset；完成后清理本活跃项并提交。
 
 ## 暂缓池
 
@@ -13,7 +28,6 @@
 - [ ] MOS I-V / gm/Id 多曲线 DC 结果与 `DcSweep` 扩展评估。
 - [ ] `EvaluatorOptions` 扩展或 netlist template / DSL。
 - [ ] Ngspice `.op` operating point。
-- [ ] M4.3 执行层 binding 评估。
 - [ ] C ABI 正式实现（M4 第一版暂缓，仅保留 ownership 草案）。
 - [ ] libpsf backend 产品化分发与 license notice。
 - [ ] spectre / ngspice 外部测试门控拆分（让 ngspice 上云）——阶段 2 任务 3，
@@ -28,6 +42,10 @@
 
 ## 归档
 
+- M6 Python workflow binding 文档侧启动完成：已新增阶段记录
+  `doc/develop_doc/10_阶段记录/06_M6_Python工作流Binding.md` 和专题草案
+  `doc/develop_doc/20_专题记录/03_Python工作流Binding设计.md`；已同步路线图、项目章程、
+  当前事实、M4/M5 承接关系和文档索引（2026-09-02）。
 - 统一用户工作流 API 第一轮：C++ workflow facade 已落地，公开入口
   `include/su/workflow.hpp`，实现目录 `src/workflow/`，契约测试
   `tests/workflow_test.cpp`；默认测试 97/97 通过（2026-09-02）。

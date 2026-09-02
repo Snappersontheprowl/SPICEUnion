@@ -295,11 +295,13 @@ session。候选方案：
   `../00_项目总览/03_开发路线图.md`。
 - 更新 `include/su/README.md`、`src/README.md`、`tests/README.md`。
 
-第二轮：Python workflow binding，暂缓。
+第二轮：Python workflow binding，已作为 M6 完成开发文档侧工作。
 
 - 在 C++ workflow API 稳定后，将 Python 执行层 binding 绑定到 workflow 层。
 - 不直接暴露 `SimulatorSession`、`SessionFactory` 或 `OrderedConcurrentPool`。
 - 继续复用 Python 结果对象当前的 `ok()`、`status_text()`、`message` 失败语义。
+- 阶段记录见 `../10_阶段记录/06_M6_Python工作流Binding.md`。
+- Python API 草案见 `03_Python工作流Binding设计.md`。
 
 ## 10. 完成定义
 

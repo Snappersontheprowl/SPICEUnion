@@ -7,6 +7,8 @@
 - 这是 C++ core 的可选外部语言接口；
 - 默认构建不启用；
 - 第一版只绑定结果读取 helper 和少量基础结果类型；
+- M6 Python workflow binding 文档侧已完成，后续应绑定 `Simulation` /
+  `SimulationResult`；
 - 不绑定 `Evaluator`、`SimulatorSession`、`SpectreSession`、`NgspiceSession`；
 - 不实现 C ABI；
 - 不引入 numpy；
@@ -80,6 +82,32 @@ import spiceunion
 - `calculate_settling_time()`
 
 结果读取函数返回带状态对象，不抛出异常来表示普通读取失败。
+
+## Python workflow binding 计划
+
+M6 计划把 M5 的 C++ workflow facade 绑定到 Python，而不是直接暴露底层执行层对象。
+
+目标用户路径：
+
+```python
+import spiceunion as su
+
+simulation = su.Simulation(simulator="spectre", netlist_path="input.scs", workers=4)
+simulation.add_parameter("wp")
+simulation.add_parameter("wn")
+
+results = simulation.run([
+    {"wp": 14e-6, "wn": 10e-6},
+])
+
+if results[0].ok():
+    ac = results[0].read_ac("out")
+```
+
+文档入口：
+
+- `../../doc/develop_doc/10_阶段记录/06_M6_Python工作流Binding.md`
+- `../../doc/develop_doc/20_专题记录/03_Python工作流Binding设计.md`
 
 ## API 契约
 
