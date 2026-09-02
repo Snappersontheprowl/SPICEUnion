@@ -7,7 +7,7 @@
 
 - `CMakeLists.txt`
 - `src/parse/libpsf_backend.cpp`
-- `doc/develop_doc/M2.md`
+- `../10_阶段记录/02_M2_ResultIR与结果读取.md`
 
 ## 背景
 

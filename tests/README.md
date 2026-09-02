@@ -49,7 +49,7 @@
   `Evaluator::cleanup()` 只停止仿真进程，不删除产物目录，是否清理由用例决定。
 - 测试注册与构建开关的单一事实来源为根 `CMakeLists.txt`
   （`SPICEUNION_BUILD_TESTS`、`SPICEUNION_ENABLE_EXTERNAL_TESTS`、libpsf / python 开关）。
-- 各预设的验证数字不在本 README 维护，统一见 `doc/develop_doc/当前事实状态.md`。
+- 各预设的验证数字不在本 README 维护，统一见 `doc/develop_doc/00_项目总览/01_当前事实状态.md`。
 
 ## 常用入口
 

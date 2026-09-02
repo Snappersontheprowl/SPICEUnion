@@ -7,7 +7,7 @@
 - 面向 GitHub Actions 在 SPICEUnion 上的真实落地（两级流水线：云 runner 无 EDA +
   自托管 runner 有 EDA）。
 - 本目录不是开发事实源；项目验证数字与能力边界以
-  `../develop_doc/当前事实状态.md` 为准。
+  `../develop_doc/00_项目总览/01_当前事实状态.md` 为准。
 
 ## 本级模块职责
 

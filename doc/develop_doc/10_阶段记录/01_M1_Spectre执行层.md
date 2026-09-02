@@ -374,4 +374,4 @@ ctest --preset external --output-on-failure
 
 - M1 文档关注 Spectre 相关 external tests；
 - external preset 当前也包含后续 M3 引入的 Ngspice external tests；
-- 最近验证结果统一以 `当前事实状态.md` 为事实总账。
+- 最近验证结果统一以 `../00_项目总览/01_当前事实状态.md` 为事实总账。

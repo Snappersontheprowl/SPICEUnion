@@ -2,7 +2,7 @@
 
 更新时间：2026-08-11
 
-本文只记录 `OrderedConcurrentPool` 从 SPICEUnion 内部调度实现抽离为独立项目的专项边界、装配关系、阶段状态和后续限制。SPICEUnion 总体计划见 `CPP版本开发计划书.md`；SPICEUnion 当前事实见 `当前事实状态.md`。
+本文只记录 `OrderedConcurrentPool` 从 SPICEUnion 内部调度实现抽离为独立项目的专项边界、装配关系、阶段状态和后续限制。SPICEUnion 总体计划见 `../00_项目总览/00_项目章程.md`；SPICEUnion 当前事实见 `../00_项目总览/01_当前事实状态.md`。
 
 ## 1. 当前结论
 
@@ -110,7 +110,7 @@ src/pool/simulator_pool.cpp
 | M3.5.5 | 已完成 | SPICEUnion 装配外部 `OrderedConcurrentPool` 项目并移除内部副本 |
 | M3.5.6 | 已完成 | MIT license、CHANGELOG、benchmark、CMake install/export、GitHub Actions CI、`v0.1.0` 发布 |
 
-详细验证结果见 `当前事实状态.md`。
+详细验证结果见 `../00_项目总览/01_当前事实状态.md`。
 
 ## 5. 独立项目结构
 
@@ -218,4 +218,4 @@ GitHub Actions 当前覆盖：
 3. 若出现外部消费需求，再评估 `find_package` 接入 SPICEUnion；
 4. 若出现真实功能需求，再设计动态扩缩容、取消、重试或优先级。
 
-如果回到 SPICEUnion 主线，应优先继续 `开发路线图.md` 中的 M3 收敛或 M4 任务，而不是继续扩张 OCP 功能面。
+如果回到 SPICEUnion 主线，应优先继续 `../00_项目总览/03_开发路线图.md` 中的 M3 收敛或 M4 任务，而不是继续扩张 OCP 功能面。

@@ -73,7 +73,7 @@ ParameterState batch
 - 尚未发布 wheel / package；性能数字未系统实测。
 
 能力边界由 `external-libpsf` 预设的多网表矩阵测试持续钉住，详细事实与验证数字见
-`doc/develop_doc/当前事实状态.md`。
+`doc/develop_doc/00_项目总览/01_当前事实状态.md`。
 
 ## 与 spectre_materials 的关系
 
@@ -164,10 +164,13 @@ third_party/     第三方依赖的固定构建配方（当前：henjo/libpsf �
 ## 文档入口
 
 - `doc/develop_doc/README.md`：开发文档地图与维护规则；
-- `doc/develop_doc/CPP版本开发计划书.md`：项目章程（定位、范围、设计原则、里程碑）；
-- `doc/develop_doc/架构总览.md`：分层架构、执行链路与结果读取链路图；
-- `doc/develop_doc/当前事实状态.md`：当前能力、验证数字与边界总账；
-- `doc/develop_doc/开发路线图.md`：后续施工路线；
+- `doc/develop_doc/00_项目总览/01_当前事实状态.md`：当前能力、验证数字与边界总账；
+- `doc/develop_doc/00_项目总览/02_架构总览.md`：分层架构、执行链路与结果读取链路图；
+- `doc/develop_doc/00_项目总览/03_开发路线图.md`：后续施工路线；
+- `doc/develop_doc/00_项目总览/00_项目章程.md`：项目章程（定位、范围、设计原则、里程碑）；
+- `doc/develop_doc/10_阶段记录/`：M1-M4 阶段设计背景与收口记录；
+- `doc/develop_doc/20_专题记录/`：跨阶段专项文档；
+- `doc/develop_doc/90_归档备注/`：遗留调研与暂缓备注；
 - `doc/resume/`（本地私有，不入库）：简历与面试表达材料与事件笔记。
 - `doc/cicd/`：CI/CD 学习与落地方案。
 
