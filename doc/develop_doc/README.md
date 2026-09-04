@@ -32,6 +32,7 @@ develop_doc/
     01_OrderedConcurrentPool专项.md
     02_用户工作流API设计.md
     03_Python工作流Binding设计.md
+    04_仿真器自动适配与诊断设计.md
   90_归档备注/
     README.md
     01_libpsf上游候选备注.md
@@ -70,6 +71,7 @@ develop_doc/
 | L2 | `20_专题记录/01_OrderedConcurrentPool专项.md` | OrderedConcurrentPool 独立化专项的边界、装配关系和当前状态 |
 | L2 | `20_专题记录/02_用户工作流API设计.md` | 统一用户工作流 API 的目标、边界、API、失败语义和开发切分 |
 | L2 | `20_专题记录/03_Python工作流Binding设计.md` | Python workflow binding 的用户 API、对象映射、生命周期和异常契约 |
+| L2 | `20_专题记录/04_仿真器自动适配与诊断设计.md` | 工具链探测、能力声明、门控与诊断；面向“他人环境开箱自检” |
 | L3 | `90_归档备注/` | 外部调研、遗留判断、候选方案和暂缓问题；不作为当前事实或路线图的替代 |
 
 ## 事实归属
