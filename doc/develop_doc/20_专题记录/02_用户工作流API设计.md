@@ -7,7 +7,7 @@
 
 - `include/su/workflow.hpp`
 - `src/workflow/`
-- `tests/workflow_test.cpp`
+- `tests/unit/workflow/workflow_test.cpp`
 
 阶段收口记录：`../10_阶段记录/05_M5_用户工作流API.md`
 
@@ -257,7 +257,7 @@ workflow API 应保持三层失败语义：
 
 ## 8. 测试策略
 
-`tests/workflow_test.cpp` 覆盖用户层契约：
+`tests/unit/workflow/workflow_test.cpp` 覆盖用户层契约：
 
 - `SimulationOptions` 非法配置拒绝。
 - 参数声明拒绝空名和重复名。
@@ -289,7 +289,7 @@ session。候选方案：
 - 新增 `include/su/workflow.hpp`。
 - 新增 `src/workflow/simulation.cpp` 与 `src/workflow/README.md`。
 - 更新 `CMakeLists.txt`。
-- 新增 `tests/workflow_test.cpp`。
+- 新增 `tests/unit/workflow/workflow_test.cpp`。
 - 更新根 README 主示例。
 - 更新 `../00_项目总览/01_当前事实状态.md`、`../00_项目总览/02_架构总览.md`、
   `../00_项目总览/03_开发路线图.md`。

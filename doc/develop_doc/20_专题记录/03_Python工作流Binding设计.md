@@ -306,7 +306,7 @@ Spectre Python workflow smoke 暂缓。
   `add_parameter()`、`run()`、`cleanup()` 和 context manager。
 - 不把 `make_simulation_for_session_factory()` 暴露给 Python 普通用户。
 - 不为了 Python 测试暴露 fake session factory。
-- 如果确实需要 fake workflow 测试，应优先保留在 C++ `tests/workflow_test.cpp`。
+- 如果确实需要 fake workflow 测试，应优先保留在 C++ `tests/unit/workflow/workflow_test.cpp`。
 
 ## 12. 完成定义
 

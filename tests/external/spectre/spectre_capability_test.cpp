@@ -73,8 +73,7 @@ TEST_P(SpectreCapabilityTest, RunsRealNetlistAndParsesWithDocumentedStatus) {
   }
 
   const auto options = capability_options(test_case);
-  const auto work_dir =
-      spectre_runtime_root("capability") + "/" + test_case.id + "/worker_0";
+  const auto work_dir = spectre_runtime_root("capability") + "/" + test_case.id + "/worker_0";
   su::SpectreSession session(0, options, work_dir);
 
   // 执行能力：真实仿真必须跑通并交付结果目录。

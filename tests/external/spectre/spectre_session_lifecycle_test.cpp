@@ -28,8 +28,7 @@ TEST(SpectreSessionLifecycleTest, CanStartHandshakeAndStopWhenExternalSpectreIsE
   }
 
   auto options = spectre_options();
-  su::SpectreSession session(0, options,
-                             spectre_runtime_root("lifecycle") + "/lifecycle/worker_0");
+  su::SpectreSession session(0, options, spectre_runtime_root("lifecycle") + "/lifecycle/worker_0");
 
   ASSERT_NO_THROW(session.start());
   EXPECT_FALSE(session.recent_output().empty());

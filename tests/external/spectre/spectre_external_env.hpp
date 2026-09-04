@@ -17,8 +17,8 @@ bool spectre_executable_available() {
 }
 
 std::string spectre_materials_netlist_path(const char* circuit_dir) {
-  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) + "/external/netlist/" +
-         circuit_dir + "/input.scs";
+  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) + "/external/netlist/" + circuit_dir +
+         "/input.scs";
 }
 
 std::string spectre_materials_netlist_path() {
@@ -26,13 +26,11 @@ std::string spectre_materials_netlist_path() {
 }
 
 std::string spectre_materials_pdk_toplevel_path() {
-  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) +
-         "/external/pdk/tsmcN65/toplevel.scs";
+  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) + "/external/pdk/tsmcN65/toplevel.scs";
 }
 
 std::string spectre_materials_gpdk045_entry_path() {
-  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) +
-         "/external/pdk/gpdk045/gpdk045_mos.scs";
+  return std::string(SPICEUNION_SPECTRE_MATERIALS_DIR) + "/external/pdk/gpdk045/gpdk045_mos.scs";
 }
 
 std::string spectre_runtime_root(const char* scenario) {

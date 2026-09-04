@@ -208,12 +208,9 @@ TEST(TranMathTest, RejectsInvalidWaveformShape) {
 TEST(ResultReaderBackendStatusTest, FileReadersReportCurrentBackendStatus) {
 #if SPICEUNION_ENABLE_LIBPSF_READER
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
-  EXPECT_EQ(su::read_dc_sweep("result.raw", "Vin", "vout").status,
-            su::ResultStatus::kFileNotFound);
-  EXPECT_EQ(su::read_ac_response("result.raw", "vout").status,
-            su::ResultStatus::kFileNotFound);
-  EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status,
-            su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_dc_sweep("result.raw", "Vin", "vout").status, su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_ac_response("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
+  EXPECT_EQ(su::read_tran_waveform("result.raw", "vout").status, su::ResultStatus::kFileNotFound);
 #else
   EXPECT_EQ(su::read_dc_value("result.raw", "vout").status, su::ResultStatus::kUnsupportedFormat);
   EXPECT_EQ(su::read_dc_sweep("result.raw", "Vin", "vout").status,
@@ -268,8 +265,7 @@ TEST(LibpsfDcReaderTest, ReadsSpectreClProjectFixtureDcOpScalar) {
 
 TEST(LibpsfDcSweepReaderTest, ReadsSpectreResistorDividerDcFixture) {
   const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
-      "spectre_resistor_divider_dc.raw";
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_resistor_divider_dc.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
 
@@ -287,8 +283,7 @@ TEST(LibpsfDcSweepReaderTest, ReadsSpectreResistorDividerDcFixture) {
 
 TEST(LibpsfDcSweepReaderTest, ReportsMissingSweep) {
   const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
-      "spectre_resistor_divider_dc.raw";
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_resistor_divider_dc.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
 
@@ -300,8 +295,7 @@ TEST(LibpsfDcSweepReaderTest, ReportsMissingSweep) {
 
 TEST(LibpsfDcSweepReaderTest, ReportsMissingSignal) {
   const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
-      "spectre_resistor_divider_dc.raw";
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_resistor_divider_dc.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
 
@@ -357,8 +351,8 @@ TEST(LibpsfTranReaderTest, ReportsPsfxlTransientAsUnsupported) {
 }
 
 TEST(LibpsfAcReaderTest, ReadsStbProjectFixtureAsComplexResponse) {
-  const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_stb_loop_gain.raw";
+  const std::filesystem::path fixture = std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
+                                        "spectre_materials_stb_loop_gain.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "stb.stb")) << fixture;
 
@@ -399,8 +393,8 @@ TEST(LibpsfAcReaderTest, ReadsStandardAcProjectFixtureWithDefaultFilename) {
 }
 
 TEST(LibpsfAcReaderTest, ReportsMissingComplexResponseSignal) {
-  const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_materials_stb_loop_gain.raw";
+  const std::filesystem::path fixture = std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
+                                        "spectre_materials_stb_loop_gain.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "stb.stb")) << fixture;
 

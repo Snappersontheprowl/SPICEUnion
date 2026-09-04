@@ -48,8 +48,7 @@ TEST(RcTranSemanticContractTest, SpectreRcChargingTranFixtureUsesCommonTranWavef
 
 TEST(ResistorDividerDcSemanticContractTest, SpectreFixtureUsesCommonDcSweepSemantics) {
   const std::filesystem::path fixture =
-      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" /
-      "spectre_resistor_divider_dc.raw";
+      std::filesystem::path(SPICEUNION_FIXTURE_ROOT) / "psf" / "spectre_resistor_divider_dc.raw";
 
   ASSERT_TRUE(std::filesystem::is_regular_file(fixture / "dc.dc")) << fixture;
 

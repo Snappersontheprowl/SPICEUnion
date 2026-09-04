@@ -9,40 +9,30 @@
 
 ## 本级模块职责
 
-- `smoke_test.cpp`：验证构建与链接路径（版本符号可用）。
-- `evaluator_contract_test.cpp`：验证 `Evaluator` batch facade 契约（保序返回、失败
-  隔离、worker 目录隔离、清理可重复）。
-- `ordered_concurrent_pool_test.cpp`：通过外部 `ocp::ordered_concurrent_pool` target
-  验证领域无关池语义（构造校验、启动清理、保序返回、异常转换、重复 shutdown、
-  stress batch）。
-- `simulator_pool_contract_test.cpp`：验证 `SimulatorPool` 作为 SPICEUnion adapter 的
-  契约（worker work directory、`TaskResult` 映射、保序与失败隔离）。
-- `workflow_test.cpp`：验证用户工作流 facade 契约（参数声明、非法 case 拒绝、默认值
-  补齐、保序返回、单任务失败封装和 `SimulationResult` 读取封装）。
-- `result_test.cpp`：验证 ResultIR、`ReadResult` 状态与公开 result_reader API 骨架。
-- `result_reader_test.cpp`：验证 `.raw` 目录定位、AC 数学 helper、settling time 与
-  文件读取行为；真实 PSF 读取由 libpsf 开关控制。
-- `simulation_semantics_test.cpp`：使用 `support/rc_semantics.hpp` 的公共语义 helper，
-  验证不同 backend 读出的 ResultIR 满足同一类电路的物理语义（AC -3 dB、TRAN `τ`、
-  DC 分压比例）。
-- `spectre_protocol_test.cpp`：纯单元测试，验证 SKILL 命令格式与 completion 行分类，
-  不依赖真实 spectre。
-- `ngspice_session_test.cpp`：默认验证 Ngspice 配置、netlist 渲染与 `wrdata` 输出
-  解析；启用外部测试后真实调用 `ngspice -b` 跑 AC / TRAN / DC batch。
-- `support/`：测试共享 helper（如 `rc_semantics.hpp`），不含被测逻辑。
+- `CMakeLists.txt`：测试 target 注册入口；根 `CMakeLists.txt` 只负责
+  `add_subdirectory(tests)`。
+- `unit/`：默认可跑的 C++ 单元/契约测试，不调用真实 EDA 工具，详见
+  `unit/README.md`。
+- `integration/`：默认可跑的跨模块语义测试，使用仓库内固定 fixture，详见
+  `integration/README.md`。
+- `external/`：依赖真实 Spectre / Ngspice 或私有材料的外部测试，默认 skip，详见
+  `external/README.md`。
+- `support/`：测试共享 helper（如 `rc_semantics.hpp`、`ngspice_external_env.hpp`），
+  不含被测逻辑。
 - `fixtures/`：已提交的小体积固定样本（Spectre 源 netlist 与 PSF 结果），详见
   `fixtures/README.md`。
-- `external/`：外部 Spectre 测试（生命周期契约 + 真实网表端到端仿真/解析），依赖
-  私有材料目录（`SPICEUNION_SPECTRE_MATERIALS_DIR`）的网表与 PDK，默认 skip，
-  详见 `external/README.md`。
 - `manual/`：人工验证工具，不进入默认 ctest，详见 `manual/README.md`。
 
 ## 命名规则
 
 - 测试文件按被测模块命名，统一 `snake_case` 并以 `_test` 结尾，例如
   `evaluator_contract_test.cpp`、`simulator_pool_contract_test.cpp`。
-- 目录按职责命名：`fixtures/` 固定样本、`support/` 共享 helper、`external/` 外部
-  材料依赖测试、`manual/` 人工工具。
+- 顶层目录按测试性质分层：`unit/` 默认单元/契约测试，`integration/` 默认集成语义
+  测试，`external/` 真实工具/私有材料依赖测试，`fixtures/` 固定样本，
+  `support/` 共享 helper，`manual/` 人工工具。
+- `unit/` 下按源码模块或公共职责继续分层，例如 `core/`、`parse/`、`pool/`、
+  `session/`、`workflow/`；后续工具链诊断测试应进入 `unit/toolchain/`。
+- `external/` 下按真实工具或外部系统分层，例如 `spectre/`、`ngspice/`。
 
 ## 当前约定
 
@@ -50,8 +40,10 @@
   Spectre / Ngspice 外部用例在测试体开头 `GTEST_SKIP()`，不产生真实仿真产物。
 - 仿真产物统一写入 `<项目根>/local/runtime/<场景>/`（场景名说明来源与用途）；
   `Evaluator::cleanup()` 只停止仿真进程，不删除产物目录，是否清理由用例决定。
-- 测试注册与构建开关的单一事实来源为根 `CMakeLists.txt`
-  （`SPICEUNION_BUILD_TESTS`、`SPICEUNION_ENABLE_EXTERNAL_TESTS`、libpsf / python 开关）。
+- C++ 测试注册的单一事实来源为 `tests/CMakeLists.txt`；根 `CMakeLists.txt` 只保留
+  测试开关和子目录入口。
+- 测试构建开关仍由根 `CMakeLists.txt` 定义（`SPICEUNION_BUILD_TESTS`、
+  `SPICEUNION_ENABLE_EXTERNAL_TESTS`、libpsf / python 开关）。
 - 各预设的验证数字不在本 README 维护，统一见 `doc/develop_doc/00_项目总览/01_当前事实状态.md`。
 
 ## 常用入口

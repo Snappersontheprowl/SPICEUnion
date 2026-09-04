@@ -203,8 +203,7 @@ TEST(SimulationRunContractTest, RejectsNonFiniteParameterBeforeStartingWorkers) 
   auto simulation = make_fake_simulation(&states, 1);
   simulation.add_parameter("wp");
 
-  EXPECT_THROW(simulation.run({su::SimulationCase{{"wp", std::nan("")}}}),
-               std::invalid_argument);
+  EXPECT_THROW(simulation.run({su::SimulationCase{{"wp", std::nan("")}}}), std::invalid_argument);
   EXPECT_TRUE(states.empty());
 }
 
@@ -280,7 +279,8 @@ TEST(SimulationResultReaderTest, ReadsNgspiceWrdataThroughResultFacade) {
   const auto directory = results[0].result_directory();
   ASSERT_TRUE(directory.ok()) << directory.error_message;
   EXPECT_FALSE(directory.value.raw_directory_found);
-  EXPECT_EQ(std::filesystem::path(directory.value.path), std::filesystem::path(results[0].work_dir()));
+  EXPECT_EQ(std::filesystem::path(directory.value.path),
+            std::filesystem::path(results[0].work_dir()));
 
   const auto response = results[0].read_ac("v(out)");
   ASSERT_TRUE(response.ok()) << response.error_message;

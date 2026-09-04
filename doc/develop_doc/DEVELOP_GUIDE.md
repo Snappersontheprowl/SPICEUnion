@@ -116,7 +116,7 @@ TODO 不写长篇解释，只写可执行分步骤计划。例如：
 - [ ] 统一用户工作流 API：
   - [ ] 新增 `include/su/workflow.hpp`，定义 `SimulationOptions`、`Simulation`、`SimulationResult`。
   - [ ] 新增 `src/workflow/`，内部复用 `Evaluator` 与 `result_reader`。
-  - [ ] 新增 `tests/workflow_test.cpp`，覆盖参数校验、保序返回、结果读取封装。
+  - [ ] 新增 `tests/unit/workflow/workflow_test.cpp`，覆盖参数校验、保序返回、结果读取封装。
   - [ ] 更新 `CMakeLists.txt` 纳入 workflow 实现与测试。
   - [ ] 更新根 README 主示例。
   - [ ] 更新 `00_项目总览/01_当前事实状态.md`。
@@ -150,7 +150,7 @@ doc/develop_doc/20_专题记录/02_用户工作流API设计.md
 
 - `include/su/workflow.hpp`（落地后）
 - `src/workflow/`
-- `tests/workflow_test.cpp`
+- `tests/unit/workflow/workflow_test.cpp`
 ```
 
 草案只写这些：
@@ -239,7 +239,7 @@ include/su/README.md
 如果新增测试：
 
 ```text
-tests/workflow_test.cpp
+tests/unit/workflow/workflow_test.cpp
 ```
 
 就必须更新：

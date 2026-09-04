@@ -54,8 +54,7 @@ TEST(PsfAsciiReaderTest, ReadsStbComplexSweep) {
 
 TEST(PsfAsciiReaderTest, ReadsSyntheticTranWaveform) {
   // 当前无真实 ASCII tran 样本，用合成 PSFASCII 验证波形解析路径。
-  const auto root =
-      std::filesystem::temp_directory_path() / "spiceunion_psf_ascii_tran";
+  const auto root = std::filesystem::temp_directory_path() / "spiceunion_psf_ascii_tran";
   std::filesystem::remove_all(root);
   std::filesystem::create_directories(root);
   {
@@ -86,13 +85,11 @@ TEST(PsfAsciiReaderTest, ReadsSyntheticTranWaveform) {
 TEST(PsfAsciiReaderTest, DeclaredFormatSkipsContentSniffing) {
   const auto raw = ascii_fixture("bgr_amp_dc_op.raw");
 
-  const auto declared_ascii =
-      su::read_dc_value(raw.string(), "V_BGR", su::ResultFormat::kPsfAscii);
+  const auto declared_ascii = su::read_dc_value(raw.string(), "V_BGR", su::ResultFormat::kPsfAscii);
   ASSERT_TRUE(declared_ascii.ok()) << declared_ascii.error_message;
   EXPECT_NEAR(declared_ascii.value.value, 1.182060051516776e0, 1e-12);
 
-  const auto declared_psfxl =
-      su::read_dc_value(raw.string(), "V_BGR", su::ResultFormat::kPsfxl);
+  const auto declared_psfxl = su::read_dc_value(raw.string(), "V_BGR", su::ResultFormat::kPsfxl);
   EXPECT_FALSE(declared_psfxl.ok());
   EXPECT_EQ(declared_psfxl.status, su::ResultStatus::kUnsupportedFormat);
 }

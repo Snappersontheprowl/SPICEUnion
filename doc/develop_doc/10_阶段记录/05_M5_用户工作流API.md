@@ -45,7 +45,7 @@ M5 的目标是把 SPICEUnion 的一次仿真使用路径从底层执行对象�
 | 支持 backend | Spectre / Ngspice 第一版分派 |
 | 参数契约 | 显式声明参数，run 前校验整批结构 |
 | 失败语义 | 构造或整批输入错误抛异常；单任务失败进入 `SimulationResult`；读取失败进入 `ReadResult<T>` |
-| 测试入口 | `tests/workflow_test.cpp`，纳入默认 CTest |
+| 测试入口 | `tests/unit/workflow/workflow_test.cpp`，纳入默认 CTest |
 
 ## 3. M5.0 范围
 
@@ -158,7 +158,7 @@ M5.0 固定三类失败边界：
 
 ## 7. 测试策略
 
-新增 `tests/workflow_test.cpp`，使用 fake session factory 钉住 workflow 层契约。
+新增 `tests/unit/workflow/workflow_test.cpp`，使用 fake session factory 钉住 workflow 层契约。
 
 当前覆盖：
 
