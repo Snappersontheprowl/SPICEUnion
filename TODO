@@ -11,10 +11,11 @@
 
 P-a 打包地基：
 
-- [ ] OrderedConcurrentPool 增加 FetchContent 回退（sibling 优先，缺失自动拉取）。
-- [ ] 新增 `pyproject.toml`（scikit-build-core）与 CMake 安装规则，产出
+- [x] OrderedConcurrentPool 增加 FetchContent 回退（sibling 优先，缺失自动拉取）。
+- [x] 新增 `pyproject.toml`（scikit-build-core）与 CMake 安装规则，产出
       `spiceunion` Python 模块。
-- [ ] 本机干净 venv 中 `pip install .` + `import spiceunion` 通过。
+- [x] 本机干净 venv 中 `pip install .` + `import spiceunion` 通过（无 sibling
+      源码目录 + 全新 venv，wheel 构建成功，default 102/102 回归通过）。
 
 P-b 一键体验：
 

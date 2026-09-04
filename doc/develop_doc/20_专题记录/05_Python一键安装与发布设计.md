@@ -94,9 +94,13 @@ spiceunion.doctor()
 
 ### P-a：打包地基
 
-- [ ] OCP FetchContent 回退生效，单仓 `pip install .` 可构建；
-- [ ] CMake 安装规则输出 `spiceunion` Python 模块；
-- [ ] 本机干净 venv 中 `pip install .` + `import spiceunion` 通过。
+- [x] OCP FetchContent 回退生效，单仓 `pip install .` 可构建；
+- [x] CMake 安装规则输出 `spiceunion` Python 模块；
+- [x] 本机干净 venv 中 `pip install .` + `import spiceunion` 通过。
+
+验证（2026-09-04）：`/tmp` 下无 sibling 的干净源码 + 全新 venv，
+`pip install .` 自动拉取 OCP 并产出 `spiceunion-0.1.0-cp310-*.whl`，
+`import spiceunion` / `Simulation(...)` / `version()` 正常；默认不含 libpsf。
 
 ### P-b：一键体验
 

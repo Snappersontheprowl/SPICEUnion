@@ -20,13 +20,16 @@ set(SPICEUNION_ORDERED_POOL_SOURCE_DIR
     CACHE PATH
     "Path to the standalone OrderedConcurrentPool project"
 )
-
-if(NOT EXISTS "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}/CMakeLists.txt")
-  message(FATAL_ERROR
-    "SPICEUNION_ORDERED_POOL_SOURCE_DIR must point to the standalone "
-    "OrderedConcurrentPool project. Current value: ${SPICEUNION_ORDERED_POOL_SOURCE_DIR}"
-  )
-endif()
+set(SPICEUNION_ORDERED_POOL_GIT_URL
+    "https://github.com/Snappersontheprowl/OrderedConcurrentPool.git"
+    CACHE STRING
+    "OrderedConcurrentPool repository used by FetchContent fallback"
+)
+set(SPICEUNION_ORDERED_POOL_GIT_TAG
+    "422e1a11475a8c9fe09a86223d340f87b9f62383"
+    CACHE STRING
+    "OrderedConcurrentPool commit used by FetchContent fallback"
+)
 
 set(SPICEUNION_SPECTRE_MATERIALS_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../spectre_materials"
@@ -48,10 +51,22 @@ set(ORDERED_CONCURRENT_POOL_BUILD_TESTS OFF CACHE BOOL
     "Build OrderedConcurrentPool tests when embedded by SPICEUnion" FORCE)
 set(ORDERED_CONCURRENT_POOL_BUILD_EXAMPLES OFF CACHE BOOL
     "Build OrderedConcurrentPool examples when embedded by SPICEUnion" FORCE)
-add_subdirectory(
-  "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}"
-  "${CMAKE_BINARY_DIR}/_deps/ordered_concurrent_pool"
-)
+if(EXISTS "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}/CMakeLists.txt")
+  add_subdirectory(
+    "${SPICEUNION_ORDERED_POOL_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}/_deps/ordered_concurrent_pool"
+  )
+else()
+  # 单仓构建（pip / sdist / wheel）回退：sibling 不存在时从上游拉取。
+  include(FetchContent)
+  FetchContent_Declare(
+    ordered_concurrent_pool
+    GIT_REPOSITORY "${SPICEUNION_ORDERED_POOL_GIT_URL}"
+    GIT_TAG "${SPICEUNION_ORDERED_POOL_GIT_TAG}"
+  )
+  FetchContent_MakeAvailable(ordered_concurrent_pool)
+  message(STATUS "OrderedConcurrentPool fetched via FetchContent (${SPICEUNION_ORDERED_POOL_GIT_TAG})")
+endif()
 
 if(SPICEUNION_ENABLE_LIBPSF_READER)
   if(SPICEUNION_LIBPSF_INCLUDE_DIR)

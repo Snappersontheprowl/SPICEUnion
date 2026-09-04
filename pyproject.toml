@@ -1,0 +1,26 @@
+[build-system]
+requires = ["scikit-build-core>=0.10"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "spiceunion"
+version = "0.1.0"
+description = "C++17 simulator execution and result-reading infrastructure with pybind11 bindings"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+authors = [{ name = "SPICEUnion contributors" }]
+classifiers = [
+  "Programming Language :: C++",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+
+[tool.scikit-build.cmake.define]
+SPICEUNION_BUILD_PYTHON_BINDINGS = "ON"
+SPICEUNION_BUILD_TESTS = "OFF"
+SPICEUNION_ENABLE_EXTERNAL_TESTS = "OFF"
+SPICEUNION_ENABLE_LIBPSF_READER = "OFF"

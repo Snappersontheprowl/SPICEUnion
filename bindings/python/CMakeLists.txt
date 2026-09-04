@@ -109,3 +109,10 @@ if(SPICEUNION_BUILD_TESTS)
       ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
   )
 endif()
+
+# wheel 安装规则：把 pybind11 扩展作为顶层模块装到 site-packages。
+# scikit-build-core 会把相对 DESTINATION "." 映射到 wheel 的 site-packages。
+install(TARGETS spiceunion
+  LIBRARY DESTINATION .
+  RUNTIME DESTINATION .
+)
