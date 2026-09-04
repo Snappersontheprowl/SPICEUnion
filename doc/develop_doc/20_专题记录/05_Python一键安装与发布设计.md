@@ -111,7 +111,8 @@ ngspice / Spectre。
 
 - [x] Python `doctor()` / `spiceunion doctor` console 输出仿真器报告（干净
       venv 安装后实跑通过）；
-- [ ] CI（云 runner）构建 wheel 并做 import + doctor 冒烟；
+- [x] CI（云 runner）构建 wheel 并做 import + doctor 冒烟（`wheel-smoke` 云端
+      跑绿，2026-09-05）；
 - [x] 根 README 增加“Python 用户 3 分钟上手”小节。
 
 ### P-c：发布
