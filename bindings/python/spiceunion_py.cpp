@@ -1,4 +1,5 @@
 #include "su/result_reader.hpp"
+#include "su/toolchain.hpp"
 #include "su/version.hpp"
 #include "su/workflow.hpp"
 
@@ -37,6 +38,33 @@ std::string result_format_text(su::ResultFormat format) {
       return "nspice_wrdata";
   }
   return "unknown";
+}
+
+std::string doctor_report() {
+  std::string report;
+  const auto append_kind = [&report](su::SimulatorKind kind,
+                                     const char* label) {
+    const auto handle = su::find_simulator(kind);
+    report += "[" + std::string(label) + "]\n";
+    if (!handle.found) {
+      report += "  found: no\n";
+      report += "  env var: " + std::string(su::simulator_env_var(kind)) + "\n";
+      report += "  suggestion: add the simulator to PATH or set the env var above\n";
+      return;
+    }
+    report += "  found: yes\n";
+    report += "  executable: " + handle.executable_path + "\n";
+    report += "  source: " + handle.discovered_from + "\n";
+    if (!handle.version_number.empty()) {
+      report += "  version: " + handle.version_number + "\n";
+    } else {
+      report += "  version: (unavailable)\n";
+    }
+  };
+  append_kind(su::SimulatorKind::kSpectre, "Spectre");
+  report += "\n";
+  append_kind(su::SimulatorKind::kNgspice, "Ngspice");
+  return report;
 }
 
 su::SimulatorKind parse_simulator_kind(const std::string& value) {
@@ -589,6 +617,8 @@ PYBIND11_MODULE(spiceunion, module) {
            py::arg("traceback"));
 
   module.def("version", &su::version);
+  module.def("doctor", &doctor_report,
+             "Report which simulators SPICEUnion can detect on this machine.");
   module.def("status_text", &status_text, py::arg("status"));
   module.def("task_status_text", &task_status_text, py::arg("status"));
 

@@ -64,6 +64,8 @@ SPICEUNION_NGSPICE=<conda-env>/bin/ngspice ./build/default/tests/spiceunion_doct
 因此只报告“找到/路径/来源”；版本探测策略见
 `src/toolchain/simulator_probe.cpp` 注释。
 
+安装 wheel 后也有等价命令：`spiceunion doctor`（或 `python -m spiceunion_cli doctor`）。
+
 ## libpsf probe 本机示例
 
 若本机已在 `local/external/libpsf/` 中构建并安装 `henjo/libpsf`，可用：

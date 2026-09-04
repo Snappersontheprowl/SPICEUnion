@@ -152,6 +152,33 @@ PYTHONPATH=build/python/bindings/python python3 -c "import spiceunion; print(spi
 
 More examples live in `bindings/python/examples/`.
 
+### Python users: 3-minute start
+
+No C++/CMake needed. From a fresh environment:
+
+```bash
+# install the library only (a simulator is never installed by SPICEUnion)
+pip install git+https://github.com/Snappersontheprowl/SPICEUnion.git
+
+# check what this machine can run
+spiceunion doctor
+```
+
+```python
+import spiceunion as su
+
+with su.Simulation(netlist_path="input.scs", simulator="spectre", workers=4) as sim:
+    sim.add_parameter("wp")
+    results = sim.run([{"wp": 14e-6}])
+    if results[0].ok():
+        ac = results[0].read_ac("out")
+```
+
+Reading existing result files needs no simulator at all; see
+`bindings/python/examples/`. Real simulation additionally requires your own
+ngspice / Spectre installation — `spiceunion doctor` tells you if it is
+missing and how to provide it.
+
 ## Documentation
 
 Most project documentation is Simplified Chinese; the doc map and conventions

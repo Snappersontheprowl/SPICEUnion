@@ -162,3 +162,32 @@ jobs:
           name: results-${{ matrix.preset }}
           path: results-${{ matrix.preset }}.xml
           if-no-files-found: warn
+
+  wheel-smoke:
+    # P-b：单仓构建 wheel 并做 import + doctor 冒烟（无 EDA，不需要 OCP sibling）。
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and install wheel from source
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Import and doctor smoke
+        run: |
+          python - <<'PY'
+          import spiceunion
+          report = spiceunion.doctor()
+          assert "Spectre" in report and "Ngspice" in report
+          assert spiceunion.version() == "0.1.0"
+          print(spiceunion.version())
+          print(report)
+          PY
+          spiceunion doctor

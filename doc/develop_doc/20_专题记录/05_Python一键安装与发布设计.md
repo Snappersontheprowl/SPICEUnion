@@ -37,7 +37,7 @@ python demo.py           # Simulation → 批量 → 读结果
 
 ```bash
 pip install spiceunion
-python -m spiceunion.doctor   # 自动发现 /opt/.../spectre 或提示手动安装
+spiceunion doctor             # 自动发现 /opt/.../spectre 或提示手动安装
 ```
 
 ## 2. 为什么现在做不到
@@ -65,7 +65,8 @@ OrderedConcurrentPool 改为“sibling 优先，缺失时 CMake `FetchContent` �
 - `pyproject.toml` + `scikit-build-core`：声明 CMake 构建、wheel 内输出
   `spiceunion` Python 模块；
 - 元数据：名称 `spiceunion`、Apache-2.0、Python 版本支持面；
-- `python -m spiceunion` 或 console script 暴露 `doctor` 入口；
+- `spiceunion doctor` console script（等价 `python -m spiceunion_cli doctor`）
+  暴露 `doctor` 入口；
 - 保持“默认 wheel 不依赖 libpsf / 不引入 numpy”。
 
 ### 3.3 Python doctor（P-b）
@@ -108,9 +109,10 @@ ngspice / Spectre。
 
 ### P-b：一键体验
 
-- [ ] Python `doctor()` / `python -m spiceunion` 输出仿真器报告；
+- [x] Python `doctor()` / `spiceunion doctor` console 输出仿真器报告（干净
+      venv 安装后实跑通过）；
 - [ ] CI（云 runner）构建 wheel 并做 import + doctor 冒烟；
-- [ ] 根 README 增加“Python 用户 3 分钟上手”小节。
+- [x] 根 README 增加“Python 用户 3 分钟上手”小节。
 
 ### P-c：发布
 

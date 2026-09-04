@@ -19,9 +19,10 @@ P-a 打包地基：
 
 P-b 一键体验：
 
-- [ ] 绑定 `spiceunion.doctor()` / `python -m spiceunion`（复用 toolchain 探测）。
-- [ ] CI 云 runner 构建 wheel 并做 import + doctor 冒烟。
-- [ ] 根 README 增加“Python 用户 3 分钟上手”。
+- [x] 绑定 `spiceunion.doctor()` / `spiceunion doctor` console（复用 toolchain
+      探测）；干净 venv 安装后实跑通过。
+- [ ] CI 云 runner 构建 wheel 并做 import + doctor 冒烟（job 已加，待云端跑绿）。
+- [x] 根 README 增加“Python 用户 3 分钟上手”（中英）。
 
 P-c 发布：
 

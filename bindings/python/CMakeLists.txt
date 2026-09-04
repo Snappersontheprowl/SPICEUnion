@@ -116,3 +116,8 @@ install(TARGETS spiceunion
   LIBRARY DESTINATION .
   RUNTIME DESTINATION .
 )
+
+# 纯 Python CLI：和顶层扩展模块一起装在 site-packages，供 console script 调用。
+install(FILES spiceunion_cli.py
+  DESTINATION .
+)

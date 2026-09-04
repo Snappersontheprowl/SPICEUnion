@@ -16,6 +16,9 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
 ]
 
+[project.scripts]
+spiceunion = "spiceunion_cli:main"
+
 [tool.scikit-build]
 minimum-version = "build-system.requires"
 
