@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+（暂无）
+
+## [0.1.0] - 2026-09-05
+
 ### Added
 
 - Python 一键安装链路（P-a/P-b）：OrderedConcurrentPool FetchContent 回退、
