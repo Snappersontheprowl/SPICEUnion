@@ -9,6 +9,8 @@
 - `pool/`：有序 worker 调度与 session pool 实现。
 - `session/`：simulator session 实现与 protocol helper。
 - `parse/`：结果读取与辅助计算。
+- `toolchain/`：仿真器探测与版本解析（env → PATH → `--version`），供 session 与
+  诊断工具使用。
 
 ## 命名规则
 

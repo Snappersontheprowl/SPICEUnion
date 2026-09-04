@@ -61,6 +61,9 @@ ParameterState batch
   `(sclRun "all")`, completion detection);
 - Ngspice batch backend with built-in RC AC / RC TRAN / resistor-divider DC
   tasks.
+- simulator discovery and diagnostics: `find_simulator()` honors
+  `SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE`; a manual `spiceunion doctor`
+  reports which simulators are available.
 
 **Results**
 
@@ -90,6 +93,7 @@ src/core/        evaluator and shared execution types
 src/pool/        ordered worker-pool adapter
 src/session/     Spectre / Ngspice session backends
 src/parse/       ResultIR helpers and optional libpsf backend
+src/toolchain/   simulator discovery / version probing
 bindings/python/ optional pybind11 bindings
 tests/           GoogleTest suites and fixtures
 doc/             development docs and study notes (mostly Simplified Chinese)
@@ -223,7 +227,8 @@ SPICEUnion 是一个 C++17 的**仿真器执行与结果读取基础设施库**�
 
 - **执行层**：用户工作流 facade（`Simulation`/`SimulationResult`）；
   `Evaluator` batch facade；Spectre interactive backend（SKILL handshake、
-  参数写入、`(sclRun "all")`、完成判定）；Ngspice batch backend。
+  参数写入、`(sclRun "all")`、完成判定）；Ngspice batch backend；
+  工具链探测（`SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE` 自动发现 + 版本解析）。
 - **结果层**：统一 ResultIR；产物格式由执行层声明交付（`ResultFormat`），
   PSFASCII 内置解析、BINPSF 走可选 libpsf；AC 数学 helper 与 settling time。
 - **多语言**：C++17 公开 API（`include/su/`）；可选 pybind11 Python 绑定
