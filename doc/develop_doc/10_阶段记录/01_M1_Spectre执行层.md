@@ -15,14 +15,13 @@ Evaluator facade、SimulatorSession 抽象、TaskResult 执行状态、Spectre i
 
 ## 1. M1 目标
 
-M1 的目标是把 Python 版 `spectre_materials` 中的 Spectre interactive 执行链路，用 C++17 建立为可测试、可嵌入的执行层基础。
+M1 的目标是把内部 Python 参考原型（未公开）中的 Spectre interactive 执行链路，
+用 C++17 建立为可测试、可嵌入的执行层基础。
 
 行为基线来自：
 
-- `~/my_lab/projects/spectre_materials/src/spectre_interactive/generic_evaluator.py`
-- `~/my_lab/projects/spectre_materials/src/spectre_interactive/daemon_pool.py`
-- `~/my_lab/projects/spectre_materials/src/spectre_interactive/spectre_daemon.py`
-- `~/my_lab/projects/spectre_materials/src/spectre_interactive/task_library.py`
+- 内部 Python 参考原型（未公开）的模块：`generic_evaluator.py`、`daemon_pool.py`、
+  `spectre_daemon.py`、`task_library.py`。
 
 M1 关注：
 
@@ -249,7 +248,7 @@ SPICEUNION_ENABLE_EXTERNAL_TESTS=ON
 运行条件：
 
 - `SPICEUNION_ENABLE_EXTERNAL_TESTS=ON`；
-- `SPICEUNION_SPECTRE_MATERIALS_DIR` 指向 `spectre_materials`（默认
+- `SPICEUNION_SPECTRE_MATERIALS_DIR` 指向材料目录（默认
   `~/my_lab/projects/spectre_materials`）；
 - `spectre` 位于 `PATH`；
 - `<spectre_materials>/external/pdk/tsmcN65/toplevel.scs` 存在；

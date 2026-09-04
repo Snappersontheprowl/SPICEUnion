@@ -2,7 +2,25 @@
 
 ## 当前活跃待办
 
-（无。）
+### 公开化：README/文档完善 + 去除 spectre_materials 命名
+
+背景：仓库即将公开。根 README 需中英双语并面向“使用 + 贡献”两类读者；代码与
+文档中的 `spectre_materials` 命名统一改为中性材料语义（`spectre_materials`），避免公开
+后指向未公开的兄弟项目。
+
+步骤：
+
+- [ ] 代码契约改名：CMake 变量 `SPICEUNION_SPECTRE_MATERIALS_DIR`、tests/external
+      helper 函数、ci-external secret（`SPECTRE_MATERIALS_DIR`）与 workflow 注释。
+- [ ] 根 README 中英双语重写：删 `spectre_materials` 相关章节、面向贡献者、从零快速开始、
+      边界/许可/参与入口。
+- [ ] 新增 `CONTRIBUTING.md`（中文），根 README 挂链接。
+- [ ] 相关文档中性化：tests/external、fixtures、manual、TODO、develop_doc 叙述。
+- [ ] 历史清理：filter-repo 将历史中的 `spectre_materials` / `SPECTRE_MATERIALS` 替换为
+      `spectre_materials` / `SPECTRE_MATERIALS`，备份后 force push。
+- [ ] 本机材料目录 symlink `../spectre_materials` → 现有材料目录，验证 default 与
+      external-libpsf 构建测试。
+- [ ] 提醒：GitHub secret 改名为 `SPECTRE_MATERIALS_DIR`；公开后云端 CI 重跑观察。
 
 ## 暂缓池
 

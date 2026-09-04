@@ -180,14 +180,14 @@ tests/fixtures/psf/
 | fixture | 用途 |
 |---|---|
 | `dc_op_minimal.raw/dcOp.dc` | 最小 DC scalar 读取 |
-| `spectre_materials_dc_op.raw/dcOp.dc` | spectre_materials 历史 DC scalar |
-| `amp_ac_response.raw/ac.ac` | spectre_materials 历史 AC response |
+| `spectre_materials_dc_op.raw/dcOp.dc` | 真实 Spectre 23.1 历史 DC scalar（私有材料） |
+| `amp_ac_response.raw/ac.ac` | 真实 Spectre 23.1 历史 AC response（私有材料） |
 | `spectre_rc_lowpass_ac.raw/ac.ac` | Spectre RC AC 语义测试 |
 | `spectre_resistor_divider_dc.raw/dc.dc` | Spectre resistor-divider DC sweep 语义测试 |
 | `spectre_materials_stb_loop_gain.raw/stb.stb` | STB swept complex response |
 | `tran_time_sweep.raw/tran.tran` | 普通 transient waveform |
 | `spectre_rc_charging_tran.raw/tran.tran.tran` | Spectre RC TRAN 语义测试 |
-| `spectre_materials_psfxl_tran.raw/tran.tran.tran` | PSFXL unsupported 边界 |
+| `spectre_materials_psfxl_tran.raw/tran.tran.tran` | PSFXL unsupported 边界（私有材料） |
 
 M2 结果层当前覆盖：
 
