@@ -9,6 +9,8 @@
 
 - `default/`：默认开发构建产物，对应 `cmake --preset default`。
 - `external/`：启用真实 Spectre / Ngspice 外部测试的构建产物，对应 `cmake --preset external`。
+- `external-libpsf/`：同时启用外部 Spectre / Ngspice 测试与 `henjo/libpsf` reader 的构建产物，
+  对应 `cmake --preset external-libpsf`（真实网表端到端验证用）。
 - `libpsf/`：启用可选 `henjo/libpsf` PSF reader backend 的构建产物，对应 `cmake --preset libpsf`。
 - `python/`：启用 pybind11 Python binding 的构建产物，对应 `cmake --preset python`。
 - `python-libpsf-pic/`：同时启用 Python binding 与 libpsf backend 的构建产物，对应 `cmake --preset python-libpsf-pic`。
