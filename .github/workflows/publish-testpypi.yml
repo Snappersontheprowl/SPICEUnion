@@ -1,0 +1,64 @@
+# 发布到 TestPyPI（试跑通道）：手动触发，不影响正式 PyPI 发布。
+#
+# 前置（仓库 owner 手动做一次）：
+#   1. 在 https://test.pypi.org 注册并验证邮箱；
+#   2. Account settings -> Publishing 添加 pending publisher：
+#      Owner: Snappersontheprowl / Repository: SPICEUnion /
+#      Workflow: publish-testpypi.yml / Environment: pypi-test
+#   3. 本仓库 Actions 首次运行会自动创建 pypi-test environment（无需保护规则）。
+name: publish-testpypi
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install release tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build cibuildwheel
+
+      - name: Build sdist
+        run: python -m build --sdist --outdir dist
+
+      - name: Build manylinux wheels (cp39-cp312 x86_64)
+        run: python -m cibuildwheel --output-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: dist
+          path: dist/*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi-test
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist
+          skip-existing: true
