@@ -14,16 +14,18 @@
   断言解析状态（支持路径断言结构，已知边界断言当前状态）。
 - `spectre_real_result_test.cpp`：真实网表端到端——用真实 spectre 跑
   `AMP/dc/input.scs`，再用 libpsf 解析真实 dcOp.dc，断言 Vos / Idd 与
-  `spectre_materials` `amp_dc` profile 校准值一致。需要 `SPICEUNION_ENABLE_LIBPSF_READER`。
+  外部材料中的 `amp_dc` 校准 profile 一致（校准数据私有，不随仓库公开）。
+  需要 `SPICEUNION_ENABLE_LIBPSF_READER`。
 - `spectre_external_env.hpp`：外部环境检查与材料路径共享 helper。
 
 ## 当前约定
 
 - 基线网表与 PDK 统一来自 `SPICEUNION_SPECTRE_MATERIALS_DIR`（默认
-  `~/my_lab/projects/spectre_materials`）的 `external/netlist` 与 `external/pdk`，
-  路径由 CMake 编译宏注入，不在本目录硬编码机器路径。
-- `spectre_materials/external/netlist` 下的网表均为项目所有者实测的合法仿真网表；
-  当前外部测试仅消费 `AMP/dc/input.scs`，其余电路网表可作为后续契约测试材料扩展。
+  `<repo 上一级>/spectre_materials`，可用 `-D` 显式指定）的 `external/netlist` 与
+  `external/pdk`，路径由 CMake 编译宏注入，不在本目录硬编码机器路径。
+- 材料目录 `external/netlist` 下的网表均为项目所有者实测的合法仿真网表；这些材料
+  私有、不随本仓库分发。当前外部测试仅消费 `AMP/dc/input.scs`，其余电路网表可
+  作为后续契约测试材料扩展。
 - 基线网表内部以绝对路径 include PDK，跨机器需要等价材料布局。
 - 本机 `/dev/shm/pdk_cache` 已废弃，SPICEUnion 不再检查该路径。
 - 真实仿真产物写入 `<项目根>/local/runtime/spectre_<场景>/`，不使用内存盘

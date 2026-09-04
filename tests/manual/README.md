@@ -33,10 +33,10 @@ local/external/libpsf/libpsf_probe \
   local/external/libpsf/src/test/data/dcOp.dc vout
 ```
 
-读取 `spectre_materials` 历史输出样本：
+读取仓库内真实 Spectre 历史输出 fixture：
 
 ```bash
 local/external/libpsf/libpsf_probe \
-  ~/my_lab/projects/spectre_materials/local/runtime/sim_result/input_C11/input_C11.raw/stb.stb \
+  tests/fixtures/psf/spectre_materials_stb_loop_gain.raw/stb.stb \
   loopGain
 ```

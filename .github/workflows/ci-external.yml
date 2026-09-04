@@ -1,13 +1,14 @@
-# 自托管 runner 流水线：EDA 预设（需要 spectre 许可 + PDK + libpsf）
+# 自托管 runner 流水线：EDA 预设（需要 spectre 许可 + 私有材料目录 + libpsf）
 #
 # 运行前提（本机自托管 runner 机器）：
 #   - 注册 runner 并打 label：eda（仓库 Settings → Actions → Runners）
 #   - spectre 位于 PATH，license 可达
-#   - spectre_materials/external 材料可访问
+#   - 材料目录含 external/netlist 与 external/pdk（私有，不入库）
 #   - libpsf 已构建（本机 local/external/libpsf/install-pic 或等价路径）
 #
 # 前置配置（仓库 Secrets and variables → Actions → Secrets）：
-#   SPECTRE_MATERIALS_DIR：spectre_materials 仓库路径，如 ~/my_lab/projects/spectre_materials
+#   SPECTRE_MATERIALS_DIR：外部 Spectre 材料目录路径
+#     （含 external/netlist 与 external/pdk），如 ~/my_lab/projects/spectre_materials
 #   LIBPSF_INCLUDE_DIR / LIBPSF_LIBRARY：libpsf 安装的 include 与库文件路径
 #   ORDERED_POOL_REPOSITORY：见 ci-eda-free.yml（Variables）
 #

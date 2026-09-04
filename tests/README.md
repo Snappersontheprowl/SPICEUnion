@@ -33,7 +33,8 @@
 - `fixtures/`：已提交的小体积固定样本（Spectre 源 netlist 与 PSF 结果），详见
   `fixtures/README.md`。
 - `external/`：外部 Spectre 测试（生命周期契约 + 真实网表端到端仿真/解析），依赖
-  `spectre_materials/external/` 网表与 PDK，默认 skip，详见 `external/README.md`。
+  私有材料目录（`SPICEUNION_SPECTRE_MATERIALS_DIR`）的网表与 PDK，默认 skip，
+  详见 `external/README.md`。
 - `manual/`：人工验证工具，不进入默认 ctest，详见 `manual/README.md`。
 
 ## 命名规则

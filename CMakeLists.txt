@@ -31,14 +31,15 @@ endif()
 set(SPICEUNION_SPECTRE_MATERIALS_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../spectre_materials"
     CACHE PATH
-    "Path to the spectre_materials project that provides shared Spectre netlist/PDK materials"
+    "Path to the private materials directory with external/netlist and external/pdk"
 )
 
 if(SPICEUNION_ENABLE_EXTERNAL_TESTS AND NOT EXISTS
    "${SPICEUNION_SPECTRE_MATERIALS_DIR}/external/netlist")
   message(FATAL_ERROR
     "SPICEUNION_ENABLE_EXTERNAL_TESTS=ON requires SPICEUNION_SPECTRE_MATERIALS_DIR "
-    "pointing to the spectre_materials project. Current value: "
+    "pointing to a directory that contains external/netlist and external/pdk. "
+    "Current value: "
     "${SPICEUNION_SPECTRE_MATERIALS_DIR}"
   )
 endif()

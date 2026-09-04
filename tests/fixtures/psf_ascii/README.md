@@ -5,8 +5,8 @@
 
 ## 样本来源
 
-来源网表：`spectre_materials/external/netlist/BGR_AMP/{dc,stb}/input.scs`（gpdk045），
-由真实 spectre 23.1 仿真生成，2026-08-22 固化。
+来源网表：私有材料中的 `BGR_AMP/{dc,stb}`（gpdk045），由真实 Spectre 23.1 仿真
+生成，2026-08-22 固化（网表与原始路径不随仓库公开）。
 
 | fixture | 内容 | 用途 |
 |---|---|---|
