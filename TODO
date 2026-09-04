@@ -27,8 +27,8 @@ P-b 一键体验：
 
 P-c 发布：
 
-- [ ] 打 `v0.1.0` tag，PyPI 发布 sdist + manylinux wheel（workflow 已备，
-      需仓库在 PyPI 启用 trusted publishing）。
+- [x] 打 `v0.1.0` tag，PyPI 发布 sdist + manylinux wheel（TestPyPI 试跑 →
+      正式 PyPI 安装验收通过，2026-09-05）。
 - [ ] conda-forge feedstock 候选与 `ngspice` 联合安装验证
       （配方草稿在 `packaging/conda-forge/`）。
 - [ ] 版本号同步三处 + CHANGELOG（策略已写入专题 05）。

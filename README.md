@@ -159,7 +159,9 @@ No C++/CMake needed. From a fresh environment:
 
 ```bash
 # install the library only (a simulator is never installed by SPICEUnion)
-pip install git+https://github.com/Snappersontheprowl/SPICEUnion.git
+pip install spiceunion
+# or install the latest development build straight from Git:
+# pip install git+https://github.com/Snappersontheprowl/SPICEUnion.git
 
 # check what this machine can run
 spiceunion doctor
@@ -210,8 +212,8 @@ start at `doc/develop_doc/README.md`:
   BINPSF parser are not implemented;
 - Python bindings currently cover workflow + result reading; starting
   simulations from Python is supported through `Simulation`;
-- no wheel / package release yet; performance numbers are not yet systematically
-  measured.
+- the first PyPI release (`spiceunion` 0.1.0, default wheel without libpsf) is
+  available; performance numbers are not yet systematically measured.
 
 ## Contributing
 
@@ -307,7 +309,8 @@ ctest --preset default --output-on-failure
   PSFASCII 内置支持、BINPSF 走可选 libpsf；legacy sensitivity 与完整原生
   BINPSF parser 未实现；
 - Python 已支持第一版 workflow binding；真实 simulator smoke 需显式开启；
-- 尚未发布 wheel / package；性能数字未系统实测。
+- 首版 PyPI 已发布（`spiceunion` 0.1.0，默认 wheel 不含 libpsf）；性能数字未
+  系统实测。
 
 ## 参与贡献
 

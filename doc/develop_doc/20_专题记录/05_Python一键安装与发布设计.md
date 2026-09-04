@@ -117,9 +117,9 @@ ngspice / Spectre。
 
 ### P-c：发布
 
-- [ ] 首版发布到 PyPI：sdist + manylinux wheel（cp39–cp312 × x86_64，默认不含
-      libpsf）；发布 workflow 已备（tag `v*` → cibuildwheel → trusted
-      publishing），待仓库拥有者在 PyPI 配置环境并打 tag；
+- [x] 首版发布到 PyPI（v0.1.0，2026-09-05）：sdist + manylinux wheel
+      （cp39–cp312 × x86_64，默认不含 libpsf）；TestPyPI 先行试跑、正式 PyPI
+      安装验收均通过；
 - [ ] conda-forge recipe 候选（`packaging/conda-forge/`）+ 与 `ngspice` 联合安装
       验证（feedstock 需在 conda-forge 侧创建，见目录 README）；
 - [ ] 版本号与升级策略定稿（见下），回归走现有 preset 矩阵。
