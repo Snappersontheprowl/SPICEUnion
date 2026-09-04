@@ -31,7 +31,8 @@
   测试，`external/` 真实工具/私有材料依赖测试，`fixtures/` 固定样本，
   `support/` 共享 helper，`manual/` 人工工具。
 - `unit/` 下按源码模块或公共职责继续分层，例如 `core/`、`parse/`、`pool/`、
-  `session/`、`workflow/`；后续工具链诊断测试应进入 `unit/toolchain/`。
+  `session/`、`workflow/`、`toolchain/`；仿真器探测测试用 fake 可执行文件，
+  不调用真实 EDA 工具。
 - `external/` 下按真实工具或外部系统分层，例如 `spectre/`、`ngspice/`。
 
 ## 当前约定

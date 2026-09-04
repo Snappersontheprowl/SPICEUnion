@@ -16,5 +16,4 @@
 - `session/`：不依赖真实工具的 session 协议、Ngspice 配置、netlist 渲染和
   `wrdata` parser。
 - `workflow/`：用户工作流 facade 契约。
-
-后续新增工具链自动适配与诊断测试时，默认放入 `toolchain/`。
+- `toolchain/`：仿真器探测与版本解析（用 fake 可执行文件测试，不依赖真实工具）。

@@ -3,6 +3,7 @@
 #include "su/evaluator.hpp"
 #include "su/ngspice_session.hpp"
 #include "su/result_reader.hpp"
+#include "su/simulator_kind.hpp"
 #include "su/task_result.hpp"
 
 #include <map>
@@ -11,11 +12,6 @@
 #include <vector>
 
 namespace su {
-
-enum class SimulatorKind {
-  kSpectre,
-  kNgspice,
-};
 
 struct SimulationOptions {
   SimulatorKind simulator = SimulatorKind::kSpectre;

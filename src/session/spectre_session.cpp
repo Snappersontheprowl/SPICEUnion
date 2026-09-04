@@ -1,6 +1,7 @@
 #include "su/spectre_session.hpp"
 
 #include "su/spectre_protocol.hpp"
+#include "su/toolchain.hpp"
 
 #include <sys/select.h>
 #include <sys/stat.h>
@@ -183,6 +184,12 @@ void SpectreSession::launch_process() {
   int input_pipe[2] = {-1, -1};
   int output_pipe[2] = {-1, -1};
 
+  // 通过统一探测解析 spectre 可执行文件；未显式/未在 PATH 找到时回退到 "spectre"，
+  // 保持原有失败语义不变。
+  const auto spectre_handle = su::find_simulator(su::SimulatorKind::kSpectre);
+  const std::string spectre_executable =
+      spectre_handle.found ? spectre_handle.executable_path : "spectre";
+
   if (::pipe(input_pipe) != 0) {
     throw std::runtime_error("failed to create Spectre stdin pipe");
   }
@@ -214,10 +221,10 @@ void SpectreSession::launch_process() {
     ::chdir(work_dir_.c_str());
 
     const char* argv[] = {
-        "spectre", options_.netlist_path.c_str(), "+interactive", "-64", "-o", work_dir_.c_str(),
-        nullptr,
+        spectre_executable.c_str(), options_.netlist_path.c_str(), "+interactive",
+        "-64", "-o", work_dir_.c_str(), nullptr,
     };
-    ::execvp("spectre", const_cast<char* const*>(argv));
+    ::execvp(spectre_executable.c_str(), const_cast<char* const*>(argv));
     _exit(127);
   }
 

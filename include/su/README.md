@@ -6,13 +6,30 @@
 
 ## 模块概览
 
+### `simulator_kind.hpp`
+
+轻量枚举头：`SimulatorKind`（`kSpectre` / `kNgspice`）。只声明枚举本身，供执行层、
+工具链探测与上层 facade 共用，避免上层头文件把底层实现一起带进来。
+
+### `toolchain.hpp`
+
+仿真器探测入口（供诊断与高级装配使用）：
+
+- `SimulatorHandle`：一次探测结果（是否找到、可执行路径、版本文本/版本号、来源）。
+- `simulator_env_var()`：返回对应仿真器的环境变量名（`SPICEUNION_SPECTRE` /
+  `SPICEUNION_NGSPICE`）。
+- `find_simulator()`：按“环境变量显式指定 → PATH 候选”探测。
+
+MVP 只负责“找到并报告”，不做版本门控；能力声明与版本→能力映射见后续里程碑。
+
 ### `workflow.hpp`
 
 普通用户工作流入口。
 
 该头文件当前定义：
 
-- `SimulatorKind`：普通用户选择 simulator 的轻量枚举。
+- `SimulatorKind`：普通用户选择 simulator 的轻量枚举（定义在 `simulator_kind.hpp`，
+  本头文件 re-export）。
 - `SimulationOptions`：workflow 层配置，包括 simulator、网表路径、worker 数量、
   工作目录、超时、重启次数、结果格式声明和当前 Ngspice 内置任务选择。
 - `SimulationCase`：单个用户仿真 case 的参数映射。

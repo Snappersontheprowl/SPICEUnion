@@ -110,6 +110,7 @@ add_library(spiceunion_core STATIC
   src/session/ngspice_session.cpp
   src/session/spectre_protocol.cpp
   src/session/spectre_session.cpp
+  src/toolchain/simulator_probe.cpp
   src/workflow/simulation.cpp
   src/core/version.cpp
 )

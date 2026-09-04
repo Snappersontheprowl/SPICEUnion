@@ -55,6 +55,10 @@ spiceunion_add_gtest(spiceunion_smoke_test
   unit/core/smoke_test.cpp
 )
 
+spiceunion_add_gtest(spiceunion_toolchain_test
+  unit/toolchain/toolchain_test.cpp
+)
+
 spiceunion_add_gtest(spiceunion_evaluator_contract_test
   unit/core/evaluator_contract_test.cpp
 )

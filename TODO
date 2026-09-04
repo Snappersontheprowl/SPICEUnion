@@ -7,14 +7,27 @@
 设计文档：`doc/develop_doc/20_专题记录/04_仿真器自动适配与诊断设计.md`
 （2026-09-04 完成，已同步专题索引、文档地图与路线图 3.3）。
 
-代码实施步骤（启动前先在本节更新进度）：
+当前进展：P0/P1 实施中（2026-09-04）。
 
-- [ ] 新增公开头文件 `include/su/toolchain.hpp`：`SimulatorHandle` /
-      `SimulatorCapabilities` / 探测入口。
-- [ ] 新增实现目录与 resolver/版本解析/能力表/最小探针（用可控假环境做单元测试）。
-- [ ] 外部测试 skip 原因收敛为机器可读分类并接入现有门控。
-- [ ] `spiceunion doctor` 诊断入口（先落 `tests/manual/` 或示例）。
-- [ ] 在“干净机器 + 新装 conda ngspice”场景复现完整诊断并沉淀到文档。
+P0 探测与解析：
+
+- [x] 抽出 `include/su/simulator_kind.hpp`（`SimulatorKind` 独立成轻量头）。
+- [x] 新增 `include/su/toolchain.hpp`：`SimulatorHandle` 与 `find_simulator()`。
+- [x] 新增 `src/toolchain/simulator_probe.cpp`：env → PATH → `--version` 解析
+      （兼容 `ngspice-41` 与 `revision 27` 两种输出）。
+- [x] 新增 `tests/unit/toolchain/toolchain_test.cpp`：fake 可执行覆盖
+      env 优先 / PATH 发现 / 版本解析 / not_found（5/5）。
+
+P1 接入执行层：
+
+- [x] ngspice / spectre session 改用统一 resolver（spectre 新增
+      `SPICEUNION_SPECTRE` env 支持）。
+- [x] include/su/README 登记 `simulator_kind.hpp` 与 `toolchain.hpp`。
+- [x] default 预设全绿；external-libpsf 真实 spectre/ngspice 子集 10/10。
+
+P2 诊断入口（后续）：
+
+- [ ] `tests/manual/` 新增 `spiceunion doctor` 样例程序并沉淀输出样例。
 
 ## 暂缓池
 

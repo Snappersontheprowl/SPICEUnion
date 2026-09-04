@@ -1,5 +1,7 @@
 #include "su/ngspice_session.hpp"
 
+#include "su/toolchain.hpp"
+
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
@@ -43,33 +45,6 @@ bool make_directories(const std::string& path) {
   return std::filesystem::create_directories(path, error);
 }
 
-bool is_executable_file(const std::string& path) {
-  return !path.empty() && ::access(path.c_str(), X_OK) == 0;
-}
-
-std::vector<std::string> split_path_list(const char* path_text) {
-  std::vector<std::string> paths;
-  if (path_text == nullptr) {
-    return paths;
-  }
-
-  std::string text(path_text);
-  std::size_t start = 0;
-  while (start <= text.size()) {
-    const auto end = text.find(':', start);
-    auto part = text.substr(start, end == std::string::npos ? std::string::npos : end - start);
-    if (part.empty()) {
-      part = ".";
-    }
-    paths.push_back(std::move(part));
-    if (end == std::string::npos) {
-      break;
-    }
-    start = end + 1;
-  }
-  return paths;
-}
-
 std::string join_path_local(const std::string& left, const std::string& right) {
   if (left.empty()) {
     return right;
@@ -84,21 +59,8 @@ std::string join_path_local(const std::string& left, const std::string& right) {
 }
 
 std::string find_ngspice_executable() {
-  const char* explicit_path = std::getenv("SPICEUNION_NGSPICE");
-  if (explicit_path != nullptr && is_executable_file(explicit_path)) {
-    return explicit_path;
-  }
-
-  const auto paths = split_path_list(std::getenv("PATH"));
-  for (const char* name : {"ngspice_con", "ngspice"}) {
-    for (const auto& dir : paths) {
-      auto candidate = join_path_local(dir, name);
-      if (is_executable_file(candidate)) {
-        return candidate;
-      }
-    }
-  }
-  return {};
+  const auto handle = su::find_simulator(su::SimulatorKind::kNgspice);
+  return handle.found ? handle.executable_path : std::string{};
 }
 
 std::string format_spice_double(double value) {
