@@ -100,6 +100,7 @@ doc/             development docs and study notes (mostly Simplified Chinese)
 local/           local run outputs / external build products (not versioned)
 build/           CMake build products (not versioned)
 third_party/     vendored build recipes for third-party dependencies
+packaging/       wheel / conda-forge release materials
 .github/         GitHub Actions pipelines (cloud CI + self-hosted CI)
 ```
 

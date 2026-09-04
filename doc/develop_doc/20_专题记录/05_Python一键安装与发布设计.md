@@ -117,9 +117,25 @@ ngspice / Spectre。
 
 ### P-c：发布
 
-- [ ] 首版 wheel 发布到 PyPI（默认不含 libpsf）；
-- [ ] conda-forge recipe 候选（`spiceunion` + 依赖说明）；
-- [ ] 版本号与升级策略，回归走现有 preset 矩阵。
+- [ ] 首版发布到 PyPI：sdist + manylinux wheel（cp39–cp312 × x86_64，默认不含
+      libpsf）；发布 workflow 已备（tag `v*` → cibuildwheel → trusted
+      publishing），待仓库拥有者在 PyPI 配置环境并打 tag；
+- [ ] conda-forge recipe 候选（`packaging/conda-forge/`）+ 与 `ngspice` 联合安装
+      验证（feedstock 需在 conda-forge 侧创建，见目录 README）；
+- [ ] 版本号与升级策略定稿（见下），回归走现有 preset 矩阵。
+
+#### 版本与升级策略（v0.1.0 起）
+
+- 语义化版本（SemVer）：`MAJOR.MINOR.PATCH`；公开 API 破坏性变化升 MAJOR，
+  向后兼容新增升 MINOR，修复升 PATCH。
+- 版本号需同步三处：`CMakeLists.txt` 的 `project(VERSION ...)`、
+  `src/core/version.cpp` 的 `version()`、`pyproject.toml` 的 `version`；
+  发布前用预设矩阵回归并在 README/文档记录。
+- 每次发布：更新 CHANGELOG（遵循 Keep a Changelog）→ 同步三处版本号 →
+  本地 `pip install .` 冒烟 → 打 `vX.Y.Z` tag → 发布 workflow 自动出包上传 →
+  验证 PyPI 安装与 `spiceunion doctor`。
+- PyPI 发布使用 GitHub trusted publishing（环境级权限），不在仓库存 token；
+  conda-forge 走 feedstock PR 流程，版本与 PyPI 对齐。
 
 ## 6. 验证矩阵
 
@@ -127,7 +143,7 @@ ngspice / Spectre。
 |---|---|---|
 | 全新 venv，读结果 | `pip install .` 后 import + 读 fixture | 成功 |
 | 全新环境，ngspice 仿真（conda） | `conda install -c conda-forge spiceunion ngspice` | doctor 显示 ngspice found，样例可跑 |
-| Spectre 场景 | `python -m spiceunion.doctor` | 报告 found / missing 与建议 |
+| Spectre 场景 | `spiceunion doctor` | 报告 found / missing 与建议 |
 | 回归 | `verify_all_presets.sh` | 全绿，默认 wheel 不破坏现有测试 |
 
 ## 7. 承接关系

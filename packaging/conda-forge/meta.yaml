@@ -1,0 +1,49 @@
+# spiceunion conda-forge 配方候选（草稿）
+#
+# 注意：conda-forge 正式配方需放在独立 feedstock 仓库，由 conda-forge 维护流程
+# 管理。本文件只用于本地 conda-build 试构建与评审，sha256 待 PyPI 首版发布后回填。
+
+{% set version = "0.1.0" %}
+
+package:
+  name: spiceunion
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/s/spiceunion/spiceunion-{{ version }}.tar.gz
+  sha256: TBD-after-first-pypi-release
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps
+  noarch: false
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake >=3.20
+    - git        # FetchContent 拉取 OrderedConcurrentPool
+    - pip
+    - python
+    - scikit-build-core
+  host:
+    - python
+    - pip
+  run:
+    - python
+
+test:
+  imports:
+    - spiceunion
+  commands:
+    - spiceunion doctor
+
+about:
+  home: https://github.com/Snappersontheprowl/SPICEUnion
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: C++17 simulator execution and result-reading infrastructure with pybind11 bindings
+
+extra:
+  recipe-maintainers:
+    - Snappersontheprowl
