@@ -160,6 +160,8 @@ start at `doc/develop_doc/README.md`:
 - `00_项目总览/03_开发路线图.md` — what is next;
 - `10_阶段记录/` — per-milestone design background (M1–M6);
 - `20_专题记录/` — cross-milestone design topics.
+- `doc/develop_doc/DEVELOP_GUIDE.md` — how documentation should participate in a
+  feature development (Simplified Chinese).
 
 ## Boundaries and known limitations
 
@@ -251,6 +253,7 @@ ctest --preset default --output-on-failure
 ## 文档入口
 
 - `doc/develop_doc/README.md`：开发文档地图与维护规范；
+- `doc/develop_doc/DEVELOP_GUIDE.md`：一次功能开发的文档参与流程使用指导；
 - `00_项目总览/01_当前事实状态.md`：当前能力、验证数字与边界总账（事实唯一来源）；
 - `00_项目总览/02_架构总览.md`：分层架构与执行/读取链路；
 - `00_项目总览/03_开发路线图.md`：下一步施工；
