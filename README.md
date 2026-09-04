@@ -171,6 +171,11 @@ start at `doc/develop_doc/README.md`:
 
 - not a circuit metric/objective/penalty engine, optimizer, PDK manager, GUI,
   or full netlist IR;
+- SPICEUnion does **not** install, download, or manage real simulators
+  (Spectre / Ngspice). It only detects executables already present on the
+  machine (`SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE` or PATH) and calls them;
+  when missing, `spiceunion doctor` tells the user how to provide one
+  themselves.
 - parsing boundaries verified against real netlists: PSFXL transient returns
   `unsupported_format`; PSFASCII is supported by the built-in parser; BINPSF is
   supported through optional libpsf; legacy sensitivity and a fully native
@@ -267,6 +272,9 @@ ctest --preset default --output-on-failure
 ## 边界与不足
 
 - 不做 metric/objective/penalty、optimizer、PDK 内容管理、GUI、完整 netlist IR；
+- SPICEUnion **不负责安装/下载/管理真实仿真器**（Spectre / Ngspice）：只探测机器上
+  已存在的可执行文件（`SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE` 或 PATH）并调用；
+  缺失时 `spiceunion doctor` 提示用户自行安装；
 - 解析边界（真实网表实测）：PSFXL transient 明确返回 `unsupported_format`；
   PSFASCII 内置支持、BINPSF 走可选 libpsf；legacy sensitivity 与完整原生
   BINPSF parser 未实现；

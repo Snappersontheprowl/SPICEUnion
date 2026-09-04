@@ -90,6 +90,10 @@ spiceunion.doctor()
 - **ngspice 可分发但不在 PyPI**：走 conda-forge 的 `ngspice` 包；
 - wheel 仅保证“库可装可导入”，真实仿真能力仍由外部工具决定。
 
+边界声明：SPICEUnion **不负责安装/下载/管理真实仿真器**。`pip` / `conda` 安装的是
+`spiceunion` 库本身；doctor 只做检测与“用户自行安装”的提示，不替用户安装
+ngspice / Spectre。
+
 ## 5. 分阶段实施与完成定义
 
 ### P-a：打包地基

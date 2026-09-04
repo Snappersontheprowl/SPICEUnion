@@ -20,10 +20,12 @@ const char* kind_name(su::SimulatorKind kind) {
 
 const char* suggestion(su::SimulatorKind kind) {
   if (kind == su::SimulatorKind::kSpectre) {
-    return "set SPICEUNION_SPECTRE=<path> or install Cadence Spectre and put "
+    return "user action required: set SPICEUNION_SPECTRE=<path>, or install "
+           "Cadence Spectre yourself and put "
            "`spectre` on PATH";
   }
-  return "set SPICEUNION_NGSPICE=<path> or install ngspice (e.g. conda "
+  return "user action required: set SPICEUNION_NGSPICE=<path>, or install "
+         "ngspice yourself (e.g. conda "
          "create -n ngspice -c conda-forge ngspice) and put it on PATH";
 }
 
