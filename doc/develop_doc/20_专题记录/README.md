@@ -8,6 +8,7 @@
 - `02_用户工作流API设计.md`：统一用户工作流 API 的目标、边界、API、失败语义和开发切分。
 - `03_Python工作流Binding设计.md`：Python workflow binding 的对象映射、生命周期、异常语义和测试切分。
 - `04_仿真器自动适配与诊断设计.md`：工具链探测、能力声明、门控与诊断的设计与实施切分。
+- `05_Python一键安装与发布设计.md`：pip / conda-forge 分发、doctor 入口与打包前置改造。
 
 ## 命名规则
 

@@ -2,7 +2,30 @@
 
 ## 当前活跃待办
 
-（无。）
+### Python 一键安装与发布（设计定稿，代码待启动）
+
+设计文档：`doc/develop_doc/20_专题记录/05_Python一键安装与发布设计.md`
+（2026-09-04 定稿，已同步专题索引、文档地图与路线图 3.4）。
+
+代码实施步骤：
+
+P-a 打包地基：
+
+- [ ] OrderedConcurrentPool 增加 FetchContent 回退（sibling 优先，缺失自动拉取）。
+- [ ] 新增 `pyproject.toml`（scikit-build-core）与 CMake 安装规则，产出
+      `spiceunion` Python 模块。
+- [ ] 本机干净 venv 中 `pip install .` + `import spiceunion` 通过。
+
+P-b 一键体验：
+
+- [ ] 绑定 `spiceunion.doctor()` / `python -m spiceunion`（复用 toolchain 探测）。
+- [ ] CI 云 runner 构建 wheel 并做 import + doctor 冒烟。
+- [ ] 根 README 增加“Python 用户 3 分钟上手”。
+
+P-c 发布：
+
+- [ ] 首版 wheel 发布 PyPI（默认不含 libpsf，LGPL 边界另立）。
+- [ ] conda-forge recipe 候选与 `ngspice` 联合安装验证。
 
 ## 暂缓池
 
