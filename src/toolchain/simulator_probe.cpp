@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <cstdlib>
@@ -51,17 +52,45 @@ std::vector<std::string> split_path_list(const char* path_text) {
   return out;
 }
 
-std::string first_line(const std::string& output) {
-  const auto end = output.find('\n');
-  auto line = output.substr(0, end == std::string::npos ? std::string::npos : end);
-  while (!line.empty() && (line.back() == '\r' || line.back() == ' ')) {
-    line.pop_back();
+std::string trim_copy(std::string value) {
+  const auto not_space = [](char c) {
+    return c != ' ' && c != '\t' && c != '\r' && c != '*';
+  };
+  const auto first = std::find_if(value.begin(), value.end(), not_space);
+  const auto last = std::find_if(value.rbegin(), value.rend(), not_space).base();
+  if (first >= last) {
+    return {};
   }
-  return line;
+  return std::string(first, last);
 }
 
-// 尽力读取 `<exe> --version` 的首行。探测失败返回空串，不影响主路径。
-std::string probe_version_line(const std::string& exe) {
+std::string first_meaningful_line(const std::string& output) {
+  std::string current;
+  for (const char c : output) {
+    if (c != '\n') {
+      current.push_back(c);
+      continue;
+    }
+    const auto line = trim_copy(current);
+    if (!line.empty()) {
+      return line;
+    }
+    current.clear();
+  }
+  return trim_copy(current);
+}
+
+struct VersionProbe {
+  std::string text;
+  std::string number;
+};
+
+std::string parse_version_number(const std::string& version_text);
+
+// 尽力读取 `<exe> --version` 输出。探测失败返回空串，不影响主路径。
+// 注意：Cadence Spectre 对 `--version` 会崩溃（实测 segment fault），因此 Spectre
+// 不执行版本探测，只报告可执行文件本身；版本号留待后续用静态/其它安全方式补齐。
+VersionProbe probe_ngspice_version(const std::string& exe) {
   const std::string command = "'" + exe + "' --version 2>/dev/null";
   FILE* pipe = ::popen(command.c_str(), "r");
   if (pipe == nullptr) {
@@ -71,7 +100,11 @@ std::string probe_version_line(const std::string& exe) {
   const std::size_t n = std::fread(buffer.data(), 1, buffer.size() - 1, pipe);
   buffer[n] = '\0';
   ::pclose(pipe);
-  return first_line(std::string(buffer.data(), n));
+  const std::string output(buffer.data(), n);
+  VersionProbe result;
+  result.text = first_meaningful_line(output);
+  result.number = parse_version_number(output);
+  return result;
 }
 
 // ngspice 不同年代输出差异较大，按已知形态顺序解析：
@@ -106,8 +139,11 @@ SimulatorHandle probe_one(SimulatorKind kind, const std::string& candidate,
   handle.found = true;
   handle.executable_path = candidate;
   handle.discovered_from = source;
-  handle.version_text = probe_version_line(candidate);
-  handle.version_number = parse_version_number(handle.version_text);
+  if (kind == SimulatorKind::kNgspice) {
+    const auto version = probe_ngspice_version(candidate);
+    handle.version_text = version.text;
+    handle.version_number = version.number;
+  }
   return handle;
 }
 

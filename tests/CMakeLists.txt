@@ -119,6 +119,21 @@ spiceunion_add_gtest(spiceunion_workflow_test
   unit/workflow/workflow_test.cpp
 )
 
+# 诊断工具：随启用 BUILD_TESTS 的构建产出，但不注册为 ctest 用例。
+add_executable(spiceunion_doctor
+  manual/spiceunion_doctor.cpp
+)
+
+target_include_directories(spiceunion_doctor
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}
+)
+
+target_link_libraries(spiceunion_doctor
+  PRIVATE
+    spiceunion_core
+)
+
 target_compile_definitions(spiceunion_workflow_test
   PRIVATE
     SPICEUNION_PROJECT_ROOT="${PROJECT_SOURCE_DIR}"

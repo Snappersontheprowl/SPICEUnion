@@ -2,32 +2,7 @@
 
 ## 当前活跃待办
 
-### 工具链自动适配与诊断（设计已完成，代码待启动）
-
-设计文档：`doc/develop_doc/20_专题记录/04_仿真器自动适配与诊断设计.md`
-（2026-09-04 完成，已同步专题索引、文档地图与路线图 3.3）。
-
-当前进展：P0/P1 实施中（2026-09-04）。
-
-P0 探测与解析：
-
-- [x] 抽出 `include/su/simulator_kind.hpp`（`SimulatorKind` 独立成轻量头）。
-- [x] 新增 `include/su/toolchain.hpp`：`SimulatorHandle` 与 `find_simulator()`。
-- [x] 新增 `src/toolchain/simulator_probe.cpp`：env → PATH → `--version` 解析
-      （兼容 `ngspice-41` 与 `revision 27` 两种输出）。
-- [x] 新增 `tests/unit/toolchain/toolchain_test.cpp`：fake 可执行覆盖
-      env 优先 / PATH 发现 / 版本解析 / not_found（5/5）。
-
-P1 接入执行层：
-
-- [x] ngspice / spectre session 改用统一 resolver（spectre 新增
-      `SPICEUNION_SPECTRE` env 支持）。
-- [x] include/su/README 登记 `simulator_kind.hpp` 与 `toolchain.hpp`。
-- [x] default 预设全绿；external-libpsf 真实 spectre/ngspice 子集 10/10。
-
-P2 诊断入口（后续）：
-
-- [ ] `tests/manual/` 新增 `spiceunion doctor` 样例程序并沉淀输出样例。
+（无。）
 
 ## 暂缓池
 
@@ -69,6 +44,14 @@ P2 诊断入口（后续）：
   fixture 目录同步改名；全部历史（含提交信息）已用 filter-repo 清理旧命名并
   force push；本机材料目录以 symlink `../spectre_materials` 装配。验证：
   default 全绿、external-libpsf 116/116。
+- 工具链自动适配与诊断 MVP（2026-09-04）：设计见
+  `doc/develop_doc/20_专题记录/04_仿真器自动适配与诊断设计.md`；实现
+  `simulator_kind.hpp` / `toolchain.hpp` / `src/toolchain/simulator_probe.cpp`；
+  spectre 与 ngspice session 接入统一 resolver（spectre 新增
+  `SPICEUNION_SPECTRE` env）；`tests/manual/spiceunion_doctor.cpp` 诊断入口
+  与样例输出已沉淀。验证：ToolchainTest 5/5、default 102/102、
+  external-libpsf spectre/ngspice 子集 10/10。后续：版本→能力门控、Spectre
+  安全版本探测策略、Python `doctor()`（均在暂缓/路线图 3.3）。
 - M6 Python workflow binding 第一版：已在 `bindings/python/spiceunion_py.cpp` 绑定
   `Simulation` / `SimulationResult`，新增 `test_workflow_api_contract.py`、
   `test_workflow_external.py` 和 `run_workflow.py`；`python` 预设 104/104 通过，

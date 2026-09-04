@@ -73,12 +73,14 @@ class TempDir {
 };
 
 void make_fake_executable(const fs::path& dir, const std::string& name,
-                          const std::string& version_line) {
+                          const std::vector<std::string>& version_lines) {
   const auto file = dir / name;
   std::ofstream out(file);
   out << "#!/bin/sh\n";
   out << "if [ \"$1\" = \"--version\" ]; then\n";
-  out << "  echo '" << version_line << "'\n";
+  for (const auto& line : version_lines) {
+    out << "  echo '" << line << "'\n";
+  }
   out << "else\n  echo fake-run\nfi\n";
   out.close();
   fs::permissions(file, fs::perms::owner_all | fs::perms::group_all |
@@ -100,10 +102,11 @@ TEST(ToolchainTest, NgspiceEnvOverrideWinsOverPath) {
   TempDir env_dir;
   TempDir path_dir;
 
-  make_fake_executable(env_dir.path(), "ngspice",
-                       "** ngspice-41 : Circuit level simulation program");
+  make_fake_executable(
+      env_dir.path(), "ngspice",
+      {"******", "** ngspice-41 : Circuit level simulation program"});
   make_fake_executable(path_dir.path(), "ngspice",
-                       "ngspice compiled from ngspice revision 27");
+                       {"ngspice compiled from ngspice revision 27"});
 
   env.set(kNgspiceEnv, (env_dir.path() / "ngspice").string());
   env.set(kPathEnv, path_dir.path().string());
@@ -113,13 +116,14 @@ TEST(ToolchainTest, NgspiceEnvOverrideWinsOverPath) {
   EXPECT_EQ(handle.discovered_from, "env");
   EXPECT_EQ(handle.executable_path, (env_dir.path() / "ngspice").string());
   EXPECT_EQ(handle.version_number, "41");
+  EXPECT_EQ(handle.version_text, "ngspice-41 : Circuit level simulation program");
 }
 
 TEST(ToolchainTest, NgspicePathDiscoveryParsesRevisionStyleVersion) {
   ScopedEnv env;
   TempDir dir;
   make_fake_executable(dir.path(), "ngspice",
-                       "ngspice compiled from ngspice revision 27");
+                       {"ngspice compiled from ngspice revision 27"});
 
   env.clear(kNgspiceEnv);
   env.set(kPathEnv, dir.path().string());
@@ -131,11 +135,10 @@ TEST(ToolchainTest, NgspicePathDiscoveryParsesRevisionStyleVersion) {
   EXPECT_EQ(handle.version_number, "27");
 }
 
-TEST(ToolchainTest, SpectreEnvOverrideIsHonored) {
+TEST(ToolchainTest, SpectreEnvOverrideIsHonoredWithoutVersionProbe) {
   ScopedEnv env;
   TempDir dir;
-  make_fake_executable(dir.path(), "spectre",
-                       "Spectre 23.1.1 : Circuit simulation");
+  make_fake_executable(dir.path(), "spectre", {"Spectre 23.1.1 : Circuit simulation"});
 
   env.set(kSpectreEnv, (dir.path() / "spectre").string());
   env.clear(kNgspiceEnv);
@@ -144,7 +147,8 @@ TEST(ToolchainTest, SpectreEnvOverrideIsHonored) {
   const auto handle = su::find_simulator(su::SimulatorKind::kSpectre);
   EXPECT_TRUE(handle.found);
   EXPECT_EQ(handle.discovered_from, "env");
-  EXPECT_EQ(handle.version_number, "23.1.1");
+  EXPECT_TRUE(handle.version_text.empty());
+  EXPECT_TRUE(handle.version_number.empty());
 }
 
 TEST(ToolchainTest, NotFoundWhenEnvAndPathHaveNoSimulator) {

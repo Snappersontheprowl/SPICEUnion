@@ -13,6 +13,56 @@
 
 - `libpsf_probe.cpp`：用于手动验证 `henjo/libpsf` C++ API 是否能读取指定 PSF 文件。
   它不会进入默认构建，也不会把 `psf.h` 暴露到 SPICEUnion 公开 API。
+- `spiceunion_doctor.cpp`：一次性报告本机可探测到的仿真器（Spectre / Ngspice）、
+  路径、来源与版本。随启用 `SPICEUNION_BUILD_TESTS` 的构建产出，但不注册为
+  `ctest` 用例；实现细节见
+  `../../include/su/toolchain.hpp`。
+
+## spiceunion doctor 本机示例
+
+构建（任意启用测试的 preset 均可）：
+
+```bash
+cmake --preset default
+cmake --build --preset default --target spiceunion_doctor
+./build/default/tests/spiceunion_doctor
+```
+
+默认 PATH 场景（本机未显式指定 ngspice 时找到 PATH 中的版本）：
+
+```text
+[Spectre]
+  found: yes
+  executable: /opt/cadence/SPECTRE231/bin/spectre
+  source: path
+  version number: (unavailable)
+
+[Ngspice]
+  found: yes
+  executable: /usr/local/bin/ngspice
+  source: path
+  version text: ngspice compiled from ngspice revision 27
+  version number: 27
+```
+
+显式指定 conda ngspice-41 场景：
+
+```bash
+SPICEUNION_NGSPICE=<conda-env>/bin/ngspice ./build/default/tests/spiceunion_doctor
+```
+
+```text
+[Ngspice]
+  found: yes
+  executable: <conda-env>/bin/ngspice
+  source: env
+  version text: ngspice-41 : Circuit level simulation program
+  version number: 41
+```
+
+说明：MVP 阶段 Spectre 不做 `--version` 探测（实测 `spectre --version` 会崩溃），
+因此只报告“找到/路径/来源”；版本探测策略见
+`src/toolchain/simulator_probe.cpp` 注释。
 
 ## libpsf probe 本机示例
 
