@@ -12,6 +12,24 @@ results through one unified model.
 > 中文版见 [下文](#中文版chinese)。Simplified-Chinese readers can jump to the
 > Chinese section below.
 
+## Which one are you?
+
+**I want to use SPICEUnion** (call it from Python or embed it in C++):
+
+- 3-minute start: [Python users](#python-users-3-minute-start) /
+  [Quick start](#quick-start);
+- full end-user guide (Simplified Chinese):
+  [`doc/usage/README.md`](doc/usage/README.md);
+- install with `pip install spiceunion` or build from source (below).
+
+**I want to contribute or develop SPICEUnion**:
+
+- start with [`CONTRIBUTING.md`](CONTRIBUTING.md) (conventions + CI/CD map);
+- developer doc map:
+  [`doc/develop_doc/README.md`](doc/develop_doc/README.md);
+- how documentation participates in development:
+  [`doc/develop_doc/DEVELOP_GUIDE.md`](doc/develop_doc/DEVELOP_GUIDE.md).
+
 ## What problem does it solve?
 
 Circuit design, optimization, and parameter-scan projects usually need
@@ -249,6 +267,20 @@ upstream libpsf and is released under Apache-2.0.
 ---
 
 # 中文版（Chinese）
+
+## 你是哪类读者？
+
+**想使用 SPICEUnion**（用 Python 调用或嵌入 C++）：
+
+- 3 分钟上手：[快速开始](#快速开始)，含 Python 用户小节；
+- 使用者完整指引：[`doc/usage/README.md`](doc/usage/README.md)；
+- 安装：`pip install spiceunion`，或按下文从源码构建。
+
+**想参与开发 / 贡献**：
+
+- 先读 [`CONTRIBUTING.md`](CONTRIBUTING.md)（协作约定 + CI/CD 地图）；
+- 开发者文档地图：[`doc/develop_doc/README.md`](doc/develop_doc/README.md)；
+- 文档如何参与开发：[`doc/develop_doc/DEVELOP_GUIDE.md`](doc/develop_doc/DEVELOP_GUIDE.md)。
 
 ## 项目是什么
 
