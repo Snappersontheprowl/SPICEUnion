@@ -96,7 +96,7 @@ src/parse/       ResultIR helpers and optional libpsf backend
 src/toolchain/   simulator discovery / version probing
 bindings/python/ optional pybind11 bindings
 tests/           GoogleTest suites and fixtures
-doc/             end-user usage guide + internal dev/learning docs (mostly Simplified Chinese)
+doc/             end-user guide + internal development docs (Simplified Chinese mostly)
 local/           local run outputs / external build products (not versioned)
 build/           CMake build products (not versioned)
 third_party/     vendored build recipes for third-party dependencies
