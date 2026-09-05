@@ -62,6 +62,8 @@ scripts/verify_all_presets.sh
 
 - PR 只能触发**无 EDA 的云 CI**；`ci-external` 永不接 PR / fork 代码，真实仿真只在
   自托管 runner 上手动或定时执行（安全取舍）；
+- 想跳过本次 push 的 CI：把 `[skip ci]` 写进 commit message（例如
+  `git commit -m "docs: ... [skip ci]"`），本次 push 不会触发任何 workflow；
 - 仓库配置只引用不写值：`ORDERED_POOL_REPOSITORY`（Variables）、
   `SPECTRE_MATERIALS_DIR` / `LIBPSF_INCLUDE_DIR` / `LIBPSF_LIBRARY`（Secrets，
   仅 `ci-external` 用）；
