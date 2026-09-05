@@ -9,14 +9,13 @@
 | 使用者（Python / C++ 嵌入） | `usage/` | 安装、读取结果、发起仿真、doctor 与边界 |
 | 开发者 / 贡献者 | `develop_doc/`、根 `CONTRIBUTING.md` | 当前事实、架构、路线、阶段/专题、文档参与流程 |
 | 项目规范维护者 | 根 `AGENTS.md`、`doc/README_GUIDE.md` | 协作约定、README 写作规范 |
-| 内部学习 | `cicd/` | CI/CD 学习档案 |
 | 本人（私有） | `resume/` | 简历与面试材料（不入库） |
 
 `doc/README_GUIDE.md` 是所有 README 的写作参考；`develop_doc/README.md` 是
 开发文档地图与维护规范。
 
-`resume/` 与 `study_notes/` 均为本地私有材料，不入库；如本地保留请勿推送到公开
-仓库。
+`resume/` 与 `study_notes/`（含 `study_notes/cicd/` CI/CD 学习档案）均为本地私有
+材料，不入库；如本地保留请勿推送到公开仓库。
 
 ## 规则
 

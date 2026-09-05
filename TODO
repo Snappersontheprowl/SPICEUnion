@@ -97,5 +97,5 @@ P-c 发布：
   `20_专题记录`、`30_归档备注` 编号分层；文档地图与维护规范见
   `doc/develop_doc/README.md`（2026-09-02 落地）。
 - 阶段 2：云 CI 补 libpsf 预设 + 缓存与 artifact（2026-08-23 落地并验收，
-  云 CI 四预设全绿；见 `doc/cicd/CICD学习笔记.md` 第 8.7 节；工作流
-  `.github/workflows/ci-eda-free.yml`）。
+  云 CI 四预设全绿；学习档案见本地 `doc/study_notes/cicd/`（私有，不入库）；
+  工作流 `.github/workflows/ci-eda-free.yml`）。

@@ -17,6 +17,6 @@ vendor 到本目录。CI 在 checkout 上游源码后，先把它复制到源码
 
 - 锁定上游 commit：`6efc14f7c5fa7e09a07e354cc54b9135ec353d70`
   （`LIBPSF_REF`，见 `.github/workflows/ci-eda-free.yml`）。
-- 升级 libpsf 时：更新 `LIBPSF_REF`、本目录 `CMakeLists.txt` 的源列表与
-  `README.md`，并同步更新 `doc/cicd/CICD学习笔记.md` 第 8 节。
+- 升级 libpsf 时：更新 `LIBPSF_REF`、本目录 `CMakeLists.txt` 的源列表、
+  本 `README.md` 与根 `README.md` 第三方许可表。
 - 本目录只放“能让第三方按我们要求构建”的增量配方，不放第三方源码。

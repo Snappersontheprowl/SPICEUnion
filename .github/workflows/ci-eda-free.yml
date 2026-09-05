@@ -43,7 +43,7 @@ jobs:
           - preset: python-libpsf-pic
             needs_libpsf: true
     env:
-      # 与 doc/cicd/CICD学习笔记.md 中锁定的上游版本保持一致
+      # 与上游 libpsf 锁定版本保持一致（升级记录见本地学习档案）
       LIBPSF_REF: 6efc14f7c5fa7e09a07e354cc54b9135ec353d70
     steps:
       - name: Checkout SPICEUnion
