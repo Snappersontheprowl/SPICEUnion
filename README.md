@@ -96,7 +96,7 @@ src/parse/       ResultIR helpers and optional libpsf backend
 src/toolchain/   simulator discovery / version probing
 bindings/python/ optional pybind11 bindings
 tests/           GoogleTest suites and fixtures
-doc/             development docs and study notes (mostly Simplified Chinese)
+doc/             end-user usage guide + internal dev/learning docs (mostly Simplified Chinese)
 local/           local run outputs / external build products (not versioned)
 build/           CMake build products (not versioned)
 third_party/     vendored build recipes for third-party dependencies
@@ -187,6 +187,8 @@ missing and how to provide it.
 Most project documentation is Simplified Chinese; the doc map and conventions
 start at `doc/develop_doc/README.md`:
 
+- `doc/usage/README.md` — end-user guide: install, read results, run simulations,
+  and failure semantics (Simplified Chinese);
 - `00_项目总览/01_当前事实状态.md` — current capability, verification results,
   and boundary ledger (the single source of truth);
 - `00_项目总览/02_架构总览.md` — layered architecture and execution/reading
@@ -292,6 +294,7 @@ ctest --preset default --output-on-failure
 
 ## 文档入口
 
+- `doc/usage/README.md`：使用者指引（安装、读结果、跑仿真、doctor 与边界）；
 - `doc/develop_doc/README.md`：开发文档地图与维护规范；
 - `doc/develop_doc/DEVELOP_GUIDE.md`：一次功能开发的文档参与流程使用指导；
 - `00_项目总览/01_当前事实状态.md`：当前能力、验证数字与边界总账（事实唯一来源）；
