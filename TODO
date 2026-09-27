@@ -32,6 +32,7 @@ P-c 发布：
 - [ ] conda-forge feedstock 候选与 `ngspice` 联合安装验证
       （配方草稿在 `packaging/conda-forge/`）。
 - [ ] 版本号同步三处 + CHANGELOG（策略已写入专题 05）。
+- [ ] 发布后回归 `pypi-smoke`（手动/定时安装线上 PyPI 包跑测试）云端跑绿后收口。
 
 ## 暂缓池
 

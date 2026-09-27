@@ -15,6 +15,9 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    # 每周一 03:00 UTC：对“线上已发布的 PyPI 包”做发布后回归
+    - cron: "0 3 * * 1"
 
 jobs:
   require-config:
@@ -191,3 +194,36 @@ jobs:
           print(report)
           PY
           spiceunion doctor
+
+  pypi-smoke:
+    # 发布后回归：干净环境安装线上 PyPI 包，用仓库测试脚本验证。
+    # 只在手动/定时触发，避免“仓库测试已更新但包还没发版”时挡住 PR。
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install released package in clean venv
+        run: |
+          python -m venv .venv-pypi-smoke
+          .venv-pypi-smoke/bin/python -m pip install --upgrade pip
+          .venv-pypi-smoke/bin/pip install spiceunion
+          .venv-pypi-smoke/bin/python -c "import spiceunion; print('pypi version:', spiceunion.version())"
+
+      - name: Run repo Python tests against installed package
+        run: |
+          P=.venv-pypi-smoke/bin/python
+          $P bindings/python/tests/test_import.py
+          $P bindings/python/tests/test_api_contract.py
+          $P bindings/python/tests/test_workflow_api_contract.py
+          $P bindings/python/tests/test_read_results.py tests/fixtures
+          $P bindings/python/examples/read_fixture_results.py tests/fixtures
+
+      - name: Doctor report
+        run: .venv-pypi-smoke/bin/spiceunion doctor
