@@ -6,7 +6,13 @@
 
 ## [Unreleased]
 
-（暂无）
+### Changed
+
+- 同步 OrderedConcurrentPool 的 failure handler 契约变更：worker id 参数改为
+  `std::optional<std::size_t>`。`std::nullopt` 表示该 job 从未分配到 worker，
+  此时 `SimulatorPool` 的失败结果回落到 workspace 根目录，不再越界取
+  `worker_work_dirs_`；`tests/unit/pool/ordered_concurrent_pool_test.cpp`
+  同步上游契约测试（含 shutdown 并发与执行单元创建失败两项）。
 
 ## [0.1.0] - 2026-09-05
 

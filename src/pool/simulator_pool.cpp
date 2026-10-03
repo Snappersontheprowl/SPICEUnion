@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <exception>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -81,10 +82,13 @@ SimulatorPool::SimulatorPool(EvaluatorOptions options, std::string workspace_roo
         std::move(session), std::chrono::seconds(options_.timeout_seconds)));
   };
 
-  auto failure_handler = [this](std::size_t worker_id, const ParameterState&,
+  // worker id 为 std::nullopt 表示这个 job 从未分配到 worker：池子被关停，
+  // 或者执行单元创建失败。此时没有对应的 worker 工作目录，回落到 workspace 根目录。
+  auto failure_handler = [this](std::optional<std::size_t> worker_id, const ParameterState&,
                                 std::exception_ptr error) {
-    return TaskResult::failure(TaskStatus::kException, worker_work_dirs_.at(worker_id),
-                               exception_message(error));
+    const std::string& work_dir =
+        worker_id.has_value() ? worker_work_dirs_.at(*worker_id) : workspace_root_;
+    return TaskResult::failure(TaskStatus::kException, work_dir, exception_message(error));
   };
 
   pool_.reset(new ocp::OrderedConcurrentPool<ParameterState, TaskResult>(

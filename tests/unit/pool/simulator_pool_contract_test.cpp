@@ -238,3 +238,37 @@ TEST(SimulatorPoolContractTest, ShutdownIsRepeatable) {
   ASSERT_EQ(states.size(), 1U);
   EXPECT_GE(states[0]->stops.load(), 2);
 }
+
+TEST(SimulatorPoolContractTest, ShutdownDuringBatchReportsFailureAtWorkspaceRoot) {
+  std::vector<std::shared_ptr<FakeSessionState>> states;
+  su::SimulatorPool pool(options(1), pool_contract_runtime_root(), factory_with_states(&states));
+  pool.start_all();
+
+  // 每个 task 都远长于关停延时：只有第一个任务可能正常完成，其余都拿不到 worker。
+  std::vector<su::ParameterState> inputs;
+  for (int id = 0; id < 20; ++id) {
+    inputs.push_back(su::ParameterState{{"tag", static_cast<double>(id)}, {"delay_ms", 200.0}});
+  }
+
+  std::thread stopper([&pool] {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    pool.shutdown_all();
+  });
+
+  std::vector<su::TaskResult> results;
+  ASSERT_NO_THROW(results = pool.evaluate_batch(inputs));
+  stopper.join();
+
+  ASSERT_EQ(results.size(), inputs.size());
+  std::size_t failures = 0;
+  for (const auto& result : results) {
+    if (result.ok()) {
+      continue;
+    }
+    ++failures;
+    EXPECT_EQ(result.status, su::TaskStatus::kException);
+    // 未分配到 worker 的失败结果回落到 workspace 根目录，而不是越界索引 worker 目录。
+    EXPECT_EQ(result.work_dir, pool_contract_runtime_root());
+  }
+  EXPECT_GE(failures, 15U);
+}
