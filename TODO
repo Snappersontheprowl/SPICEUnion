@@ -48,6 +48,8 @@ P-c 发布：
       分离；Python 暴露形态待定）。
 - [ ] P2：仿真器原生测量直出（`ResultFormat::kMeasure` + Ngspice `.meas` /
       Spectre `measure` 解析；直出优先、raw 兜底）。
+- [ ] P2.5：worker 内每 job 子目录（会话常驻）——先落 Ngspice，并做 Spectre
+      验证实验（能否 per-run 指定输出目录 / 唯一 netlist 名是否产生唯一 raw）。
 - [ ] 文档同步：01 事实状态、02 架构总览、usage/README 的产物语义说明。
 
 ## 暂缓池
