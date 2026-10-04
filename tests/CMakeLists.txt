@@ -148,6 +148,20 @@ target_link_libraries(spiceunion_spectre_output_dir_probe
     spiceunion_core
 )
 
+add_executable(spiceunion_ngspice_job_dir_probe
+  manual/ngspice_job_dir_probe.cpp
+)
+
+target_include_directories(spiceunion_ngspice_job_dir_probe
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}
+)
+
+target_link_libraries(spiceunion_ngspice_job_dir_probe
+  PRIVATE
+    spiceunion_core
+)
+
 target_compile_definitions(spiceunion_workflow_test
   PRIVATE
     SPICEUNION_PROJECT_ROOT="${PROJECT_SOURCE_DIR}"

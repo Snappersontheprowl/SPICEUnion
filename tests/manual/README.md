@@ -21,6 +21,8 @@
   目录是否可做到每 job 独立”的手动探针（专题 06 方案三的验证实验 A/B）。
 - `spectre_skill_probe.py`：驱动 Spectre interactive 的 SKILL 探针，用于实验 B
   （`sclHelp` 接口清单、`sclSetResultDir` 行为、候选命令前后的产物目录对比）。
+- `ngspice_job_dir_probe.cpp`：验证 Ngspice 侧“每 job 独立子目录”隔离性（专题 06
+  实验 C）：三个 job 各自目录、各自产物、各自读数。
 
 ## Spectre 产物目录探针
 
@@ -49,6 +51,16 @@ python3 tests/manual/spectre_skill_probe.py \
 
 已记录结论（2026-10-04）：`sclSetResultDir` 存在且返回 `t`，但不改变 raw 产物
 位置；交互 SKILL 另有 `mdlRegMeasurement` / `mdlRun` 等测量 API 待验证。
+
+Ngspice 每 job 子目录探针：
+
+```bash
+cmake --build --preset default --target spiceunion_ngspice_job_dir_probe
+./build/default/tests/spiceunion_ngspice_job_dir_probe
+```
+
+已记录结论（2026-10-04）：三个 job 的 `work_dir` 各不相同、产物可读、-3dB 频率
+与理论一致（159.1 / 79.57 / 39.79 MHz）→ Ngspice 侧方案三成立。
 
 ## spiceunion doctor 本机示例
 
