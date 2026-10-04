@@ -47,10 +47,14 @@ P-c 发布：
 - [ ] P1：worker 内即时提取上层指标（声明式 `ExtractionSpec`；提取状态与仿真状态
       分离；Python 暴露形态待定）。
 - [ ] P2：仿真器原生测量直出（`ResultFormat::kMeasure` + Ngspice `.meas` /
-      Spectre `measure` 解析；直出优先、raw 兜底）。
+      Spectre `measure` 解析；直出优先、raw 兜底）。Spectre 侧新增线索：
+      交互 SKILL 存在 `mdlRegMeasurement` / `mdlRun` / `sclSetResultDir`，
+      待单独验证 `mdl*` 测量路径。
 - [ ] P2.5：worker 内每 job 子目录（会话常驻）——先落 Ngspice，并做 Spectre
       验证实验。实验 A 已完成（2026-10-04）：常驻会话连续 run 复用同名产物路径，
-      会话级换目录不可行；待做实验 B（SKILL 能否 per-run 指定输出目录）。
+      会话级换目录不可行；实验 B 已完成（2026-10-04）：`sclSetResultDir` 存在但
+      不改变 raw 产物位置，Spectre 侧判定为不可行 → 收敛为“Ngspice 每 job 子目录
+      + Spectre 快照/即时提取”。
 - [ ] 文档同步：01 事实状态、02 架构总览、usage/README 的产物语义说明。
 
 ## 暂缓池

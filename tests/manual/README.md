@@ -19,6 +19,8 @@
   `../../include/su/toolchain.hpp`。
 - `spectre_output_dir_probe.cpp`：验证“Spectre 常驻交互会话下，连续 run 的产物
   目录是否可做到每 job 独立”的手动探针（专题 06 方案三的验证实验 A/B）。
+- `spectre_skill_probe.py`：驱动 Spectre interactive 的 SKILL 探针，用于实验 B
+  （`sclHelp` 接口清单、`sclSetResultDir` 行为、候选命令前后的产物目录对比）。
 
 ## Spectre 产物目录探针
 
@@ -33,6 +35,20 @@ cmake --build --preset default --target spiceunion_spectre_output_dir_probe
 若第二次运行只是“同名路径被重写”，说明会话下无法直接换目录，需要走实验 B
 （SKILL 探查）或快照方案。结论回填到
 `doc/develop_doc/20_专题记录/06_产物生命周期与指标提取设计.md` 的「验证结果」。
+
+SKILL 探针用法：
+
+```bash
+# 1) 输出交互 SKILL 的接口清单（sclHelp / 候选函数探测）
+python3 tests/manual/spectre_skill_probe.py --script <skill脚本文件>
+
+# 2) 两次 run 前后对比：验证候选命令是否让产物落到新目录
+python3 tests/manual/spectre_skill_probe.py \
+  --candidate '(sclSetResultDir "/abs/path/job_000002")'
+```
+
+已记录结论（2026-10-04）：`sclSetResultDir` 存在且返回 `t`，但不改变 raw 产物
+位置；交互 SKILL 另有 `mdlRegMeasurement` / `mdlRun` 等测量 API 待验证。
 
 ## spiceunion doctor 本机示例
 
