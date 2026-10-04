@@ -17,6 +17,22 @@
   路径、来源与版本。随启用 `SPICEUNION_BUILD_TESTS` 的构建产出，但不注册为
   `ctest` 用例；实现细节见
   `../../include/su/toolchain.hpp`。
+- `spectre_output_dir_probe.cpp`：验证“Spectre 常驻交互会话下，连续 run 的产物
+  目录是否可做到每 job 独立”的手动探针（专题 06 方案三的验证实验 A/B）。
+
+## Spectre 产物目录探针
+
+```bash
+cmake --build --preset default --target spiceunion_spectre_output_dir_probe
+./build/default/tests/spiceunion_spectre_output_dir_probe
+# 也可指定自有网表（需含 ac 分析与 save）
+./build/default/tests/spiceunion_spectre_output_dir_probe --netlist path/to/input.scs
+```
+
+该探针会：启动一个常驻会话 → 连续运行两次 → 打印两次运行后的产物快照与差异。
+若第二次运行只是“同名路径被重写”，说明会话下无法直接换目录，需要走实验 B
+（SKILL 探查）或快照方案。结论回填到
+`doc/develop_doc/20_专题记录/06_产物生命周期与指标提取设计.md` 的「验证结果」。
 
 ## spiceunion doctor 本机示例
 
