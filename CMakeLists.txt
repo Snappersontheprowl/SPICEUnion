@@ -26,7 +26,7 @@ set(SPICEUNION_ORDERED_POOL_GIT_URL
     "OrderedConcurrentPool repository used by FetchContent fallback"
 )
 set(SPICEUNION_ORDERED_POOL_GIT_TAG
-    "422e1a11475a8c9fe09a86223d340f87b9f62383"
+    "80511bd9a9420fa72fdf2e0ee9b4bd3686b920e7"
     CACHE STRING
     "OrderedConcurrentPool commit used by FetchContent fallback"
 )
