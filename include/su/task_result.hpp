@@ -26,7 +26,6 @@ struct TaskResult {
   std::string error_message;
   std::string detail;
   MetricsOutcome metrics;
-  bool artifacts_retained = true;
 
   bool ok() const noexcept {
     return status == TaskStatus::kSuccess;

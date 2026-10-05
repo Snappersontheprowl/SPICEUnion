@@ -27,7 +27,6 @@ def main() -> None:
     assert hasattr(su, "MetricsStatus")
     assert hasattr(su, "DerivedMetric")
     assert hasattr(su, "ResultStatus")
-    assert su.ResultStatus.ARTIFACTS_NOT_RETAINED.name == "ARTIFACTS_NOT_RETAINED"
 
     # 合法声明（不运行仿真，只验证解析与构造）。
     make_simulation([{"kind": "tran", "signal": "v(out)", "derived": ["settling_time"]}])

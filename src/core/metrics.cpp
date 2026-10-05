@@ -30,7 +30,6 @@ MetricsStatus map_read_status(ResultStatus status) {
     case ResultStatus::kFileNotFound:
     case ResultStatus::kParseError:
     case ResultStatus::kInvalidInput:
-    case ResultStatus::kArtifactsNotRetained:
       return MetricsStatus::kReadFailed;
   }
   return MetricsStatus::kReadFailed;

@@ -72,18 +72,6 @@ void snapshot_artifacts(const std::string& source_dir, const std::string& job_di
   }
 }
 
-// 成功且指标提取完成时，按默认策略丢弃本次 job 的原始产物（保留目录本身）。
-void clear_job_artifacts(const std::string& job_dir) {
-  std::error_code error;
-  const fs::path directory(job_dir);
-  if (!fs::exists(directory, error)) {
-    return;
-  }
-  for (const auto& entry : fs::directory_iterator(directory, error)) {
-    fs::remove_all(entry.path(), error);
-  }
-}
-
 class SimulatorPoolWorker final : public ocp::Worker<IndexedState, TaskResult> {
  public:
   SimulatorPoolWorker(SimulatorSessionPtr session, std::chrono::seconds timeout,
@@ -111,12 +99,6 @@ class SimulatorPoolWorker final : public ocp::Worker<IndexedState, TaskResult> {
     result.work_dir = job_dir;
     // 指标提取必须发生在 worker 归还池子之前。
     result.metrics = extract_metrics(job_dir, result.result_format, metric_requests_);
-    if (!metric_requests_.empty() && result.ok() &&
-        result.metrics.status == MetricsStatus::kOk) {
-      // 默认策略：成功且指标已提取 → 丢弃原始产物；失败或提取未完成则保留。
-      clear_job_artifacts(job_dir);
-      result.artifacts_retained = false;
-    }
     return result;
   }
 

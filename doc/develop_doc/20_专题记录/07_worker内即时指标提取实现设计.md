@@ -22,8 +22,8 @@
    接口；不为旧行为保留双路径、废弃标记或默认值妥协。
 2. **产物生命周期一步到位**：每 job 独立产物目录（Ngspice 直接支持，Spectre 用
    快照），不再走“先快照过渡、以后再改”的两步走。
-3. **默认策略取最优**：成功丢弃 raw、失败保留 raw；第一期不暴露保留策略开关，
-   需要时再加（只在真实需求出现后再引入选项）。
+3. **产物保留策略不在本方案范围**：保持现状（产物保留在 job 目录、`read_*`
+   继续可用）；如未来需要“成功丢弃/限量保留”等策略，另立专题评估。
 
 ## 2. 目标与非目标
 
@@ -44,7 +44,7 @@
 | 后端 | 机制 | 依据 |
 |---|---|---|
 | Ngspice | 每 job 独立子目录，作为 `ngspice -b` 子进程工作目录 | 专题 06 实验 C 已验证（三 job 隔离、读数与理论一致） |
-| Spectre | 常驻会话无法切换 raw 目录；改用**每 job 快照**（或即时提取后丢弃） | 专题 06 实验 A/B（`sclSetResultDir` 不改变 raw 位置） |
+| Spectre | 常驻会话无法切换 raw 目录；改用**每 job 快照**（产物保留） | 专题 06 实验 A/B（`sclSetResultDir` 不改变 raw 位置） |
 
 目录命名（保序、可追溯）：
 
@@ -52,7 +52,7 @@
 workspace_root/worker_<id>/case_<输入下标>/
 ```
 
-默认行为：成功 job 的产物在提取完成后丢弃；失败 job 的产物保留，用于排查。
+产物策略：保持现状——产物保留在 job 目录，`read_*` 继续可用。
 
 ## 4. 用户可见接口（主路径）
 
@@ -94,9 +94,8 @@ r.metrics()          # {"vout": 0.8, "ugbw_hz": 1.2e8, "settling_time_s": 4.6e-9
 r.metric("ugbw_hz")  # 便捷访问，不存在返回 None
 ```
 
-`read_*` 的行为：成功样本默认已丢弃 raw，调用时返回明确状态
-`artifacts_not_retained`（新增枚举值）；失败样本保留 raw，`read_*` 可用于排查。
-单任务调试场景可显式保留产物（后续按需增加开关，不在本期）。
+`read_*` 的行为保持不变（产物仍保留）；提取结果通过 `metrics_ok()` /
+`metrics_message()` / `metrics()` 读取，两者互不影响。
 
 ## 5. 数据模型
 
@@ -135,7 +134,6 @@ struct MetricsOutcome {
 worker 线程：
   session.run(state)                  -> TaskResult（仿真状态 + job 目录）
   extract_metrics(job_dir, requests)  -> MetricsOutcome（worker 归还前完成）
-  apply_artifact_policy(success/fail)  -> 成功丢弃 / 失败保留
   返回 {TaskResult, MetricsOutcome}
 ```
 
@@ -185,15 +183,16 @@ worker 线程：
 - [x] 数据模型（第 5 节）与 `include/su/metrics.hpp`；
 - [x] worker 内提取（DC / DC sweep / AC 派生 / TRAN 派生；PSF 与 Ngspice wrdata
   分派）；
-- [x] 默认产物策略（成功丢弃 / 失败保留）与 `artifacts_not_retained`；
+- [x] 提取与仿真状态分离（`metrics_ok()` / `metrics_message()`）；**产物保留策略
+  不在本方案范围**（保持现状：产物保留，`read_*` 可用），后续如需再单独立项；
 - [x] Python 绑定（`metrics=` / `metrics()` / `metric()` / `metrics_ok()` /
   `metrics_message()` / `metric_values()`）；
 - [x] 示例：`bindings/python/examples/metrics_only.py`；
 - [x] 文档：`usage/README.md`、`include/su/README.md`、事实状态、CHANGELOG。
 
-验证（2026-10-05）：default 108/108、python 120/120；Ngspice 三 case 的 settling
-时间各异，成功后 `read_tran` 返回 `artifacts_not_retained`（失败场景保留产物由
-`metrics_pipeline_contract_test` 覆盖）。
+验证（2026-10-05）：default 112/112、python 120/120、python-libpsf-pic 139/139；
+Ngspice 三 case 的 settling 时间各异且 `read_tran` 仍可读；Spectre + libpsf 的
+AC 派生指标同样通过。
 
 完成定义：`workers=4`、8 个不同 case 的批量跑完，指标与输入一一对应；成功样本
 不再产生可读 raw（默认），失败样本可排查。
@@ -228,8 +227,7 @@ worker 线程：
 
 ## 12. 版本与变更记录
 
-- 版本：`0.2.0`（破坏性）：`metrics=` 成为指标主路径；成功样本默认不保留 raw；
-  `read_*` 在产物未保留时返回 `artifacts_not_retained`；
+- 版本：`0.2.0`：新增 `metrics=` 指标主路径；既有 `read_*` 行为不变；
 - `CHANGELOG.md` 记录上述破坏性变化与迁移说明（旧用户升级到 0.2.0 的注意事项）。
 
 ## 13. 文档同步清单（实施时执行）

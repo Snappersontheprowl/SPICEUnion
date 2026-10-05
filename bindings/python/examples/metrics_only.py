@@ -29,7 +29,7 @@ def main() -> None:
             print(f"  settling_time_s = {settling}")
             if not result.metrics_ok():
                 print(f"  metrics_message = {result.metrics_message()}")
-            # 默认策略：成功且指标提取完成后，原始产物已丢弃。
+            # 方案一只改变提取时机：产物仍保留，read_* 仍可用。
             print(f"  read_tran -> {result.read_tran('v(out)').status_text()}")
 
 

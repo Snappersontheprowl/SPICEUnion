@@ -44,11 +44,11 @@ P-c 发布：
       契约测试 `job_work_dir_contract_test` + 真实两后端验证通过（ngspice 三 case
       -3 dB 频率与理论一致；spectre 两 case 快照哈希不同）。
 - [x] P1 metrics 主路径（2026-10-05）：数据模型 `include/su/metrics.hpp` → worker
-      内提取（DC/DC sweep/AC 派生/TRAN 派生）→ 成功丢 raw、失败保留 +
-      `artifacts_not_retained` → Python `metrics=`/`metrics()` 与示例
-      `metrics_only.py` → usage/测试/CHANGELOG 同步。验证：default 108/108、
-      python 120/120；ngspice 三 case settling 指标各异且成功后
-      `read_tran → artifacts_not_retained`。
+      内提取（DC/DC sweep/AC 派生/TRAN 派生）→ 提取状态与仿真状态分离 →
+      Python `metrics=`/`metrics()` 与示例 `metrics_only.py` → usage/测试/CHANGELOG
+      同步。产物保留策略保持现状（不在方案一范围）。验证：default 112/112、
+      python 120/120、python-libpsf-pic 139/139；ngspice 三 case settling 指标
+      各异且 `read_tran` 仍可用。
 - [ ] P2：仿真器原生测量直出（`ResultFormat::kMeasure` + Ngspice `.meas` /
       Spectre `measure` 解析；直出优先、raw 兜底）。Spectre 侧新增线索：
       交互 SKILL 存在 `mdlRegMeasurement` / `mdlRun` / `sclSetResultDir`，

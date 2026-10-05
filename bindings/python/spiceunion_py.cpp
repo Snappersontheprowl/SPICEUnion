@@ -590,8 +590,7 @@ PYBIND11_MODULE(spiceunion, module) {
       .value("SIGNAL_NOT_FOUND", su::ResultStatus::kSignalNotFound)
       .value("UNSUPPORTED_FORMAT", su::ResultStatus::kUnsupportedFormat)
       .value("PARSE_ERROR", su::ResultStatus::kParseError)
-      .value("INVALID_INPUT", su::ResultStatus::kInvalidInput)
-      .value("ARTIFACTS_NOT_RETAINED", su::ResultStatus::kArtifactsNotRetained);
+      .value("INVALID_INPUT", su::ResultStatus::kInvalidInput);
 
   py::enum_<su::MetricKind>(module, "MetricKind")
       .value("DC", su::MetricKind::kDcValue)

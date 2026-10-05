@@ -80,8 +80,8 @@ ParameterState batch
 - Ngspice batch backend with built-in RC AC / RC TRAN / resistor-divider DC
   tasks.
 - declarative metrics (`metrics=[...]`): extract DC / AC / TRAN derived metrics
-  inside workers before artifacts are released; successful jobs drop raw files,
-  failures keep them for debugging.
+  inside workers before the worker is released back to the pool; original
+  artifacts are still retained, so `read_*` keeps working.
 - simulator discovery and diagnostics: `find_simulator()` honors
   `SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE`; a manual `spiceunion doctor`
   reports which simulators are available.
@@ -302,8 +302,7 @@ SPICEUnion 是一个 C++17 的**仿真器执行与结果读取基础设施库**�
   参数写入、`(sclRun "all")`、完成判定）；Ngspice batch backend；
   工具链探测（`SPICEUNION_SPECTRE` / `SPICEUNION_NGSPICE` 自动发现 + 版本解析）。
 - **指标提取**：`metrics=[...]` 声明式取 DC / AC 派生 / TRAN 派生指标，在 worker
-  归还前完成；成功样本默认丢弃 raw，失败保留；`read_*` 此时返回
-  `artifacts_not_retained`。
+  归还前完成；产物仍保留，`read_*` 继续可用（保留策略不在本方案范围内）。
 - **结果层**：统一 ResultIR；产物格式由执行层声明交付（`ResultFormat`），
   PSFASCII 内置解析、BINPSF 走可选 libpsf；AC 数学 helper 与 settling time。
 - **多语言**：C++17 公开 API（`include/su/`）；可选 pybind11 Python 绑定

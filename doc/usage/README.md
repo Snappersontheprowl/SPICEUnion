@@ -79,8 +79,8 @@ Ngspice 还内置 RC AC / RC TRAN / 电阻分压 DC 任务，适合不想准备�
 
 ### 2.3 只取指标（metrics 主路径）
 
-如果只关心指标值、不需要波形文件，用 `metrics=` 声明；库会在 worker 归还池子前
-提取指标，并在成功后丢弃原始产物（失败保留，便于排查）：
+如果关心指标值，用 `metrics=` 声明；库会在 worker 归还池子前完成提取。产物仍保
+留在 job 目录中，`read_*` 继续可用（本方案只改变提取时机，不改变保留策略）：
 
 ```python
 import spiceunion as su
@@ -96,7 +96,7 @@ with su.Simulation(
 for r in results:
     print(r.metrics_ok(), r.metrics())     # {"settling_time_s": 4.6e-9}
     print(r.metric("settling_time_s"))
-    print(r.read_tran("v(out)").status_text())   # artifacts_not_retained（成功后默认丢弃）
+    print(r.read_tran("v(out)").status_text())   # ok：产物仍保留
 ```
 
 可用的指标声明：
@@ -109,7 +109,7 @@ for r in results:
 | `tran` | TRAN 波形 | `settling_time` |
 
 失败语义：`r.ok()` 表示仿真成功，`r.metrics_ok()` 表示指标提取成功；两者独立。
-提取失败的 job 会保留原始产物，可用 `read_*` 排查。示例见
+提取失败不影响产物保留，可用 `read_*` 排查。示例见
 `bindings/python/examples/metrics_only.py`。
 
 ### 2.4 C++ 嵌入

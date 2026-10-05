@@ -18,8 +18,6 @@ const char* to_string(ResultStatus status) noexcept {
       return "parse_error";
     case ResultStatus::kInvalidInput:
       return "invalid_input";
-    case ResultStatus::kArtifactsNotRetained:
-      return "artifacts_not_retained";
   }
   return "unknown";
 }

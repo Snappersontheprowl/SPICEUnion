@@ -67,7 +67,7 @@ class AsciiFixtureSession final : public su::SimulatorSession {
 
 }  // namespace
 
-TEST(MetricsPipelineContractTest, ExtractsMetricsAndDiscardsArtifactsOnSuccess) {
+TEST(MetricsPipelineContractTest, ExtractsMetricsInsideWorkerAndRetainsArtifacts) {
   TempDir temp;
   su::EvaluatorOptions options;
   options.num_workers = 1;
@@ -96,13 +96,12 @@ TEST(MetricsPipelineContractTest, ExtractsMetricsAndDiscardsArtifactsOnSuccess) 
   ASSERT_EQ(1u, result.metrics.values.size());
   EXPECT_EQ("V_BGR", result.metrics.values[0].name);
   EXPECT_NE(0.0, result.metrics.values[0].value);
-  // 成功后按默认策略丢弃原始产物，但保留 job 目录本身。
-  EXPECT_FALSE(result.artifacts_retained);
+  // 方案一只改变提取时机，不改变产物保留策略：产物仍在 job 目录中。
   EXPECT_TRUE(fs::exists(result.work_dir));
-  EXPECT_TRUE(fs::is_empty(result.work_dir));
+  EXPECT_FALSE(fs::is_empty(result.work_dir));
 }
 
-TEST(MetricsPipelineContractTest, KeepsArtifactsWhenMetricsFail) {
+TEST(MetricsPipelineContractTest, ReportsExtractionFailureWithoutFailingSimulation) {
   TempDir temp;
   su::EvaluatorOptions options;
   options.num_workers = 1;
@@ -128,7 +127,5 @@ TEST(MetricsPipelineContractTest, KeepsArtifactsWhenMetricsFail) {
   const auto& result = results[0];
   ASSERT_TRUE(result.ok()) << result.error_message;
   EXPECT_EQ(su::MetricsStatus::kSignalNotFound, result.metrics.status);
-  // 提取失败时保留产物，便于排查。
-  EXPECT_TRUE(result.artifacts_retained);
   EXPECT_FALSE(fs::is_empty(result.work_dir));
 }
