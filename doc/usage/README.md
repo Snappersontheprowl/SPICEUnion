@@ -112,6 +112,9 @@ for r in results:
 提取失败不影响产物保留，可用 `read_*` 排查。示例见
 `bindings/python/examples/metrics_only.py`。
 
+想验证“已安装的发布包”是否可用，可运行 `scripts/pypi_smoke.sh [版本]`
+（安装包模式：不设 PYTHONPATH；`--with-external` 追加真实仿真使用路径）。
+
 ### 2.4 C++ 嵌入
 
 公开 API 在 `include/su/` 下，最小示例见根 `README.md`；各头文件职责见

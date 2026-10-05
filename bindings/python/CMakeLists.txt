@@ -74,6 +74,17 @@ if(SPICEUNION_BUILD_TESTS)
   )
 
   add_test(
+    NAME python_user_journey
+    COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_user_journey.py
+  )
+
+  set_tests_properties(python_user_journey
+    PROPERTIES
+      ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:spiceunion>"
+  )
+
+  add_test(
     NAME python_workflow_external_smoke
     COMMAND ${SPICEUNION_PYTHON_BINDING_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_workflow_external.py

@@ -68,3 +68,9 @@ cmake --preset external-libpsf && cmake --build --preset external-libpsf && ctes
 ```
 
 - libpsf / python / python-libpsf-pic 等其他预设及外部依赖说明见根 `README.md`。
+
+- 安装包模式冒烟（验证 PyPI 包而非源码构建）：
+
+```bash
+scripts/pypi_smoke.sh 0.2.0 --with-external
+```

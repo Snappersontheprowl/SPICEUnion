@@ -66,6 +66,12 @@ P-c 发布：
 
 ## 归档
 
+- 安装包模式冒烟与用户路径测试（2026-10-05）：新增 `scripts/pypi_smoke.sh`
+  （干净 venv 安装 PyPI 包或 `--from-source`，不设 PYTHONPATH）与
+  `bindings/python/tests/test_user_journey.py`（doctor → Simulation → metrics →
+  read；真实 ngspice / Spectre 由环境变量门控，材料走
+  `SPICEUNION_SPECTRE_MATERIALS_DIR`）。CI `pypi-smoke` 用例清单同步补齐；
+  本地实跑通过（含真实 Spectre AMP/dc）。
 - v0.2.0 发布（2026-10-05）：指标提取主路径（`metrics=`）+ 每 job 独立产物目录
   （`work_dir` 行为变化，CHANGELOG 已注明）。PyPI 提供 cp39–cp312 的
   manylinux/musllinux wheel 与 sdist；干净 venv `pip install spiceunion==0.2.0`

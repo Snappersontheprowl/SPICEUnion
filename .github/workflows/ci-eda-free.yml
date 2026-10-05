@@ -226,8 +226,10 @@ jobs:
           $P bindings/python/tests/test_import.py
           $P bindings/python/tests/test_api_contract.py
           $P bindings/python/tests/test_workflow_api_contract.py
+          $P bindings/python/tests/test_metrics_api_contract.py
           $P bindings/python/tests/test_read_results.py tests/fixtures
           $P bindings/python/examples/read_fixture_results.py tests/fixtures
+          $P bindings/python/tests/test_user_journey.py
 
       - name: Doctor report
         run: .venv-pypi-smoke/bin/spiceunion doctor

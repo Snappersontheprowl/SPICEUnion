@@ -8,8 +8,19 @@
 
 import spiceunion as su
 
+import os
+import shutil
+
 
 def main() -> None:
+    if not (
+        os.environ.get("SPICEUNION_NGSPICE")
+        or shutil.which("ngspice")
+        or shutil.which("ngspice_con")
+    ):
+        print("skip: ngspice executable is not available in PATH")
+        return
+
     with su.Simulation(
         netlist_path="ngspice_builtin.cir",
         simulator="ngspice",
