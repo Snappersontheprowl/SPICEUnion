@@ -77,6 +77,69 @@ su::SimulatorKind parse_simulator_kind(const std::string& value) {
   throw std::invalid_argument("unsupported simulator: " + value);
 }
 
+su::MetricKind parse_metric_kind(const std::string& value) {
+  if (value == "dc") {
+    return su::MetricKind::kDcValue;
+  }
+  if (value == "dc_sweep") {
+    return su::MetricKind::kDcSweep;
+  }
+  if (value == "ac") {
+    return su::MetricKind::kAcResponse;
+  }
+  if (value == "tran") {
+    return su::MetricKind::kTranWaveform;
+  }
+  throw std::invalid_argument("unsupported metric kind: " + value);
+}
+
+su::DerivedMetric parse_derived_metric(const std::string& value) {
+  if (value == "ugbw") {
+    return su::DerivedMetric::kUgbwHz;
+  }
+  if (value == "phase_margin") {
+    return su::DerivedMetric::kPhaseMarginDeg;
+  }
+  if (value == "settling_time") {
+    return su::DerivedMetric::kSettlingTimeS;
+  }
+  throw std::invalid_argument("unsupported derived metric: " + value);
+}
+
+std::vector<su::MetricRequest> parse_metric_requests(const py::object& value) {
+  std::vector<su::MetricRequest> requests;
+  if (value.is_none()) {
+    return requests;
+  }
+  for (const auto& item : value.cast<py::iterable>()) {
+    const auto spec = py::cast<py::dict>(item);
+    su::MetricRequest request;
+    if (spec.contains("kind")) {
+      request.kind = parse_metric_kind(py::cast<std::string>(spec["kind"]));
+    }
+    if (!spec.contains("signal")) {
+      throw std::invalid_argument("metric request requires a 'signal' key");
+    }
+    request.signal = py::cast<std::string>(spec["signal"]);
+    if (spec.contains("sweep_signal")) {
+      request.sweep_signal = py::cast<std::string>(spec["sweep_signal"]);
+    }
+    if (spec.contains("filename")) {
+      request.filename = py::cast<std::string>(spec["filename"]);
+    }
+    if (spec.contains("derived")) {
+      for (const auto& derived : spec["derived"].cast<py::iterable>()) {
+        request.derived.push_back(parse_derived_metric(py::cast<std::string>(derived)));
+      }
+    }
+    if (spec.contains("settling_target")) {
+      request.settling_target = py::cast<double>(spec["settling_target"]);
+    }
+    requests.push_back(std::move(request));
+  }
+  return requests;
+}
+
 su::ResultFormat parse_result_format(const std::string& value) {
   if (value == "unknown") {
     return su::ResultFormat::kUnknown;
@@ -332,6 +395,17 @@ PySettlingTimeResult to_python(su::ReadResult<su::SettlingTimeResult> result) {
   return output;
 }
 
+struct PyMetricValue {
+  su::MetricValue value;
+
+  std::string name() const { return value.name; }
+  double number() const { return value.value; }
+  std::string unit() const { return value.unit; }
+  su::MetricsStatus status() const { return value.status; }
+  std::string status_text() const { return su::to_string(value.status); }
+  std::string message() const { return value.message; }
+};
+
 struct PySimulationResult {
   explicit PySimulationResult(su::SimulationResult result) : result(std::move(result)) {}
 
@@ -380,6 +454,40 @@ struct PySimulationResult {
     return to_python(result.read_tran(signal_name, filename));
   }
 
+  bool metrics_ok() const noexcept {
+    return result.metrics_ok();
+  }
+
+  std::string metrics_message() const {
+    return result.metrics_message();
+  }
+
+  py::dict metrics() const {
+    py::dict output;
+    for (const auto& value : result.metrics()) {
+      if (value.status == su::MetricsStatus::kOk) {
+        output[py::str(value.name)] = value.value;
+      }
+    }
+    return output;
+  }
+
+  py::object metric(const std::string& name) const {
+    const auto* value = result.metric(name);
+    if (value == nullptr) {
+      return py::none();
+    }
+    return py::cast(value->value);
+  }
+
+  std::vector<PyMetricValue> metric_values() const {
+    std::vector<PyMetricValue> output;
+    for (const auto& value : result.metrics()) {
+      output.push_back(PyMetricValue{value});
+    }
+    return output;
+  }
+
   su::SimulationResult result;
 };
 
@@ -387,7 +495,7 @@ struct PySimulation {
   PySimulation(std::string netlist_path, const std::string& simulator, int workers,
                std::string work_dir_base, std::string workspace_namespace, int timeout_seconds,
                int restart_attempts, const std::string& result_format,
-               const std::string& ngspice_task) {
+               const std::string& ngspice_task, const py::object& metrics) {
     su::SimulationOptions options;
     options.simulator = parse_simulator_kind(simulator);
     options.netlist_path = std::move(netlist_path);
@@ -398,6 +506,7 @@ struct PySimulation {
     options.restart_attempts = restart_attempts;
     options.result_format = parse_result_format(result_format);
     options.ngspice_task = parse_ngspice_task(ngspice_task);
+    options.metrics = parse_metric_requests(metrics);
     simulation.reset(new su::Simulation(std::move(options)));
   }
 
@@ -481,7 +590,34 @@ PYBIND11_MODULE(spiceunion, module) {
       .value("SIGNAL_NOT_FOUND", su::ResultStatus::kSignalNotFound)
       .value("UNSUPPORTED_FORMAT", su::ResultStatus::kUnsupportedFormat)
       .value("PARSE_ERROR", su::ResultStatus::kParseError)
-      .value("INVALID_INPUT", su::ResultStatus::kInvalidInput);
+      .value("INVALID_INPUT", su::ResultStatus::kInvalidInput)
+      .value("ARTIFACTS_NOT_RETAINED", su::ResultStatus::kArtifactsNotRetained);
+
+  py::enum_<su::MetricKind>(module, "MetricKind")
+      .value("DC", su::MetricKind::kDcValue)
+      .value("DC_SWEEP", su::MetricKind::kDcSweep)
+      .value("AC", su::MetricKind::kAcResponse)
+      .value("TRAN", su::MetricKind::kTranWaveform);
+
+  py::enum_<su::DerivedMetric>(module, "DerivedMetric")
+      .value("UGBW", su::DerivedMetric::kUgbwHz)
+      .value("PHASE_MARGIN", su::DerivedMetric::kPhaseMarginDeg)
+      .value("SETTLING_TIME", su::DerivedMetric::kSettlingTimeS);
+
+  py::enum_<su::MetricsStatus>(module, "MetricsStatus")
+      .value("OK", su::MetricsStatus::kOk)
+      .value("SIGNAL_NOT_FOUND", su::MetricsStatus::kSignalNotFound)
+      .value("UNSUPPORTED_FORMAT", su::MetricsStatus::kUnsupportedFormat)
+      .value("READ_FAILED", su::MetricsStatus::kReadFailed)
+      .value("INTERNAL_ERROR", su::MetricsStatus::kInternalError);
+
+  py::class_<PyMetricValue>(module, "MetricValue")
+      .def_property_readonly("name", &PyMetricValue::name)
+      .def_property_readonly("value", &PyMetricValue::number)
+      .def_property_readonly("unit", &PyMetricValue::unit)
+      .def_property_readonly("status", &PyMetricValue::status)
+      .def("status_text", &PyMetricValue::status_text)
+      .def_property_readonly("message", &PyMetricValue::message);
 
   py::enum_<su::TaskStatus>(module, "TaskStatus")
       .value("SUCCESS", su::TaskStatus::kSuccess)
@@ -597,16 +733,21 @@ PYBIND11_MODULE(spiceunion, module) {
       .def("read_ac", &PySimulationResult::read_ac, py::arg("signal_name"),
            py::arg("filename") = "ac.ac")
       .def("read_tran", &PySimulationResult::read_tran, py::arg("signal_name"),
-           py::arg("filename") = "tran.tran");
+           py::arg("filename") = "tran.tran")
+      .def("metrics_ok", &PySimulationResult::metrics_ok)
+      .def("metrics_message", &PySimulationResult::metrics_message)
+      .def("metrics", &PySimulationResult::metrics)
+      .def("metric", &PySimulationResult::metric, py::arg("name"))
+      .def("metric_values", &PySimulationResult::metric_values);
 
   py::class_<PySimulation>(module, "Simulation")
       .def(py::init<std::string, const std::string&, int, std::string, std::string, int, int,
-                    const std::string&, const std::string&>(),
+                    const std::string&, const std::string&, const py::object&>(),
            py::arg("netlist_path"), py::arg("simulator") = "spectre", py::arg("workers") = 1,
            py::arg("work_dir_base") = "local/runtime/simulations",
            py::arg("workspace_namespace") = "", py::arg("timeout_seconds") = 60,
            py::arg("restart_attempts") = 1, py::arg("result_format") = "unknown",
-           py::arg("ngspice_task") = "rc_ac")
+           py::arg("ngspice_task") = "rc_ac", py::arg("metrics") = py::none())
       .def("add_parameter", &PySimulation::add_parameter, py::arg("name"),
            py::arg("default_value") = py::none())
       .def("run", &PySimulation::run, py::arg("cases"))

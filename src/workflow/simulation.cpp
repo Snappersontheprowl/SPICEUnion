@@ -53,6 +53,7 @@ EvaluatorOptions to_evaluator_options(const SimulationOptions& options) {
   evaluator_options.timeout_seconds = options.timeout_seconds;
   evaluator_options.restart_attempts = options.restart_attempts;
   evaluator_options.result_format = options.result_format;
+  evaluator_options.metrics = options.metrics;
   return evaluator_options;
 }
 
@@ -113,9 +114,35 @@ ResultFormat SimulationResult::result_format() const noexcept {
   return task_.result_format;
 }
 
+bool SimulationResult::metrics_ok() const noexcept {
+  return task_.metrics.status == MetricsStatus::kOk;
+}
+
+const std::string& SimulationResult::metrics_message() const noexcept {
+  return task_.metrics.message;
+}
+
+const std::vector<MetricValue>& SimulationResult::metrics() const noexcept {
+  return task_.metrics.values;
+}
+
+const MetricValue* SimulationResult::metric(const std::string& name) const noexcept {
+  for (const auto& value : task_.metrics.values) {
+    if (value.name == name) {
+      return &value;
+    }
+  }
+  return nullptr;
+}
+
 ReadResult<ResultDirectory> SimulationResult::result_directory() const {
   if (!task_.ok()) {
     return task_failure<ResultDirectory>(task_);
+  }
+  if (!task_.artifacts_retained) {
+    return ReadResult<ResultDirectory>::failure(
+        ResultStatus::kArtifactsNotRetained,
+        "artifacts were discarded after metrics extraction");
   }
   if (task_.result_format == ResultFormat::kNspiceWrdata) {
     if (task_.work_dir.empty()) {
@@ -130,6 +157,11 @@ ReadResult<ResultDirectory> SimulationResult::result_directory() const {
 ReadResult<ScalarResult> SimulationResult::read_dc(const std::string& signal_name) const {
   if (!task_.ok()) {
     return task_failure<ScalarResult>(task_);
+  }
+  if (!task_.artifacts_retained) {
+    return ReadResult<ScalarResult>::failure(
+        ResultStatus::kArtifactsNotRetained,
+        "artifacts were discarded after metrics extraction");
   }
   if (task_.result_format == ResultFormat::kNspiceWrdata) {
     return ReadResult<ScalarResult>::failure(
@@ -149,6 +181,10 @@ ReadResult<DcSweep> SimulationResult::read_dc_sweep(const std::string& sweep_nam
                                                     const std::string& filename) const {
   if (!task_.ok()) {
     return task_failure<DcSweep>(task_);
+  }
+  if (!task_.artifacts_retained) {
+    return ReadResult<DcSweep>::failure(ResultStatus::kArtifactsNotRetained,
+                                        "artifacts were discarded after metrics extraction");
   }
   if (task_.result_format == ResultFormat::kNspiceWrdata) {
     const auto data_file = choose_filename(filename, kDefaultSpectreDcSweepFile,
@@ -170,6 +206,11 @@ ReadResult<AcResponse> SimulationResult::read_ac(const std::string& signal_name,
   if (!task_.ok()) {
     return task_failure<AcResponse>(task_);
   }
+  if (!task_.artifacts_retained) {
+    return ReadResult<AcResponse>::failure(
+        ResultStatus::kArtifactsNotRetained,
+        "artifacts were discarded after metrics extraction");
+  }
   if (task_.result_format == ResultFormat::kNspiceWrdata) {
     const auto data_file = choose_filename(filename, kDefaultSpectreAcFile, kDefaultNgspiceAcFile);
     return read_ngspice_wrdata_ac_response(join_path_local(task_.work_dir, data_file),
@@ -187,6 +228,11 @@ ReadResult<TranWaveform> SimulationResult::read_tran(const std::string& signal_n
                                                      const std::string& filename) const {
   if (!task_.ok()) {
     return task_failure<TranWaveform>(task_);
+  }
+  if (!task_.artifacts_retained) {
+    return ReadResult<TranWaveform>::failure(
+        ResultStatus::kArtifactsNotRetained,
+        "artifacts were discarded after metrics extraction");
   }
   if (task_.result_format == ResultFormat::kNspiceWrdata) {
     const auto data_file =

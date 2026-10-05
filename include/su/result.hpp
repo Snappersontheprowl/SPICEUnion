@@ -15,6 +15,7 @@ enum class ResultStatus {
   kUnsupportedFormat,
   kParseError,
   kInvalidInput,
+  kArtifactsNotRetained,
 };
 
 const char* to_string(ResultStatus status) noexcept;

@@ -23,6 +23,7 @@ struct SimulationOptions {
   int restart_attempts = 1;
   ResultFormat result_format = ResultFormat::kUnknown;
   NgspiceBuiltinTask ngspice_task = NgspiceBuiltinTask::kRcAc;
+  std::vector<MetricRequest> metrics;
 };
 
 using SimulationCase = std::map<std::string, double>;
@@ -39,6 +40,11 @@ class SimulationResult {
 
   const std::string& work_dir() const noexcept;
   ResultFormat result_format() const noexcept;
+
+  bool metrics_ok() const noexcept;
+  const std::string& metrics_message() const noexcept;
+  const std::vector<MetricValue>& metrics() const noexcept;
+  const MetricValue* metric(const std::string& name) const noexcept;
 
   ReadResult<ResultDirectory> result_directory() const;
   ReadResult<ScalarResult> read_dc(const std::string& signal_name) const;

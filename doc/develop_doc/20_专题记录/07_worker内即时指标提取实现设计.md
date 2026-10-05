@@ -182,14 +182,18 @@ worker 线程：
 
 ### P1 metrics 主路径（1–1.5 天）
 
-- 数据模型（第 5 节）与 `include/su/metrics.hpp`；
-- worker 内提取（复用 `read_dc_value` / `read_dc_sweep` / `read_ac_response` /
-  `read_tran_waveform` 与派生 helper）；
-- 默认产物策略（成功丢弃 / 失败保留）与 `artifacts_not_retained`；
-- Python 绑定（`metrics=` / `metrics()` / `metric()` / `metrics_ok()`）；
-- 示例：`bindings/python/examples/` 增加“只取指标”的最小示例；
-- 文档：`usage/README.md`（用法）、`tests/README.md`、根 README 边界措辞、
-  `CHANGELOG.md`（0.2.0 破坏性说明）。
+- [x] 数据模型（第 5 节）与 `include/su/metrics.hpp`；
+- [x] worker 内提取（DC / DC sweep / AC 派生 / TRAN 派生；PSF 与 Ngspice wrdata
+  分派）；
+- [x] 默认产物策略（成功丢弃 / 失败保留）与 `artifacts_not_retained`；
+- [x] Python 绑定（`metrics=` / `metrics()` / `metric()` / `metrics_ok()` /
+  `metrics_message()` / `metric_values()`）；
+- [x] 示例：`bindings/python/examples/metrics_only.py`；
+- [x] 文档：`usage/README.md`、`include/su/README.md`、事实状态、CHANGELOG。
+
+验证（2026-10-05）：default 108/108、python 120/120；Ngspice 三 case 的 settling
+时间各异，成功后 `read_tran` 返回 `artifacts_not_retained`（失败场景保留产物由
+`metrics_pipeline_contract_test` 覆盖）。
 
 完成定义：`workers=4`、8 个不同 case 的批量跑完，指标与输入一一对应；成功样本
 不再产生可读 raw（默认），失败样本可排查。

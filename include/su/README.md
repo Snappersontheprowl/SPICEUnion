@@ -22,6 +22,18 @@
 
 MVP 只负责“找到并报告”，不做版本门控；能力声明与版本→能力映射见后续里程碑。
 
+### `metrics.hpp`
+
+指标提取主路径（供执行层与 workflow facade 使用）：
+
+- `MetricKind` / `DerivedMetric`：用户声明要什么（DC 标量、DC 扫描、AC 频响、TRAN
+  波形，以及 UGBW / phase margin / settling time 派生指标）；
+- `MetricRequest` / `MetricValue` / `MetricsOutcome` / `MetricsStatus`：请求与结果
+  模型（SI 单位；提取状态与仿真状态分离）；
+- `extract_metrics()`：在 job 产物目录中提取；由池子在 worker 归还前调用。
+
+默认策略：声明了 `metrics` 且提取成功的 job，原始产物会被丢弃；失败则保留。
+
 ### `workflow.hpp`
 
 普通用户工作流入口。

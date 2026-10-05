@@ -77,7 +77,42 @@ with su.Simulation(
 Ngspice 还内置 RC AC / RC TRAN / 电阻分压 DC 任务，适合不想准备网表的快速体验，
 详见 workflow 相关示例与代码。
 
-### 2.3 C++ 嵌入
+### 2.3 只取指标（metrics 主路径）
+
+如果只关心指标值、不需要波形文件，用 `metrics=` 声明；库会在 worker 归还池子前
+提取指标，并在成功后丢弃原始产物（失败保留，便于排查）：
+
+```python
+import spiceunion as su
+
+with su.Simulation(
+    netlist_path="ngspice_builtin.cir", simulator="ngspice",
+    ngspice_task="rc_tran", result_format="nspice_wrdata", workers=2,
+    metrics=[{"kind": "tran", "signal": "v(out)", "derived": ["settling_time"]}],
+) as simulation:
+    simulation.add_parameter("capacitance_f")
+    results = simulation.run([{"capacitance_f": 1e-12}, {"capacitance_f": 2e-12}])
+
+for r in results:
+    print(r.metrics_ok(), r.metrics())     # {"settling_time_s": 4.6e-9}
+    print(r.metric("settling_time_s"))
+    print(r.read_tran("v(out)").status_text())   # artifacts_not_retained（成功后默认丢弃）
+```
+
+可用的指标声明：
+
+| kind | 说明 | 常用 derived |
+|---|---|---|
+| `dc` | DC 标量（如 `vout`） | — |
+| `dc_sweep` | DC 扫描（需 `sweep_signal`） | 输出 `<signal>_first/_last/_points` |
+| `ac` | AC 频响 | `ugbw`、`phase_margin` |
+| `tran` | TRAN 波形 | `settling_time` |
+
+失败语义：`r.ok()` 表示仿真成功，`r.metrics_ok()` 表示指标提取成功；两者独立。
+提取失败的 job 会保留原始产物，可用 `read_*` 排查。示例见
+`bindings/python/examples/metrics_only.py`。
+
+### 2.4 C++ 嵌入
 
 公开 API 在 `include/su/` 下，最小示例见根 `README.md`；各头文件职责见
 [`include/su/README.md`](../../include/su/README.md)。

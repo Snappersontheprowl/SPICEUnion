@@ -1,6 +1,7 @@
 #pragma once
 
 #include "su/result.hpp"
+#include "su/metrics.hpp"
 
 #include <map>
 #include <string>
@@ -17,6 +18,7 @@ struct EvaluatorOptions {
   ResultFormat result_format = ResultFormat::kUnknown;
   int timeout_seconds = 60;
   int restart_attempts = 1;
+  std::vector<MetricRequest> metrics;
 };
 
 }  // namespace su

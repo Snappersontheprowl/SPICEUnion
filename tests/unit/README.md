@@ -11,8 +11,10 @@
 ## 子目录
 
 - `core/`：核心数据结构、`Evaluator` 契约、构建 smoke。
-- `parse/`：结果目录定位、ResultIR 数学 helper、PSFASCII / libpsf reader 行为。
-- `pool/`：并发池与 `SimulatorPool` adapter 契约，含每 job 产物目录隔离契约。
+- `parse/`：结果目录定位、ResultIR 数学 helper、PSFASCII / libpsf reader 行为、
+  `metrics` 提取器（fixture 驱动）。
+- `pool/`：并发池与 `SimulatorPool` adapter 契约，含每 job 产物目录隔离与
+  “提取成功丢产物 / 失败保留”契约。
 - `session/`：不依赖真实工具的 session 协议、Ngspice 配置、netlist 渲染和
   `wrdata` parser。
 - `workflow/`：用户工作流 facade 契约。

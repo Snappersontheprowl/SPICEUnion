@@ -80,6 +80,15 @@ spiceunion_add_gtest(spiceunion_job_work_dir_contract_test
   unit/pool/job_work_dir_contract_test.cpp
 )
 
+spiceunion_add_gtest(spiceunion_metrics_pipeline_contract_test
+  unit/pool/metrics_pipeline_contract_test.cpp
+)
+
+target_compile_definitions(spiceunion_metrics_pipeline_contract_test
+  PRIVATE
+    SPICEUNION_FIXTURE_ROOT="${PROJECT_SOURCE_DIR}/tests/fixtures"
+)
+
 target_compile_definitions(spiceunion_simulator_pool_contract_test
   PRIVATE
     SPICEUNION_PROJECT_ROOT="${PROJECT_SOURCE_DIR}"
@@ -101,6 +110,15 @@ target_compile_definitions(spiceunion_result_reader_test
 
 spiceunion_add_gtest(spiceunion_psf_ascii_reader_test
   unit/parse/psf_ascii_reader_test.cpp
+)
+
+spiceunion_add_gtest(spiceunion_metric_extractor_test
+  unit/parse/metric_extractor_test.cpp
+)
+
+target_compile_definitions(spiceunion_metric_extractor_test
+  PRIVATE
+    SPICEUNION_FIXTURE_ROOT="${PROJECT_SOURCE_DIR}/tests/fixtures"
 )
 
 target_compile_definitions(spiceunion_psf_ascii_reader_test

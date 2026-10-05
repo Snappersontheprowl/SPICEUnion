@@ -1,6 +1,7 @@
 #pragma once
 
 #include "su/result.hpp"
+#include "su/metrics.hpp"
 
 #include <string>
 
@@ -24,6 +25,8 @@ struct TaskResult {
   int error_code = 0;
   std::string error_message;
   std::string detail;
+  MetricsOutcome metrics;
+  bool artifacts_retained = true;
 
   bool ok() const noexcept {
     return status == TaskStatus::kSuccess;

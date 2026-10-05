@@ -43,9 +43,12 @@ P-c 发布：
 - [x] P0 产物正确性（2026-10-05）：Ngspice 每 job 子目录 + Spectre 每 job 快照；
       契约测试 `job_work_dir_contract_test` + 真实两后端验证通过（ngspice 三 case
       -3 dB 频率与理论一致；spectre 两 case 快照哈希不同）。
-- [ ] P1 metrics 主路径（1–1.5 天）：数据模型 → worker 内提取 → 成功丢 raw /
-      失败保留 + `artifacts_not_retained` → Python `metrics=`/`metrics()` 与示例 →
-      usage/测试/CHANGELOG（0.2.0 破坏性说明）。
+- [x] P1 metrics 主路径（2026-10-05）：数据模型 `include/su/metrics.hpp` → worker
+      内提取（DC/DC sweep/AC 派生/TRAN 派生）→ 成功丢 raw、失败保留 +
+      `artifacts_not_retained` → Python `metrics=`/`metrics()` 与示例
+      `metrics_only.py` → usage/测试/CHANGELOG 同步。验证：default 108/108、
+      python 120/120；ngspice 三 case settling 指标各异且成功后
+      `read_tran → artifacts_not_retained`。
 - [ ] P2：仿真器原生测量直出（`ResultFormat::kMeasure` + Ngspice `.meas` /
       Spectre `measure` 解析；直出优先、raw 兜底）。Spectre 侧新增线索：
       交互 SKILL 存在 `mdlRegMeasurement` / `mdlRun` / `sclSetResultDir`，

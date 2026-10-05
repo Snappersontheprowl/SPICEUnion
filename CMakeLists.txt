@@ -117,6 +117,7 @@ endif()
 
 add_library(spiceunion_core STATIC
   src/core/evaluator.cpp
+  src/core/metrics.cpp
   src/core/task_result.cpp
   src/parse/result.cpp
   src/parse/result_reader.cpp

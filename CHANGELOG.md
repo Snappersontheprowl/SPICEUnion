@@ -13,6 +13,15 @@
   会话在 job 结束后把产物快照到该目录。契约测试见
   `tests/unit/pool/job_work_dir_contract_test.cpp`。
 
+### Added
+
+- 指标提取主路径：`Simulation(..., metrics=[...])` / `SimulationResult.metrics()` /
+  `metric()` / `metrics_ok()` / `metrics_message()`；C++ 侧为
+  `include/su/metrics.hpp` 与 `SimulationOptions.metrics`。提取在 worker 归还池子前
+  完成，覆盖 DC 标量、DC 扫描、AC（UGBW / phase margin）、TRAN（settling time）；
+- 默认产物策略：声明指标且提取成功的 job 丢弃原始产物（失败保留），
+  `read_*` 此时返回新增状态 `artifacts_not_retained`。
+
 ### Changed
 
 - 同步 OrderedConcurrentPool 的 failure handler 契约变更：worker id 参数改为
