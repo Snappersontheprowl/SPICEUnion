@@ -31,31 +31,14 @@ P-c 发布：
       正式 PyPI 安装验收通过，2026-09-05）。
 - [ ] conda-forge feedstock 候选与 `ngspice` 联合安装验证
       （配方草稿在 `packaging/conda-forge/`）。
-- [ ] 版本号同步三处 + CHANGELOG（策略已写入专题 05）。
+- [x] 版本号同步三处 + CHANGELOG（v0.1.0 发布时已同步，策略写入专题 05）。
 - [ ] 发布后回归 `pypi-smoke`（手动/定时安装线上 PyPI 包跑测试）云端跑绿后收口。
-
-### 产物生命周期与指标提取（设计定稿，代码待启动）
-
-设计文档：方案对比见 `doc/develop_doc/20_专题记录/06_产物生命周期与指标提取设计.md`；
-落地设计见 `doc/develop_doc/20_专题记录/07_worker内即时指标提取实现设计.md`
-（2026-10-05 定稿，无兼容包袱版：`metrics` 主路径、成功丢 raw、0.2.0 破坏性升级）。
-
-- [x] P0 产物正确性（2026-10-05）：Ngspice 每 job 子目录 + Spectre 每 job 快照；
-      契约测试 `job_work_dir_contract_test` + 真实两后端验证通过（ngspice 三 case
-      -3 dB 频率与理论一致；spectre 两 case 快照哈希不同）。
-- [x] P1 metrics 主路径（2026-10-05）：数据模型 `include/su/metrics.hpp` → worker
-      内提取（DC/DC sweep/AC 派生/TRAN 派生）→ 提取状态与仿真状态分离 →
-      Python `metrics=`/`metrics()` 与示例 `metrics_only.py` → usage/测试/CHANGELOG
-      同步。产物保留策略保持现状（不在方案一范围）。验证：default 112/112、
-      python 120/120、python-libpsf-pic 139/139；ngspice 三 case settling 指标
-      各异且 `read_tran` 仍可用。
-- [ ] P2：仿真器原生测量直出（`ResultFormat::kMeasure` + Ngspice `.meas` /
-      Spectre `measure` 解析；直出优先、raw 兜底）。Spectre 侧新增线索：
-      交互 SKILL 存在 `mdlRegMeasurement` / `mdlRun` / `sclSetResultDir`，
-      待单独验证 `mdl*` 测量路径。
 
 ## 暂缓池
 
+- [ ] **方案二：仿真器原生测量直出**（Ngspice `.meas` / Spectre `measure`、
+      `mdl*`；设计见 `doc/develop_doc/20_专题记录/06_产物生命周期与指标提取设计.md`
+      第 4 节）。它是独立的产物生成方式改造，不属于方案一；启动前需另立实现设计。
 - [ ] legacy sensitivity fixture、可信参考值与读取实现。
 - [ ] Spectre 23.1 PSFXL transient 的解析或转换路径评估。
 - [ ] C++ helper 与 Python helper 在失败语义上的有意差异集中记录。
@@ -83,6 +66,12 @@ P-c 发布：
 
 ## 归档
 
+- 产物正确性与指标提取（方案一，2026-10-05 完成）：每 job 独立产物目录
+  （Ngspice 直写 + Spectre 快照，修复前序结果被覆盖）；声明式 `metrics=` 在
+  worker 归还池子前完成提取（DC / DC sweep / AC 派生 / TRAN 派生）；产物保留
+  策略未改、`read_*` 行为不变。验证：default 112/112、python 120/120、
+  python-libpsf-pic 139/139。设计见 `doc/develop_doc/20_专题记录/06`、`07`；
+  方案二（原生测量直出）在暂缓池。
 - tests 目录分层整理（2026-09-04）：新增 `tests/CMakeLists.txt`，根 CMake 只保留
   测试入口；C++ 测试按 `unit/`、`integration/`、`external/{spectre,ngspice}/`
   分层；拆分原 `ngspice_session_test.cpp` 为配置、netlist、wrdata parser、
