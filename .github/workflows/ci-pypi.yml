@@ -1,0 +1,57 @@
+# 已发布 PyPI 包的回归流水线（“安装包模式”）：验证的是 pip 安装后的包，不是源码构建。
+#
+# 触发：仅手动 + 定时（周一 03:00 UTC）——避免 push/PR 时把自托管 EDA job 拉起来。
+#
+# 两个 job：
+#   package-smoke    （云 runner，无 EDA）：安装包 + 契约/读取用例；
+#   package-external （自托管，label eda）：安装包 + 真实仿真使用路径
+#                     （ngspice；Spectre 需要 secrets.SPECTRE_MATERIALS_DIR 与许可）。
+#
+# 前置：自托管 runner 已注册 label eda；secrets.SPECTRE_MATERIALS_DIR 指向含
+#       external/netlist 与 external/pdk 的材料目录（与 ci-external 共用）。
+#       可选 repository variable PYPI_SMOKE_PYTHON：自托管机器上用于建 venv 的
+#       Python 解释器（需 >= 3.9；留空则用 PATH 中的 python3）。
+name: ci-pypi
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "spiceunion 版本（留空 = PyPI 最新）"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 3 * * 1"
+
+concurrency:
+  group: ci-pypi
+  cancel-in-progress: false
+
+jobs:
+  package-smoke:
+    name: package-smoke (cloud, EDA-free)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install released package and run repo tests
+        run: scripts/pypi_smoke.sh ${{ inputs.version }}
+
+  package-external:
+    name: package-external (self-hosted, real sim)
+    runs-on: [self-hosted, linux, eda]
+    env:
+      SPICEUNION_SPECTRE_MATERIALS_DIR: ${{ secrets.SPECTRE_MATERIALS_DIR }}
+      PYPI_SMOKE_PYTHON: ${{ vars.PYPI_SMOKE_PYTHON }}
+    steps:
+      - name: Checkout SPICEUnion
+        uses: actions/checkout@v5
+
+      - name: Install released package and run user journey
+        run: scripts/pypi_smoke.sh ${{ inputs.version }} --with-external

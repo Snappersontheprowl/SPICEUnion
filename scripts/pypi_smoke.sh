@@ -33,8 +33,12 @@ runtime_root="local/runtime/pypi_smoke"
 venv="$runtime_root/venv"
 mkdir -p "$runtime_root"
 
+# 可用 PYPI_SMOKE_PYTHON 指定解释器（自托管机器上的 python3 可能过旧、
+# 无法安装 cp39–cp312 的 wheel）；默认 python3。
+python_bin="${PYPI_SMOKE_PYTHON:-python3}"
+
 if [ ! -x "$venv/bin/python" ]; then
-  python3 -m venv "$venv"
+  "$python_bin" -m venv "$venv"
 fi
 
 "$venv/bin/python" -m pip install --upgrade pip >/dev/null

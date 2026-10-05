@@ -60,7 +60,7 @@ CMake 会优先查找 `install-pic`，再查找 `install`。这两个目录均�
 | 模式 | import 来源 | 运行方式 |
 |---|---|---|
 | 源码构建 | `build/<preset>/bindings/python`（PYTHONPATH） | `ctest --preset python` / `python-libpsf-pic` |
-| 安装包 | `pip install` 后的 site-packages | `scripts/pypi_smoke.sh [版本] [--with-external]`；CI `pypi-smoke` |
+| 安装包 | `pip install` 后的 site-packages | `scripts/pypi_smoke.sh [版本] [--with-external]`；CI `ci-pypi`（手动/定时） |
 
 安装包模式**不设置 PYTHONPATH**，验证的就是发布出去的那一个包；
 `test_user_journey.py` 做用户路径（doctor → Simulation → metrics → read），

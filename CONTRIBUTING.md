@@ -54,7 +54,8 @@ scripts/verify_all_presets.sh
 |---|---|---|---|
 | `ci-eda-free` · build-test | push / PR / 手动 | ubuntu-latest 上矩阵跑 `default` / `python` / `libpsf` / `python-libpsf-pic`（libpsf 现场构建 + ccache + JUnit artifact） | `scripts/verify_all_presets.sh`（不含 external） |
 | `ci-eda-free` · wheel-smoke | push / PR / 手动 | 单仓 `pip install .` + `import spiceunion` + `spiceunion doctor` 冒烟 | 干净 venv 中 `pip install .` |
-| `ci-eda-free` · pypi-smoke | 手动 / 定时（周一 03:00 UTC） | 干净环境安装**线上 PyPI 包**，跑仓库 Python 契约/读取/示例测试 | `pip install spiceunion` 后跑 `bindings/python/tests` |
+| `ci-pypi` · package-smoke | 手动 / 定时（周一 03:00 UTC） | 云 runner 安装**线上 PyPI 包**，跑契约/读取/示例与用户路径（真实仿真部分自动 skip） | `scripts/pypi_smoke.sh [版本]` |
+| `ci-pypi` · package-external | 手动 / 定时（周一 03:00 UTC） | 自托管 runner（label `eda`）安装线上包并跑真实仿真使用路径（ngspice；Spectre 需材料 secrets） | `scripts/pypi_smoke.sh [版本] --with-external` |
 | `ci-external` | 仅手动 / 定时（周五 22:00 UTC） | 自托管 runner（label `eda`）跑 `external-libpsf`：真实 Spectre / Ngspice + libpsf | `cmake --preset external-libpsf` 三连（需自有许可/材料） |
 | `publish-testpypi` | 手动 | 构建 sdist + manylinux wheel 上传 TestPyPI | 无（近似：`pip install .` 冒烟） |
 | `publish-pypi` | 打 `v*` tag | 构建并发布到 PyPI（trusted publishing） | 先用 `publish-testpypi` 试跑 |
