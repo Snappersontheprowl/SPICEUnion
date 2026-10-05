@@ -235,8 +235,8 @@ start at `doc/develop_doc/README.md`:
   BINPSF parser are not implemented;
 - Python bindings currently cover workflow + result reading; starting
   simulations from Python is supported through `Simulation`;
-- the first PyPI release (`spiceunion` 0.1.0, default wheel without libpsf) is
-  available; performance numbers are not yet systematically measured.
+- PyPI releases are available (current `spiceunion` 0.2.0, default wheel without
+  libpsf); performance numbers are not yet systematically measured.
 
 ## Contributing
 
@@ -349,7 +349,7 @@ ctest --preset default --output-on-failure
   PSFASCII 内置支持、BINPSF 走可选 libpsf；legacy sensitivity 与完整原生
   BINPSF parser 未实现；
 - Python 已支持第一版 workflow binding；真实 simulator smoke 需显式开启；
-- 首版 PyPI 已发布（`spiceunion` 0.1.0，默认 wheel 不含 libpsf）；性能数字未
+- PyPI 已发布（当前 `spiceunion` 0.2.0，默认 wheel 不含 libpsf）；性能数字未
   系统实测。
 
 ## 参与贡献

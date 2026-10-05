@@ -11,7 +11,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/s/spiceunion/spiceunion-{{ version }}.tar.gz
-  sha256: TBD-after-first-pypi-release
+  sha256: 7505045816ae5ed609521b69ad530e3876a9e5b262e84b49d23697e55c89302b
 
 build:
   number: 0
