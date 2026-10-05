@@ -66,6 +66,8 @@ P-c 发布：
 - [ ] spectre / ngspice 外部测试门控拆分（让 ngspice 上云）——阶段 2 任务 3，
       用户决定放弃，暂缓。
 - [ ] Xyce / Hspice 多仿真器扩展。
+- [ ] Ngspice 常驻/服务模式 backend 评估（触发条件与验证步骤见
+      `doc/develop_doc/30_归档备注/02_仿真器常驻模式评估备注.md`）。
 
 ## 监控项
 
