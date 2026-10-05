@@ -186,10 +186,14 @@ jobs:
       - name: Import and doctor smoke
         run: |
           python - <<'PY'
+          import pathlib
+          import re
           import spiceunion
           report = spiceunion.doctor()
           assert "Spectre" in report and "Ngspice" in report
-          assert spiceunion.version() == "0.1.0"
+          declared = re.search(r'version = "([^"]+)"',
+                               pathlib.Path("pyproject.toml").read_text()).group(1)
+          assert spiceunion.version() == declared, (spiceunion.version(), declared)
           print(spiceunion.version())
           print(report)
           PY

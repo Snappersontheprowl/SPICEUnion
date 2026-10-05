@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
   SPICEUnion
-  VERSION 0.1.0
+  VERSION 0.2.0
   DESCRIPTION "C++ execution core for interactive SPICE-class simulator workflows"
   LANGUAGES CXX
 )

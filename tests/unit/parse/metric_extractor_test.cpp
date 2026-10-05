@@ -46,6 +46,22 @@ TEST(MetricExtractorTest, DerivesUgbwAndPhaseMarginFromAcFixture) {
   EXPECT_EQ("deg", outcome.values[1].unit);
 }
 
+TEST(MetricExtractorTest, ExtractsDcSweepFirstLastAndPoints) {
+  su::MetricRequest request;
+  request.kind = su::MetricKind::kDcSweep;
+  request.sweep_signal = "temp";
+  request.signal = "V_BGR";
+
+  const auto outcome = su::extract_metrics(ascii_fixture("bgr_amp_dc_sweep.raw").string(),
+                                          su::ResultFormat::kPsfAscii, {request});
+  ASSERT_EQ(su::MetricsStatus::kOk, outcome.status) << outcome.message;
+  ASSERT_EQ(3u, outcome.values.size());
+  EXPECT_EQ("V_BGR_first", outcome.values[0].name);
+  EXPECT_EQ("V_BGR_last", outcome.values[1].name);
+  EXPECT_EQ("V_BGR_points", outcome.values[2].name);
+  EXPECT_GT(outcome.values[2].value, 1.0);
+}
+
 TEST(MetricExtractorTest, ReportsSignalNotFound) {
   su::MetricRequest request;
   request.kind = su::MetricKind::kDcValue;

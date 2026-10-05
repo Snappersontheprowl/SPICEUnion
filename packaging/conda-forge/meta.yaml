@@ -3,7 +3,7 @@
 # 注意：conda-forge 正式配方需放在独立 feedstock 仓库，由 conda-forge 维护流程
 # 管理。本文件只用于本地 conda-build 试构建与评审，sha256 待 PyPI 首版发布后回填。
 
-{% set version = "0.1.0" %}
+{% set version = "0.2.0" %}
 
 package:
   name: spiceunion

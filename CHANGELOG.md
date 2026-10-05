@@ -6,12 +6,20 @@
 
 ## [Unreleased]
 
-### Fixed
+（暂无）
 
-- 同一 worker 连续 job 复用产物目录导致前序结果被覆盖：现在每个 job 使用独立目录
-  `worker_<id>/case_<输入下标>`；Ngspice 每次 run 直接写入该目录，Spectre 常驻
-  会话在 job 结束后把产物快照到该目录。契约测试见
-  `tests/unit/pool/job_work_dir_contract_test.cpp`。
+## [0.2.0] - 2026-10-05
+
+### Changed
+
+- **行为变化**：`TaskResult.work_dir` 现在指向每 job 独立目录
+  `worker_<id>/case_<输入下标>`（原为 `worker_<id>`）。`read_*` 行为不变，原始
+  产物仍保留在该目录中；
+- 同步 OrderedConcurrentPool 的 failure handler 契约变更：worker id 参数改为
+  `std::optional<std::size_t>`。`std::nullopt` 表示该 job 从未分配到 worker，
+  此时 `SimulatorPool` 的失败结果回落到 workspace 根目录，不再越界取
+  `worker_work_dirs_`；`tests/unit/pool/ordered_concurrent_pool_test.cpp`
+  同步上游契约测试（含 shutdown 并发与执行单元创建失败两项）。
 
 ### Added
 
@@ -21,13 +29,12 @@
   完成，覆盖 DC 标量、DC 扫描、AC（UGBW / phase margin）、TRAN（settling time）；
   产物保留策略不变（原始产物仍保留，`read_*` 继续可用）。
 
-### Changed
+### Fixed
 
-- 同步 OrderedConcurrentPool 的 failure handler 契约变更：worker id 参数改为
-  `std::optional<std::size_t>`。`std::nullopt` 表示该 job 从未分配到 worker，
-  此时 `SimulatorPool` 的失败结果回落到 workspace 根目录，不再越界取
-  `worker_work_dirs_`；`tests/unit/pool/ordered_concurrent_pool_test.cpp`
-  同步上游契约测试（含 shutdown 并发与执行单元创建失败两项）。
+- 同一 worker 连续 job 复用产物目录导致前序结果被覆盖：现在每个 job 使用独立目录
+  `worker_<id>/case_<输入下标>`；Ngspice 每次 run 直接写入该目录，Spectre 常驻
+  会话在 job 结束后把产物快照到该目录。契约测试见
+  `tests/unit/pool/job_work_dir_contract_test.cpp`。
 
 ## [0.1.0] - 2026-09-05
 

@@ -55,6 +55,11 @@ spiceunion_add_gtest(spiceunion_smoke_test
   unit/core/smoke_test.cpp
 )
 
+target_compile_definitions(spiceunion_smoke_test
+  PRIVATE
+    SPICEUNION_VERSION="${PROJECT_VERSION}"
+)
+
 spiceunion_add_gtest(spiceunion_toolchain_test
   unit/toolchain/toolchain_test.cpp
 )
