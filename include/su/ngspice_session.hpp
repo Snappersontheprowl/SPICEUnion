@@ -87,10 +87,23 @@ class NgspiceSession final : public SimulatorSession {
     return task_;
   }
 
+  bool writes_into_job_work_dir() const noexcept override {
+    return true;
+  }
+
+  void set_job_work_dir(const std::string& job_work_dir) override {
+    current_job_dir_ = job_work_dir;
+  }
+
  private:
+  const std::string& active_work_dir() const noexcept {
+    return current_job_dir_.empty() ? work_dir_ : current_job_dir_;
+  }
+
   std::size_t worker_id_ = 0;
   EvaluatorOptions options_;
   std::string work_dir_;
+  std::string current_job_dir_;
   NgspiceBuiltinTask task_ = NgspiceBuiltinTask::kRcAc;
   std::string ngspice_executable_;
   bool started_ = false;

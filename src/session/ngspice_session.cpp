@@ -665,17 +665,23 @@ TaskResult NgspiceSession::run(const ParameterState& state, std::chrono::seconds
     start();
   }
 
-  TaskResult result = TaskResult::failure(TaskStatus::kException, work_dir_,
+  const std::string& job_dir = active_work_dir();
+  if (!make_directories(job_dir)) {
+    return TaskResult::failure(TaskStatus::kStartupFailed, job_dir,
+                               "failed to create Ngspice job directory: " + job_dir);
+  }
+
+  TaskResult result = TaskResult::failure(TaskStatus::kException, job_dir,
                                           "unknown Ngspice builtin task");
   switch (task_) {
     case NgspiceBuiltinTask::kRcAc:
-      result = run_rc_ac_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_rc_ac_task(ngspice_executable_, job_dir, state, timeout);
       break;
     case NgspiceBuiltinTask::kRcTran:
-      result = run_rc_tran_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_rc_tran_task(ngspice_executable_, job_dir, state, timeout);
       break;
     case NgspiceBuiltinTask::kResistorDividerDc:
-      result = run_resistor_divider_dc_task(ngspice_executable_, work_dir_, state, timeout);
+      result = run_resistor_divider_dc_task(ngspice_executable_, job_dir, state, timeout);
       break;
   }
 

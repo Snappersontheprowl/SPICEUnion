@@ -17,6 +17,12 @@ class OrderedConcurrentPool;
 
 namespace su {
 
+// 池内 job 包装：保留输入下标，用于每 job 产物目录命名与追溯。
+struct IndexedState {
+  std::size_t index = 0;
+  ParameterState state;
+};
+
 class SimulatorPool {
  public:
   SimulatorPool(EvaluatorOptions options, std::string workspace_root, SessionFactory factory);
@@ -34,7 +40,7 @@ class SimulatorPool {
   EvaluatorOptions options_;
   std::string workspace_root_;
   std::vector<std::string> worker_work_dirs_;
-  std::unique_ptr<ocp::OrderedConcurrentPool<ParameterState, TaskResult>> pool_;
+  std::unique_ptr<ocp::OrderedConcurrentPool<IndexedState, TaskResult>> pool_;
 };
 
 }  // namespace su

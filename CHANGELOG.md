@@ -6,6 +6,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 同一 worker 连续 job 复用产物目录导致前序结果被覆盖：现在每个 job 使用独立目录
+  `worker_<id>/case_<输入下标>`；Ngspice 每次 run 直接写入该目录，Spectre 常驻
+  会话在 job 结束后把产物快照到该目录。契约测试见
+  `tests/unit/pool/job_work_dir_contract_test.cpp`。
+
 ### Changed
 
 - 同步 OrderedConcurrentPool 的 failure handler 契约变更：worker id 参数改为

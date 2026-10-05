@@ -49,7 +49,7 @@
 目录命名（保序、可追溯）：
 
 ```text
-workspace_root/worker_<id>/job_<序号>_case_<输入下标>/
+workspace_root/worker_<id>/case_<输入下标>/
 ```
 
 默认行为：成功 job 的产物在提取完成后丢弃；失败 job 的产物保留，用于排查。
@@ -167,10 +167,18 @@ worker 线程：
 
 ### P0 产物正确性（0.5–1 天）
 
-- Ngspice：每 job 子目录；Spectre：每 job 快照（或即时提取后丢弃）；
-- **回归测试（先失败后通过）**：`workers=1` + 3 个不同参数 case，断言
-  `work_dir` 不同、读数不同、与理论一致；
-- 同步更新 `01_当前事实状态.md` 的「已知缺陷」状态。
+- [x] Ngspice：`NgspiceSession::set_job_work_dir()` 直接写入每 job 目录；
+  Spectre：池子在 job 结束后把固定 worker 目录快照到每 job 目录；
+- [x] **回归测试**：`tests/unit/pool/job_work_dir_contract_test.cpp`
+  （fake session，默认预设可跑）：三个 job 的 `work_dir` 互不相同，且各自产物
+  内容对应自己的输入参数；
+- [x] 真实验证（2026-10-05）：
+  - Ngspice `workers=1`，3 个不同电容：目录 `worker_0/case_00000{0,1,2}`，
+    -3 dB 频率 159.14 / 79.57 / 39.79 MHz（理论 159.15 / 79.58 / 39.79 MHz）；
+  - Spectre `workers=1`，2 个不同电容：目录 `worker_0/case_00000{0,1}`，快照文件
+    各自持有且 `ac.ac` 哈希不同（修复过程中发现并修掉“把上一个 job 目录也复制进
+    新 job”的缺陷）；
+- [x] `01_当前事实状态.md` 的缺陷状态已更新为「P0 修复记录」。
 
 ### P1 metrics 主路径（1–1.5 天）
 

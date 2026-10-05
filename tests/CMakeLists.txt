@@ -76,6 +76,10 @@ spiceunion_add_gtest(spiceunion_simulator_pool_contract_test
   unit/pool/simulator_pool_contract_test.cpp
 )
 
+spiceunion_add_gtest(spiceunion_job_work_dir_contract_test
+  unit/pool/job_work_dir_contract_test.cpp
+)
+
 target_compile_definitions(spiceunion_simulator_pool_contract_test
   PRIVATE
     SPICEUNION_PROJECT_ROOT="${PROJECT_SOURCE_DIR}"
